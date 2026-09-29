@@ -7,6 +7,7 @@ import Signup from "./pages/Signup";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import TutorRoute from "./components/TutorRoute";
+import PublicRoute from "./components/PublicRoute";
 import TutorLayout from "./components/TutorLayout";
 
 import Dashboard from "./pages/tutor/Dashboard";
@@ -35,31 +36,61 @@ function App() {
   return (
     <div>
       <Routes>
-        {/* Public routes */}
-        <Route path="/*" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
 
-        {/* Logged-in tutor routes */}
+        {/* Public pages - blocked when already logged in */}
+        <Route element={<PublicRoute />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+        </Route>
+
+        {/* Student area - temporary */}
+        <Route element={<ProtectedRoute />}>
+          <Route
+            path="/student"
+            element={<ComingSoon title="Student Dashboard" />}
+          />
+        </Route>
+
+        {/* Tutor area */}
         <Route element={<ProtectedRoute />}>
           <Route element={<TutorRoute />}>
             <Route element={<TutorLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
+              <Route
+                path="/dashboard"
+                element={<Dashboard />}
+              />
 
-              <Route path="/profile" element={<Profile />} />
+              <Route
+                path="/profile"
+                element={<Profile />}
+              />
 
-              <Route path="/tuition" element={<TuitionDetails />} />
+              <Route
+                path="/tuition"
+                element={<TuitionDetails />}
+              />
 
-              <Route path="/achievements" element={<Achievements />} />
+              <Route
+                path="/achievements"
+                element={<Achievements />}
+              />
 
-              <Route path="/batches" element={<Batches />} />
+              <Route
+                path="/batches"
+                element={<Batches />}
+              />
+
               <Route
                 path="/conversations"
-                element={<ComingSoon title="Conversations" />}
+                element={
+                  <ComingSoon title="Conversations" />
+                }
               />
             </Route>
           </Route>
         </Route>
+
       </Routes>
     </div>
   );
