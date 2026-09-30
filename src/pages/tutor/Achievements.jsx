@@ -55,7 +55,11 @@ function Achievements() {
       const data = response.data;
 
       if (data?.status === 200) {
-        const list = Array.isArray(data?.data)
+        // Backend currently returns:
+        // { status, message, details: [...] }
+        const list = Array.isArray(data?.details)
+          ? data.details
+          : Array.isArray(data?.data)
           ? data.data
           : Array.isArray(data?.data?.details)
           ? data.data.details
@@ -71,6 +75,9 @@ function Achievements() {
         );
       }
     } catch (err) {
+      console.error("Fetch achievements error:", err);
+      console.error("Backend response:", err.response?.data);
+
       if (err.code === "ECONNABORTED") {
         setError(
           "The server is taking too long to respond. Please try again."
@@ -79,7 +86,8 @@ function Achievements() {
         setError("The achievements request was invalid.");
       } else if (err.response?.status >= 500) {
         setError(
-          "The server is currently unavailable. Please try again in a moment."
+          err.response?.data?.message ||
+            "The server returned an internal error."
         );
       } else if (err.request) {
         setError(
@@ -121,6 +129,11 @@ function Achievements() {
     setIsFormOpen(true);
     setError("");
     setSuccess("");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   const handleEdit = (achievement) => {
@@ -146,176 +159,156 @@ function Achievements() {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const userId = getUserId();
-
-  if (!userId) {
-    setError("Your login session has expired. Please login again.");
-    return;
-  }
-
-  if (!formData.title.trim()) {
-    setError("Achievement title is required.");
-    return;
-  }
-
-  const studentRating =
-    formData.studentRating === ""
-      ? null
-      : Number(formData.studentRating);
-
-  if (
-    studentRating !== null &&
-    (!Number.isInteger(studentRating) ||
-      studentRating < 1 ||
-      studentRating > 5)
-  ) {
-    setError("Student rating must be between 1 and 5.");
-    return;
-  }
-
-  const batchId =
-    formData.batchId === "" ? null : Number(formData.batchId);
-
-  if (
-    batchId !== null &&
-    (!Number.isInteger(batchId) || batchId <= 0)
-  ) {
-    setError("Batch ID must be a valid number.");
-    return;
-  }
-
-  const payload = {
-    userId,
-    title: formData.title.trim(),
-    description: formData.description.trim() || null,
-    studentName: formData.studentName.trim() || null,
-    studentReview: formData.studentReview.trim() || null,
-    studentRating,
-    batchId,
-    createdBy: userId,
-    tags: formData.tags.trim() || null,
-  };
-
-  try {
-    setSaving(true);
-    setError("");
-    setSuccess("");
-
-    let response;
-
-    if (editingId) {
-      response = await api.put(
-        `/achievements/${editingId}`,
-        payload,
-        {
-          timeout: 15000,
-        }
-      );
-    } else {
-      response = await api.post(
-        "/achievements/new",
-        payload,
-        {
-          timeout: 15000,
-        }
-      );
+    if (saving) {
+      return;
     }
 
-    const data = response.data;
+    const userId = getUserId();
 
-    console.log("Achievement API response:", data);
+    if (!userId) {
+      setError("Your login session has expired. Please login again.");
+      return;
+    }
 
-    if (data?.status === 200 || data?.status === 201) {
-      const savedAchievement =
-        data?.data || data?.achievement || data?.details || null;
+    if (!formData.title.trim()) {
+      setError("Achievement title is required.");
+      return;
+    }
+
+    const studentRating =
+      formData.studentRating === ""
+        ? null
+        : Number(formData.studentRating);
+
+    if (
+      studentRating !== null &&
+      (!Number.isInteger(studentRating) ||
+        studentRating < 1 ||
+        studentRating > 5)
+    ) {
+      setError("Student rating must be between 1 and 5.");
+      return;
+    }
+
+    // Batch ID is optional.
+    // Leave it empty if this achievement is not linked to a batch.
+    const batchId =
+      formData.batchId === ""
+        ? null
+        : Number(formData.batchId);
+
+    if (
+      batchId !== null &&
+      (!Number.isInteger(batchId) || batchId <= 0)
+    ) {
+      setError("Batch ID must be a valid number.");
+      return;
+    }
+
+    const payload = {
+      userId,
+      title: formData.title.trim(),
+      description: formData.description.trim() || null,
+      studentName: formData.studentName.trim() || null,
+      studentReview: formData.studentReview.trim() || null,
+      studentRating,
+      batchId,
+      createdBy: userId,
+      tags: formData.tags.trim() || null,
+    };
+
+    try {
+      setSaving(true);
+      setError("");
+      setSuccess("");
+
+      let response;
 
       if (editingId) {
-        // Update existing achievement in local state
-        setAchievements((prev) =>
-          prev.map((item) =>
-            item.achievementId === editingId
-              ? {
-                  ...item,
-                  ...(savedAchievement || {
-                    title: payload.title,
-                    description: payload.description,
-                    studentName: payload.studentName,
-                    studentReview: payload.studentReview,
-                    studentRating: payload.studentRating,
-                    batchId: payload.batchId,
-                    tags: payload.tags,
-                  }),
-                }
-              : item
-          )
+        response = await api.put(
+          `/achievements/${editingId}`,
+          payload,
+          {
+            timeout: 15000,
+          }
         );
-
-        setSuccess("Achievement updated successfully.");
       } else {
-        // Add newly created achievement to the list
-        if (savedAchievement) {
-          setAchievements((prev) => [
-            savedAchievement,
-            ...prev,
-          ]);
-        }
-
-        setSuccess("Achievement added successfully.");
+        response = await api.post(
+          "/achievements/new",
+          payload,
+          {
+            timeout: 15000,
+          }
+        );
       }
 
-      resetForm();
-    } else if (data?.status === 404) {
-      setError(
-        data?.message ||
-          "User or achievement was not found."
-      );
-    } else if (data?.status === 422) {
-      setError("Please check the information entered.");
-    } else {
-      setError(
-        data?.message ||
-          "Unable to save achievement. Please try again."
-      );
-    }
-  } catch (err) {
-    console.log("Achievement API error:", err);
-    console.log("Backend response:", err.response?.data);
+      const data = response.data;
 
-    if (err.code === "ECONNABORTED") {
-      setError(
-        "The server is taking too long to respond. Please try again."
-      );
-    } else if (err.response?.status === 422) {
-      setError(
-        "Some achievement information is invalid."
-      );
-    } else if (err.response?.status >= 500) {
-      setError(
-        err.response?.data?.message ||
-          "The server returned an internal error."
-      );
-    } else if (err.request) {
-      setError(
-        "Could not connect to the server. Please check your internet connection."
-      );
-    } else {
-      setError(
-        "Something went wrong while saving the achievement."
-      );
+      console.log("Achievement API response:", data);
+
+      if (data?.status === 200 || data?.status === 201) {
+        setSuccess(
+          editingId
+            ? "Achievement updated successfully."
+            : "Achievement added successfully."
+        );
+
+        resetForm();
+
+        // Always fetch latest data from DB.
+        await fetchAchievements();
+      } else if (data?.status === 404) {
+        setError(
+          data?.message ||
+            "User or achievement was not found."
+        );
+      } else if (data?.status === 422) {
+        setError("Please check the information entered.");
+      } else {
+        setError(
+          data?.message ||
+            "Unable to save achievement. Please try again."
+        );
+      }
+    } catch (err) {
+      console.error("Achievement API error:", err);
+      console.error("Backend response:", err.response?.data);
+
+      if (err.code === "ECONNABORTED") {
+        setError(
+          "The server is taking too long to respond. Please try again."
+        );
+      } else if (err.response?.status === 422) {
+        setError(
+          "Some achievement information is invalid."
+        );
+      } else if (err.response?.status >= 500) {
+        setError(
+          err.response?.data?.message ||
+            "The server returned an internal error."
+        );
+      } else if (err.request) {
+        setError(
+          "Could not connect to the server. Please check your internet connection."
+        );
+      } else {
+        setError(
+          "Something went wrong while saving the achievement."
+        );
+      }
+    } finally {
+      setSaving(false);
     }
-  } finally {
-    setSaving(false);
-  }
-};
+  };
 
   const handleDelete = async (achievementId) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this achievement?"
     );
 
-    if (!confirmed) {
+    if (!confirmed || deletingId) {
       return;
     }
 
@@ -336,10 +329,11 @@ function Achievements() {
       if (data?.status === 200) {
         setSuccess("Achievement deleted successfully.");
 
-        setAchievements((prev) =>
-          prev.filter(
-            (item) => item.achievementId !== achievementId
-          )
+        await fetchAchievements();
+      } else if (data?.status === 404) {
+        setError(
+          data?.message ||
+            "Achievement was not found."
         );
       } else {
         setError(
@@ -348,20 +342,25 @@ function Achievements() {
         );
       }
     } catch (err) {
+      console.error("Delete achievement error:", err);
+
       if (err.code === "ECONNABORTED") {
         setError(
           "The server is taking too long to respond. Please try again."
         );
       } else if (err.response?.status >= 500) {
         setError(
-          "The server is currently unavailable. Please try again in a moment."
+          err.response?.data?.message ||
+            "The server returned an internal error."
         );
       } else if (err.request) {
         setError(
           "Could not connect to the server. Please check your internet connection."
         );
       } else {
-        setError("Something went wrong while deleting the achievement.");
+        setError(
+          "Something went wrong while deleting the achievement."
+        );
       }
     } finally {
       setDeletingId(null);
@@ -370,11 +369,8 @@ function Achievements() {
 
   const handleVisibility = async (achievement) => {
     const achievementId = achievement.achievementId;
-
-    // Backend currently returns `visibleOnWeb`
-    const currentVisibility = Boolean(
-      achievement.visibleOnWeb
-    );
+    const currentVisibility =
+      Boolean(achievement.visibleOnWeb);
 
     const nextVisibility = !currentVisibility;
 
@@ -420,13 +416,16 @@ function Achievements() {
         );
       }
     } catch (err) {
+      console.error("Achievement visibility error:", err);
+
       if (err.code === "ECONNABORTED") {
         setError(
           "The server is taking too long to respond. Please try again."
         );
       } else if (err.response?.status >= 500) {
         setError(
-          "The server is currently unavailable. Please try again in a moment."
+          err.response?.data?.message ||
+            "The server returned an internal error."
         );
       } else if (err.request) {
         setError(
@@ -511,21 +510,7 @@ function Achievements() {
 
         {/* Error */}
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 flex items-start gap-3">
-            <svg
-              className="w-5 h-5 text-red-400 mt-0.5 shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 9v3.5m0 3h.01M10.3 4.9L2.8 18a2 2 0 001.7 3h15a2 2 0 001.7 3L13.7 4.9a2 2 0 00-3.4 0z"
-              />
-            </svg>
-
+          <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
             <p className="text-red-300 text-sm">
               {error}
             </p>
@@ -534,28 +519,14 @@ function Achievements() {
 
         {/* Success */}
         {success && (
-          <div className="mb-6 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3 flex items-start gap-3">
-            <svg
-              className="w-5 h-5 text-green-400 mt-0.5 shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-
+          <div className="mb-6 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3">
             <p className="text-green-300 text-sm">
               {success}
             </p>
           </div>
         )}
 
-        {/* Add / Edit Form */}
+        {/* Form */}
         {isFormOpen && (
           <section className="mb-8 bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7">
             <div className="flex items-start justify-between gap-4 mb-6">
@@ -567,7 +538,7 @@ function Achievements() {
                 </h2>
 
                 <p className="text-[#6f84a5] text-sm mt-1">
-                  Add a student success story to your profile.
+                  Add a student success story to your tutor profile.
                 </p>
               </div>
 
@@ -599,7 +570,6 @@ function Achievements() {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-                {/* Title */}
                 <div className="md:col-span-2">
                   <label className={labelClass}>
                     Achievement Title{" "}
@@ -616,7 +586,6 @@ function Achievements() {
                   />
                 </div>
 
-                {/* Student Name */}
                 <div>
                   <label className={labelClass}>
                     Student Name
@@ -632,7 +601,6 @@ function Achievements() {
                   />
                 </div>
 
-                {/* Rating */}
                 <div>
                   <label className={labelClass}>
                     Student Rating
@@ -650,7 +618,6 @@ function Achievements() {
                   />
                 </div>
 
-                {/* Batch ID */}
                 <div>
                   <label className={labelClass}>
                     Batch ID
@@ -665,9 +632,12 @@ function Achievements() {
                     min="1"
                     className={inputClass}
                   />
+
+                  <p className="text-[#617391] text-xs mt-2">
+                    Leave empty if this achievement is not linked to a batch.
+                  </p>
                 </div>
 
-                {/* Tags */}
                 <div>
                   <label className={labelClass}>
                     Tags
@@ -683,7 +653,6 @@ function Achievements() {
                   />
                 </div>
 
-                {/* Description */}
                 <div className="md:col-span-2">
                   <label className={labelClass}>
                     Achievement Description
@@ -699,7 +668,6 @@ function Achievements() {
                   />
                 </div>
 
-                {/* Review */}
                 <div className="md:col-span-2">
                   <label className={labelClass}>
                     Student Review
@@ -748,7 +716,7 @@ function Achievements() {
           </section>
         )}
 
-        {/* Achievements List */}
+        {/* Achievement List */}
         {achievements.length === 0 ? (
           <div className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-8 sm:p-12 text-center">
             <div className="w-16 h-16 mx-auto rounded-2xl bg-blue-500/10 flex items-center justify-center">
@@ -771,9 +739,8 @@ function Achievements() {
               No achievements yet
             </h2>
 
-            <p className="text-[#94a8c7] text-sm mt-2 max-w-md mx-auto">
-              Add your first student achievement to start building
-              your tutor profile.
+            <p className="text-[#94a8c7] text-sm mt-2">
+              Add your first student achievement to start building your profile.
             </p>
 
             {!isFormOpen && (
@@ -798,7 +765,6 @@ function Achievements() {
                   key={achievement.achievementId}
                   className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-6"
                 >
-                  {/* Top */}
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                       <h2 className="text-lg font-semibold text-white break-words">
@@ -823,14 +789,12 @@ function Achievements() {
                     </span>
                   </div>
 
-                  {/* Description */}
                   {achievement.description && (
                     <p className="text-[#c7d8f5] text-sm leading-6 mt-4 whitespace-pre-line">
                       {achievement.description}
                     </p>
                   )}
 
-                  {/* Rating */}
                   {achievement.studentRating !== null &&
                     achievement.studentRating !== undefined &&
                     achievement.studentRating !== "" && (
@@ -863,7 +827,6 @@ function Achievements() {
                       </div>
                     )}
 
-                  {/* Review */}
                   {achievement.studentReview && (
                     <div className="mt-5 bg-[#0a1628] rounded-2xl p-4">
                       <p className="text-[#617391] text-xs mb-2">
@@ -876,7 +839,6 @@ function Achievements() {
                     </div>
                   )}
 
-                  {/* Tags */}
                   {achievement.tags && (
                     <div className="mt-4 flex flex-wrap gap-2">
                       {achievement.tags
@@ -894,10 +856,7 @@ function Achievements() {
                     </div>
                   )}
 
-                  {/* Actions */}
                   <div className="mt-5 pt-4 border-t border-blue-500/10 flex flex-wrap gap-2">
-
-                    {/* Visibility */}
                     <button
                       type="button"
                       onClick={() =>
@@ -917,18 +876,16 @@ function Achievements() {
                         : "Show on Website"}
                     </button>
 
-                    {/* Edit */}
                     <button
                       type="button"
                       onClick={() =>
                         handleEdit(achievement)
                       }
-                      className="px-3 py-2 rounded-lg text-xs font-medium bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 hover:text-blue-200 transition-colors"
+                      className="px-3 py-2 rounded-lg text-xs font-medium bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 transition-colors"
                     >
                       Edit
                     </button>
 
-                    {/* Delete */}
                     <button
                       type="button"
                       onClick={() =>
@@ -940,7 +897,7 @@ function Achievements() {
                         deletingId ===
                         achievement.achievementId
                       }
-                      className="px-3 py-2 rounded-lg text-xs font-medium bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-2 rounded-lg text-xs font-medium bg-red-500/10 text-red-300 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {deletingId ===
                       achievement.achievementId

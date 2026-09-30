@@ -41,11 +41,90 @@ function Batches() {
     }
   };
 
-  const fetchBatches = async (filter = "all") => {
+  /*
+    Backend currently returns some DB fields in lowercase
+    because it uses SELECT * with RealDictCursor.
+
+    Example:
+    paymenttype
+    starton
+    endon
+    eligibleclasses
+    maximumseats
+    allottedseats
+
+    This function supports both the current backend response
+    and the cleaner camelCase response if backend is changed later.
+  */
+  const normalizeBatch = (batch) => ({
+    batchId: batch?.batchId ?? batch?.batchid ?? batch?.id ?? null,
+
+    userId:
+      batch?.userId ??
+      batch?.userid ??
+      null,
+
+    title: batch?.title ?? "",
+
+    batchType:
+      batch?.batchType ??
+      batch?.batchtype ??
+      batch?.type ??
+      "upcoming",
+
+    description:
+      batch?.description ?? "",
+
+    fee:
+      batch?.fee !== null && batch?.fee !== undefined
+        ? String(batch.fee)
+        : "",
+
+    paymentType:
+      batch?.paymentType ??
+      batch?.paymenttype ??
+      "",
+
+    startOn:
+      batch?.startOn ??
+      batch?.starton ??
+      "",
+
+    endOn:
+      batch?.endOn ??
+      batch?.endon ??
+      "",
+
+    eligibleClasses:
+      batch?.eligibleClasses ??
+      batch?.eligibleclasses ??
+      "",
+
+    maximumSeats:
+      batch?.maximumSeats ??
+      batch?.maximumseats ??
+      "",
+
+    allottedSeats:
+      batch?.allottedSeats ??
+      batch?.allottedseats ??
+      "",
+
+    session:
+      batch?.session ?? "",
+
+    visibleOnWebsite:
+      batch?.visibleOnWebsite ??
+      batch?.visibleonwebsite,
+  });
+
+  const fetchBatches = async (filter = activeFilter) => {
     const userId = getUserId();
 
     if (!userId) {
-      setError("Your login session could not be found. Please login again.");
+      setError(
+        "Your login session could not be found. Please login again."
+      );
       setLoading(false);
       return;
     }
@@ -66,17 +145,27 @@ function Batches() {
       const data = response.data;
 
       if (data?.status === 200) {
-        let list = [];
+        /*
+          Current backend response:
 
-        if (Array.isArray(data?.data)) {
-          list = data.data;
-        } else if (Array.isArray(data?.data?.details)) {
-          list = data.data.details;
-        } else if (Array.isArray(data?.details)) {
-          list = data.details;
-        }
+          {
+            status: 200,
+            message: "...",
+            details: [...]
+          }
+        */
 
-        setBatches(list);
+        const rawList = Array.isArray(data?.details)
+          ? data.details
+          : Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data?.data?.details)
+          ? data.data.details
+          : [];
+
+        const normalizedList = rawList.map(normalizeBatch);
+
+        setBatches(normalizedList);
       } else if (data?.status === 404) {
         setBatches([]);
       } else {
@@ -86,6 +175,12 @@ function Batches() {
         );
       }
     } catch (err) {
+      console.error("Fetch batches error:", err);
+      console.error(
+        "Backend response:",
+        err.response?.data
+      );
+
       if (err.code === "ECONNABORTED") {
         setError(
           "The server is taking too long to respond. Please try again."
@@ -94,14 +189,17 @@ function Batches() {
         setError("The batches request was invalid.");
       } else if (err.response?.status >= 500) {
         setError(
-          "The server is currently unavailable. Please try again in a moment."
+          err.response?.data?.message ||
+            "The server returned an internal error."
         );
       } else if (err.request) {
         setError(
           "Could not connect to the server. Please check your internet connection."
         );
       } else {
-        setError("Something went wrong while loading batches.");
+        setError(
+          "Something went wrong while loading batches."
+        );
       }
     } finally {
       setLoading(false);
@@ -115,9 +213,16 @@ function Batches() {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
+    let nextValue = value;
+
+    // Fee should contain amount only.
+    if (name === "fee") {
+      nextValue = value.replace(/[^\d]/g, "");
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: nextValue,
     }));
 
     setError("");
@@ -153,8 +258,16 @@ function Batches() {
       startOn: batch.startOn ?? "",
       endOn: batch.endOn ?? "",
       eligibleClasses: batch.eligibleClasses ?? "",
-      maximumSeats: batch.maximumSeats ?? "",
-      allottedSeats: batch.allottedSeats ?? "",
+      maximumSeats:
+        batch.maximumSeats !== null &&
+        batch.maximumSeats !== undefined
+          ? String(batch.maximumSeats)
+          : "",
+      allottedSeats:
+        batch.allottedSeats !== null &&
+        batch.allottedSeats !== undefined
+          ? String(batch.allottedSeats)
+          : "",
       session: batch.session ?? "",
     });
 
@@ -172,10 +285,16 @@ function Batches() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (saving) {
+      return;
+    }
+
     const userId = getUserId();
 
     if (!userId) {
-      setError("Your login session has expired. Please login again.");
+      setError(
+        "Your login session has expired. Please login again."
+      );
       return;
     }
 
@@ -184,8 +303,12 @@ function Batches() {
       return;
     }
 
-    if (!formData.batchType) {
-      setError("Batch type is required.");
+    if (
+      !["current", "upcoming", "old"].includes(
+        formData.batchType
+      )
+    ) {
+      setError("Please select a valid batch type.");
       return;
     }
 
@@ -194,14 +317,11 @@ function Batches() {
       return;
     }
 
-    if (!["current", "upcoming", "old"].includes(formData.batchType)) {
-      setError("Please select a valid batch type.");
-      return;
-    }
-
     if (
       formData.paymentType &&
-      !["monthly", "installment"].includes(formData.paymentType)
+      !["monthly", "installment"].includes(
+        formData.paymentType
+      )
     ) {
       setError("Please select a valid payment type.");
       return;
@@ -219,7 +339,8 @@ function Batches() {
 
     if (
       maximumSeats !== null &&
-      (!Number.isInteger(maximumSeats) || maximumSeats < 0)
+      (!Number.isInteger(maximumSeats) ||
+        maximumSeats < 0)
     ) {
       setError("Maximum seats must be a valid number.");
       return;
@@ -227,7 +348,8 @@ function Batches() {
 
     if (
       allottedSeats !== null &&
-      (!Number.isInteger(allottedSeats) || allottedSeats < 0)
+      (!Number.isInteger(allottedSeats) ||
+        allottedSeats < 0)
     ) {
       setError("Allotted seats must be a valid number.");
       return;
@@ -238,7 +360,9 @@ function Batches() {
       allottedSeats !== null &&
       allottedSeats > maximumSeats
     ) {
-      setError("Allotted seats cannot be greater than maximum seats.");
+      setError(
+        "Allotted seats cannot be greater than maximum seats."
+      );
       return;
     }
 
@@ -248,11 +372,15 @@ function Batches() {
       visibleOnWebsite: true,
       batchType: formData.batchType,
       description: formData.description.trim(),
+
+      // Backend DB is accepting the fee as a numeric string.
       fee: formData.fee.trim() || null,
+
       paymentType: formData.paymentType || null,
       startOn: formData.startOn || null,
       endOn: formData.endOn || null,
-      eligibleClasses: formData.eligibleClasses.trim() || null,
+      eligibleClasses:
+        formData.eligibleClasses.trim() || null,
       maximumSeats,
       allottedSeats,
       session: formData.session.trim() || null,
@@ -287,7 +415,10 @@ function Batches() {
 
       console.log("Batch API response:", data);
 
-      if (data?.status === 200 || data?.status === 201) {
+      if (
+        data?.status === 200 ||
+        data?.status === 201
+      ) {
         setSuccess(
           editingId
             ? "Batch updated successfully."
@@ -296,7 +427,7 @@ function Batches() {
 
         resetForm();
 
-        // Reload using the current filter so DB remains source of truth.
+        // Always reload latest data from backend.
         await fetchBatches(activeFilter);
       } else if (data?.status === 404) {
         setError(
@@ -304,7 +435,9 @@ function Batches() {
             "User or batch was not found."
         );
       } else if (data?.status === 422) {
-        setError("Please check the information entered.");
+        setError(
+          "Please check the information entered."
+        );
       } else {
         setError(
           data?.message ||
@@ -312,8 +445,11 @@ function Batches() {
         );
       }
     } catch (err) {
-      console.log("Batch API error:", err);
-      console.log("Backend response:", err.response?.data);
+      console.error("Batch API error:", err);
+      console.error(
+        "Backend response:",
+        err.response?.data
+      );
 
       if (err.code === "ECONNABORTED") {
         setError(
@@ -333,7 +469,9 @@ function Batches() {
           "Could not connect to the server. Please check your internet connection."
         );
       } else {
-        setError("Something went wrong while saving the batch.");
+        setError(
+          "Something went wrong while saving the batch."
+        );
       }
     } finally {
       setSaving(false);
@@ -345,7 +483,7 @@ function Batches() {
       "Are you sure you want to delete this batch?"
     );
 
-    if (!confirmed) {
+    if (!confirmed || deletingId) {
       return;
     }
 
@@ -366,10 +504,11 @@ function Batches() {
       if (data?.status === 200) {
         setSuccess("Batch deleted successfully.");
 
-        setBatches((prev) =>
-          prev.filter(
-            (item) => item.batchId !== batchId
-          )
+        await fetchBatches(activeFilter);
+      } else if (data?.status === 404) {
+        setError(
+          data?.message ||
+            "Batch was not found."
         );
       } else {
         setError(
@@ -378,27 +517,35 @@ function Batches() {
         );
       }
     } catch (err) {
+      console.error("Delete batch error:", err);
+
       if (err.code === "ECONNABORTED") {
         setError(
           "The server is taking too long to respond. Please try again."
         );
       } else if (err.response?.status >= 500) {
         setError(
-          "The server is currently unavailable. Please try again in a moment."
+          err.response?.data?.message ||
+            "The server returned an internal error."
         );
       } else if (err.request) {
         setError(
           "Could not connect to the server. Please check your internet connection."
         );
       } else {
-        setError("Something went wrong while deleting the batch.");
+        setError(
+          "Something went wrong while deleting the batch."
+        );
       }
     } finally {
       setDeletingId(null);
     }
   };
 
-  const handleVisibility = async (batchId, visible) => {
+  const handleVisibility = async (
+    batchId,
+    visible
+  ) => {
     const nextVisibility = !visible;
 
     try {
@@ -426,11 +573,6 @@ function Batches() {
             : "Batch has been hidden from your website."
         );
 
-        /*
-          Backend getAll currently does not return
-          visibleOnWebsite, so we keep the current
-          UI state locally after a successful toggle.
-        */
         setBatches((prev) =>
           prev.map((item) =>
             item.batchId === batchId
@@ -441,6 +583,11 @@ function Batches() {
               : item
           )
         );
+      } else if (data?.status === 404) {
+        setError(
+          data?.message ||
+            "Batch was not found."
+        );
       } else {
         setError(
           data?.message ||
@@ -448,13 +595,19 @@ function Batches() {
         );
       }
     } catch (err) {
+      console.error(
+        "Batch visibility error:",
+        err
+      );
+
       if (err.code === "ECONNABORTED") {
         setError(
           "The server is taking too long to respond. Please try again."
         );
       } else if (err.response?.status >= 500) {
         setError(
-          "The server is currently unavailable. Please try again in a moment."
+          err.response?.data?.message ||
+            "The server returned an internal error."
         );
       } else if (err.request) {
         setError(
@@ -471,7 +624,9 @@ function Batches() {
   };
 
   const formatDate = (value) => {
-    if (!value) return "Not specified";
+    if (!value) {
+      return "Not specified";
+    }
 
     const date = new Date(value);
 
@@ -490,6 +645,7 @@ function Batches() {
     if (type === "current") return "Current";
     if (type === "upcoming") return "Upcoming";
     if (type === "old") return "Completed";
+
     return type;
   };
 
@@ -593,21 +749,7 @@ function Batches() {
 
         {/* Error */}
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 flex items-start gap-3">
-            <svg
-              className="w-5 h-5 text-red-400 mt-0.5 shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 9v3.5m0 3h.01M10.3 4.9L2.8 18a2 2 0 001.7 3h15a2 2 0 001.7 3L13.7 4.9a2 2 0 001.7 3L13.7 4.9a2 2 0 00-3.4 0z"
-              />
-            </svg>
-
+          <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
             <p className="text-red-300 text-sm">
               {error}
             </p>
@@ -616,21 +758,7 @@ function Batches() {
 
         {/* Success */}
         {success && (
-          <div className="mb-6 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3 flex items-start gap-3">
-            <svg
-              className="w-5 h-5 text-green-400 mt-0.5 shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-
+          <div className="mb-6 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3">
             <p className="text-green-300 text-sm">
               {success}
             </p>
@@ -640,6 +768,7 @@ function Batches() {
         {/* Add / Edit Form */}
         {isFormOpen && (
           <section className="mb-8 bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7">
+
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-lg sm:text-xl font-semibold text-white">
@@ -673,15 +802,19 @@ function Batches() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-5"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
                 {/* Title */}
                 <div className="md:col-span-2">
                   <label className={labelClass}>
                     Batch Title{" "}
-                    <span className="text-red-400">*</span>
+                    <span className="text-red-400">
+                      *
+                    </span>
                   </label>
 
                   <input
@@ -699,7 +832,9 @@ function Batches() {
                 <div>
                   <label className={labelClass}>
                     Batch Type{" "}
-                    <span className="text-red-400">*</span>
+                    <span className="text-red-400">
+                      *
+                    </span>
                   </label>
 
                   <select
@@ -711,9 +846,11 @@ function Batches() {
                     <option value="upcoming">
                       Upcoming
                     </option>
+
                     <option value="current">
                       Current
                     </option>
+
                     <option value="old">
                       Completed
                     </option>
@@ -747,9 +884,14 @@ function Batches() {
                     name="fee"
                     value={formData.fee}
                     onChange={handleChange}
-                    placeholder="e.g. ₹2,000 / month"
+                    placeholder="e.g. 500"
+                    inputMode="numeric"
                     className={inputClass}
                   />
+
+                  <p className="text-[#617391] text-xs mt-2">
+                    Enter amount only, e.g. 500.
+                  </p>
                 </div>
 
                 {/* Payment Type */}
@@ -767,16 +909,18 @@ function Batches() {
                     <option value="">
                       Select payment type
                     </option>
+
                     <option value="monthly">
                       Monthly
                     </option>
+
                     <option value="installment">
                       Installment
                     </option>
                   </select>
                 </div>
 
-                {/* Start Date */}
+                {/* Start */}
                 <div>
                   <label className={labelClass}>
                     Start Date
@@ -791,7 +935,7 @@ function Batches() {
                   />
                 </div>
 
-                {/* End Date */}
+                {/* End */}
                 <div>
                   <label className={labelClass}>
                     End Date
@@ -860,7 +1004,9 @@ function Batches() {
                 <div className="md:col-span-2">
                   <label className={labelClass}>
                     Description{" "}
-                    <span className="text-red-400">*</span>
+                    <span className="text-red-400">
+                      *
+                    </span>
                   </label>
 
                   <textarea
@@ -873,11 +1019,11 @@ function Batches() {
                     className={`${inputClass} resize-none`}
                   />
                 </div>
-
               </div>
 
               {/* Buttons */}
               <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+
                 <button
                   type="button"
                   onClick={resetForm}
@@ -926,9 +1072,10 @@ function Batches() {
           ))}
         </div>
 
-        {/* Batches */}
+        {/* Empty State */}
         {batches.length === 0 ? (
           <div className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-8 sm:p-12 text-center">
+
             <div className="w-16 h-16 mx-auto rounded-2xl bg-blue-500/10 flex items-center justify-center">
               <svg
                 className="w-8 h-8 text-blue-400"
@@ -949,9 +1096,8 @@ function Batches() {
               No batches found
             </h2>
 
-            <p className="text-[#94a8c7] text-sm mt-2 max-w-md mx-auto">
-              Create your first batch to start managing your tuition
-              classes.
+            <p className="text-[#94a8c7] text-sm mt-2">
+              Create your first batch to start managing your tuition classes.
             </p>
 
             {!isFormOpen && (
@@ -966,14 +1112,8 @@ function Batches() {
           </div>
         ) : (
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+
             {batches.map((batch) => {
-              /*
-                Backend GET currently does not return
-                visibleOnWebsite. For existing records,
-                defaulting to true is only a frontend assumption.
-                Once backend includes visibility in GET, this
-                should use that value directly.
-              */
               const visible =
                 batch.visibleOnWebsite !== undefined
                   ? Boolean(batch.visibleOnWebsite)
@@ -984,20 +1124,25 @@ function Batches() {
                   key={batch.batchId}
                   className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-6"
                 >
+
                   {/* Header */}
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
+
                       <h2 className="text-lg sm:text-xl font-semibold text-white break-words">
                         {batch.title}
                       </h2>
 
                       <div className="flex flex-wrap items-center gap-2 mt-2">
+
                         <span
                           className={`px-2.5 py-1 rounded-full border text-xs font-medium ${getTypeClass(
                             batch.batchType
                           )}`}
                         >
-                          {getTypeLabel(batch.batchType)}
+                          {getTypeLabel(
+                            batch.batchType
+                          )}
                         </span>
 
                         {batch.session && (
@@ -1005,6 +1150,7 @@ function Batches() {
                             Session {batch.session}
                           </span>
                         )}
+
                       </div>
                     </div>
 
@@ -1015,7 +1161,9 @@ function Batches() {
                           : "bg-[#0a1628] text-[#6f84a5] border border-blue-500/10"
                       }`}
                     >
-                      {visible ? "Website Visible" : "Hidden"}
+                      {visible
+                        ? "Website Visible"
+                        : "Hidden"}
                     </span>
                   </div>
 
@@ -1026,15 +1174,18 @@ function Batches() {
                     </p>
                   )}
 
-                  {/* Info Grid */}
+                  {/* Details */}
                   <div className="mt-5 grid grid-cols-2 gap-3">
+
                     <div className="bg-[#0a1628] rounded-xl p-3">
                       <p className="text-[#617391] text-xs">
                         Fee
                       </p>
 
                       <p className="text-[#c7d8f5] text-sm mt-1">
-                        {batch.fee || "Not specified"}
+                        {batch.fee
+                          ? `₹${batch.fee}`
+                          : "Not specified"}
                       </p>
                     </div>
 
@@ -1044,7 +1195,8 @@ function Batches() {
                       </p>
 
                       <p className="text-[#c7d8f5] text-sm mt-1 capitalize">
-                        {batch.paymentType || "Not specified"}
+                        {batch.paymentType ||
+                          "Not specified"}
                       </p>
                     </div>
 
@@ -1074,7 +1226,8 @@ function Batches() {
                       </p>
 
                       <p className="text-[#c7d8f5] text-sm mt-1">
-                        {batch.eligibleClasses || "Not specified"}
+                        {batch.eligibleClasses ||
+                          "Not specified"}
                       </p>
                     </div>
 
@@ -1085,18 +1238,20 @@ function Batches() {
 
                       <p className="text-[#c7d8f5] text-sm mt-1">
                         {batch.allottedSeats ?? 0}
+
                         {batch.maximumSeats !== null &&
-                        batch.maximumSeats !== undefined
+                        batch.maximumSeats !== undefined &&
+                        batch.maximumSeats !== ""
                           ? ` / ${batch.maximumSeats}`
                           : ""}
                       </p>
                     </div>
+
                   </div>
 
                   {/* Actions */}
                   <div className="mt-5 pt-4 border-t border-blue-500/10 flex flex-wrap gap-2">
 
-                    {/* Visibility */}
                     <button
                       type="button"
                       onClick={() =>
@@ -1117,16 +1272,16 @@ function Batches() {
                         : "Show on Website"}
                     </button>
 
-                    {/* Edit */}
                     <button
                       type="button"
-                      onClick={() => handleEdit(batch)}
-                      className="px-3 py-2 rounded-lg text-xs font-medium bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 hover:text-blue-200 transition-colors"
+                      onClick={() =>
+                        handleEdit(batch)
+                      }
+                      className="px-3 py-2 rounded-lg text-xs font-medium bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 transition-colors"
                     >
                       Edit
                     </button>
 
-                    {/* Delete */}
                     <button
                       type="button"
                       onClick={() =>
@@ -1135,16 +1290,18 @@ function Batches() {
                       disabled={
                         deletingId === batch.batchId
                       }
-                      className="px-3 py-2 rounded-lg text-xs font-medium bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-2 rounded-lg text-xs font-medium bg-red-500/10 text-red-300 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {deletingId === batch.batchId
                         ? "Deleting..."
                         : "Delete"}
                     </button>
+
                   </div>
                 </article>
               );
             })}
+
           </div>
         )}
 
