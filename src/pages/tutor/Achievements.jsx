@@ -13,8 +13,10 @@ const initialForm = {
 
 function Achievements() {
   const [achievements, setAchievements] = useState([]);
+  const [batches, setBatches] = useState([]);
 
   const [loading, setLoading] = useState(true);
+  const [batchesLoading, setBatchesLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [visibilityId, setVisibilityId] = useState(null);
@@ -36,11 +38,76 @@ function Achievements() {
     }
   };
 
+  const normalizeBatch = (batch) => ({
+    batchId:
+      batch?.batchId ??
+      batch?.batchid ??
+      batch?.id ??
+      null,
+
+    userId:
+      batch?.userId ??
+      batch?.userid ??
+      null,
+
+    title: batch?.title ?? "",
+
+    batchType:
+      batch?.batchType ??
+      batch?.batchtype ??
+      batch?.type ??
+      "upcoming",
+
+    description:
+      batch?.description ?? "",
+
+    fee:
+      batch?.fee !== null &&
+      batch?.fee !== undefined
+        ? String(batch.fee)
+        : "",
+
+    paymentType:
+      batch?.paymentType ??
+      batch?.paymenttype ??
+      "",
+
+    startOn:
+      batch?.startOn ??
+      batch?.starton ??
+      "",
+
+    endOn:
+      batch?.endOn ??
+      batch?.endon ??
+      "",
+
+    eligibleClasses:
+      batch?.eligibleClasses ??
+      batch?.eligibleclasses ??
+      "",
+
+    maximumSeats:
+      batch?.maximumSeats ??
+      batch?.maximumseats ??
+      "",
+
+    allottedSeats:
+      batch?.allottedSeats ??
+      batch?.allottedseats ??
+      "",
+
+    session:
+      batch?.session ?? "",
+  });
+
   const fetchAchievements = async () => {
     const userId = getUserId();
 
     if (!userId) {
-      setError("Your login session could not be found. Please login again.");
+      setError(
+        "Your login session could not be found. Please login again."
+      );
       setLoading(false);
       return;
     }
@@ -48,16 +115,17 @@ function Achievements() {
     try {
       setError("");
 
-      const response = await api.get(`/achievements/getAll/${userId}`, {
-        timeout: 15000,
-      });
+      const response = await api.get(
+        `/achievements/getAll/${userId}`,
+        {
+          timeout: 15000,
+        }
+      );
 
       const data = response.data;
 
       if (data?.status === 200) {
-        // Backend currently returns:
-        // { status, message, details: [...] }
-        const list = Array.isArray(data?.details)
+        const rawList = Array.isArray(data?.details)
           ? data.details
           : Array.isArray(data?.data)
           ? data.data
@@ -65,7 +133,14 @@ function Achievements() {
           ? data.data.details
           : [];
 
-        setAchievements(list);
+        // Newest achievement first
+        const sortedList = [...rawList].sort(
+          (a, b) =>
+            Number(b?.achievementId ?? 0) -
+            Number(a?.achievementId ?? 0)
+        );
+
+        setAchievements(sortedList);
       } else if (data?.status === 404) {
         setAchievements([]);
       } else {
@@ -76,7 +151,10 @@ function Achievements() {
       }
     } catch (err) {
       console.error("Fetch achievements error:", err);
-      console.error("Backend response:", err.response?.data);
+      console.error(
+        "Backend response:",
+        err.response?.data
+      );
 
       if (err.code === "ECONNABORTED") {
         setError(
@@ -94,15 +172,71 @@ function Achievements() {
           "Could not connect to the server. Please check your internet connection."
         );
       } else {
-        setError("Something went wrong while loading achievements.");
+        setError(
+          "Something went wrong while loading achievements."
+        );
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchBatches = async () => {
+    const userId = getUserId();
+
+    if (!userId) {
+      return;
+    }
+
+    try {
+      setBatchesLoading(true);
+
+      const response = await api.get(
+        "/batches/getAll/all",
+        {
+          params: {
+            user_id: userId,
+          },
+          timeout: 15000,
+        }
+      );
+
+      const data = response.data;
+
+      if (data?.status === 200) {
+        const rawList = Array.isArray(data?.details)
+          ? data.details
+          : Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data?.data?.details)
+          ? data.data.details
+          : [];
+
+        const normalizedList = rawList
+          .map(normalizeBatch)
+          .filter(
+            (batch) => batch.batchId !== null
+          );
+
+        setBatches(normalizedList);
+      } else if (data?.status === 404) {
+        setBatches([]);
+      } else {
+        console.error(
+          "Unable to load batches:",
+          data
+        );
+      }
+    } catch (err) {
+      console.error("Fetch batches error:", err);
+    } finally {
+      setBatchesLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchAchievements();
+    fetchBatches();
   }, []);
 
   const resetForm = () => {
@@ -142,8 +276,13 @@ function Achievements() {
       description: achievement.description ?? "",
       studentName: achievement.studentName ?? "",
       studentReview: achievement.studentReview ?? "",
-      studentRating: achievement.studentRating ?? "",
-      batchId: achievement.batchId ?? "",
+      studentRating:
+        achievement.studentRating ?? "",
+      batchId:
+        achievement.batchId !== null &&
+        achievement.batchId !== undefined
+          ? String(achievement.batchId)
+          : "",
       tags: achievement.tags ?? "",
     });
 
@@ -168,7 +307,9 @@ function Achievements() {
     const userId = getUserId();
 
     if (!userId) {
-      setError("Your login session has expired. Please login again.");
+      setError(
+        "Your login session has expired. Please login again."
+      );
       return;
     }
 
@@ -192,8 +333,6 @@ function Achievements() {
       return;
     }
 
-    // Batch ID is optional.
-    // Leave it empty if this achievement is not linked to a batch.
     const batchId =
       formData.batchId === ""
         ? null
@@ -201,18 +340,23 @@ function Achievements() {
 
     if (
       batchId !== null &&
-      (!Number.isInteger(batchId) || batchId <= 0)
+      !batches.some(
+        (batch) => Number(batch.batchId) === batchId
+      )
     ) {
-      setError("Batch ID must be a valid number.");
+      setError("Please select a valid batch.");
       return;
     }
 
     const payload = {
       userId,
       title: formData.title.trim(),
-      description: formData.description.trim() || null,
-      studentName: formData.studentName.trim() || null,
-      studentReview: formData.studentReview.trim() || null,
+      description:
+        formData.description.trim() || null,
+      studentName:
+        formData.studentName.trim() || null,
+      studentReview:
+        formData.studentReview.trim() || null,
       studentRating,
       batchId,
       createdBy: userId,
@@ -248,7 +392,10 @@ function Achievements() {
 
       console.log("Achievement API response:", data);
 
-      if (data?.status === 200 || data?.status === 201) {
+      if (
+        data?.status === 200 ||
+        data?.status === 201
+      ) {
         setSuccess(
           editingId
             ? "Achievement updated successfully."
@@ -257,7 +404,7 @@ function Achievements() {
 
         resetForm();
 
-        // Always fetch latest data from DB.
+        // Fetch latest data from backend.
         await fetchAchievements();
       } else if (data?.status === 404) {
         setError(
@@ -265,7 +412,9 @@ function Achievements() {
             "User or achievement was not found."
         );
       } else if (data?.status === 422) {
-        setError("Please check the information entered.");
+        setError(
+          "Please check the information entered."
+        );
       } else {
         setError(
           data?.message ||
@@ -274,7 +423,10 @@ function Achievements() {
       }
     } catch (err) {
       console.error("Achievement API error:", err);
-      console.error("Backend response:", err.response?.data);
+      console.error(
+        "Backend response:",
+        err.response?.data
+      );
 
       if (err.code === "ECONNABORTED") {
         setError(
@@ -327,14 +479,11 @@ function Achievements() {
       const data = response.data;
 
       if (data?.status === 200) {
-        setSuccess("Achievement deleted successfully.");
+        setSuccess(
+          "Achievement deleted successfully."
+        );
 
         await fetchAchievements();
-      } else if (data?.status === 404) {
-        setError(
-          data?.message ||
-            "Achievement was not found."
-        );
       } else {
         setError(
           data?.message ||
@@ -342,7 +491,10 @@ function Achievements() {
         );
       }
     } catch (err) {
-      console.error("Delete achievement error:", err);
+      console.error(
+        "Delete achievement error:",
+        err
+      );
 
       if (err.code === "ECONNABORTED") {
         setError(
@@ -368,9 +520,12 @@ function Achievements() {
   };
 
   const handleVisibility = async (achievement) => {
-    const achievementId = achievement.achievementId;
-    const currentVisibility =
-      Boolean(achievement.visibleOnWeb);
+    const achievementId =
+      achievement.achievementId;
+
+    const currentVisibility = Boolean(
+      achievement.visibleOnWeb
+    );
 
     const nextVisibility = !currentVisibility;
 
@@ -416,7 +571,10 @@ function Achievements() {
         );
       }
     } catch (err) {
-      console.error("Achievement visibility error:", err);
+      console.error(
+        "Achievement visibility error:",
+        err
+      );
 
       if (err.code === "ECONNABORTED") {
         setError(
@@ -439,6 +597,25 @@ function Achievements() {
     } finally {
       setVisibilityId(null);
     }
+  };
+
+  const getBatchLabel = (batch) => {
+    const type =
+      batch.batchType === "current"
+        ? "Current"
+        : batch.batchType === "upcoming"
+        ? "Upcoming"
+        : batch.batchType === "old"
+        ? "Completed"
+        : "";
+
+    const session = batch.session
+      ? ` • ${batch.session}`
+      : "";
+
+    return `${batch.title}${
+      type ? ` (${type})` : ""
+    }${session}`;
   };
 
   const inputClass =
@@ -529,6 +706,7 @@ function Achievements() {
         {/* Form */}
         {isFormOpen && (
           <section className="mb-8 bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7">
+
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-lg sm:text-xl font-semibold text-white">
@@ -570,10 +748,13 @@ function Achievements() {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
+                {/* Title */}
                 <div className="md:col-span-2">
                   <label className={labelClass}>
                     Achievement Title{" "}
-                    <span className="text-red-400">*</span>
+                    <span className="text-red-400">
+                      *
+                    </span>
                   </label>
 
                   <input
@@ -586,6 +767,7 @@ function Achievements() {
                   />
                 </div>
 
+                {/* Student Name */}
                 <div>
                   <label className={labelClass}>
                     Student Name
@@ -601,6 +783,7 @@ function Achievements() {
                   />
                 </div>
 
+                {/* Rating */}
                 <div>
                   <label className={labelClass}>
                     Student Rating
@@ -618,26 +801,43 @@ function Achievements() {
                   />
                 </div>
 
+                {/* Batch */}
                 <div>
                   <label className={labelClass}>
-                    Batch ID
+                    Batch
                   </label>
 
-                  <input
-                    type="number"
+                  <select
                     name="batchId"
                     value={formData.batchId}
                     onChange={handleChange}
-                    placeholder="Optional"
-                    min="1"
-                    className={inputClass}
-                  />
+                    disabled={batchesLoading}
+                    className={`${inputClass} appearance-none disabled:opacity-60 disabled:cursor-not-allowed`}
+                  >
+                    <option value="">
+                      {batchesLoading
+                        ? "Loading batches..."
+                        : batches.length === 0
+                        ? "No batches available"
+                        : "Select a batch (optional)"}
+                    </option>
+
+                    {batches.map((batch) => (
+                      <option
+                        key={batch.batchId}
+                        value={batch.batchId}
+                      >
+                        {getBatchLabel(batch)}
+                      </option>
+                    ))}
+                  </select>
 
                   <p className="text-[#617391] text-xs mt-2">
                     Leave empty if this achievement is not linked to a batch.
                   </p>
                 </div>
 
+                {/* Tags */}
                 <div>
                   <label className={labelClass}>
                     Tags
@@ -653,6 +853,7 @@ function Achievements() {
                   />
                 </div>
 
+                {/* Description */}
                 <div className="md:col-span-2">
                   <label className={labelClass}>
                     Achievement Description
@@ -668,6 +869,7 @@ function Achievements() {
                   />
                 </div>
 
+                {/* Review */}
                 <div className="md:col-span-2">
                   <label className={labelClass}>
                     Student Review
@@ -686,6 +888,7 @@ function Achievements() {
               </div>
 
               <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+
                 <button
                   type="button"
                   onClick={resetForm}
@@ -711,6 +914,7 @@ function Achievements() {
                     "Add Achievement"
                   )}
                 </button>
+
               </div>
             </form>
           </section>
@@ -719,6 +923,7 @@ function Achievements() {
         {/* Achievement List */}
         {achievements.length === 0 ? (
           <div className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-8 sm:p-12 text-center">
+
             <div className="w-16 h-16 mx-auto rounded-2xl bg-blue-500/10 flex items-center justify-center">
               <svg
                 className="w-8 h-8 text-blue-400"
@@ -752,9 +957,11 @@ function Achievements() {
                 Add Your First Achievement
               </button>
             )}
+
           </div>
         ) : (
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+
             {achievements.map((achievement) => {
               const visible = Boolean(
                 achievement.visibleOnWeb
@@ -765,7 +972,10 @@ function Achievements() {
                   key={achievement.achievementId}
                   className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-6"
                 >
+
+                  {/* Header */}
                   <div className="flex items-start justify-between gap-4">
+
                     <div className="min-w-0">
                       <h2 className="text-lg font-semibold text-white break-words">
                         {achievement.title}
@@ -785,50 +995,79 @@ function Achievements() {
                           : "bg-[#0a1628] text-[#6f84a5] border border-blue-500/10"
                       }`}
                     >
-                      {visible ? "Website Visible" : "Hidden"}
+                      {visible
+                        ? "Website Visible"
+                        : "Hidden"}
                     </span>
+
                   </div>
 
+                  {/* Description */}
                   {achievement.description && (
                     <p className="text-[#c7d8f5] text-sm leading-6 mt-4 whitespace-pre-line">
                       {achievement.description}
                     </p>
                   )}
 
+                  {/* Batch */}
+                  {achievement.batchId !== null &&
+                    achievement.batchId !== undefined && (
+                      <div className="mt-4">
+                        <span className="text-[#617391] text-xs">
+                          Batch ID:{" "}
+                        </span>
+
+                        <span className="text-[#c7d8f5] text-xs">
+                          {achievement.batchId}
+                        </span>
+                      </div>
+                    )}
+
+                  {/* Rating */}
                   {achievement.studentRating !== null &&
                     achievement.studentRating !== undefined &&
                     achievement.studentRating !== "" && (
                       <div className="mt-4 flex items-center gap-2">
-                        <div className="flex gap-1">
-                          {Array.from({ length: 5 }).map(
-                            (_, index) => (
+
+                        <div className="flex items-center gap-1">
+                          {Array.from({
+                            length: 5,
+                          }).map((_, index) => {
+                            const filled =
+                              index <
+                              Number(
+                                achievement.studentRating
+                              );
+
+                            return (
                               <svg
                                 key={index}
                                 className={`w-4 h-4 ${
-                                  index <
-                                  Number(
-                                    achievement.studentRating
-                                  )
+                                  filled
                                     ? "text-yellow-400"
                                     : "text-[#334765]"
                                 }`}
                                 viewBox="0 0 24 24"
                                 fill="currentColor"
+                                aria-hidden="true"
                               >
-                                <path d="M12 2.8l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5-5.8-3.1-5.8 3.1 1.1-6.5-4.7-4.6 6.5-.9L12 2.8z" />
+                                <path d="M12 2.5l2.94 5.95 6.56.95-4.75 4.63 1.12 6.54L12 17.48l-5.87 3.09 1.12-6.54L2.5 9.4l6.56-.95L12 2.5z" />
                               </svg>
-                            )
-                          )}
+                            );
+                          })}
                         </div>
 
                         <span className="text-[#94a8c7] text-xs">
                           {achievement.studentRating}/5
                         </span>
+
                       </div>
                     )}
 
+                  {/* Review */}
                   {achievement.studentReview && (
                     <div className="mt-5 bg-[#0a1628] rounded-2xl p-4">
+
                       <p className="text-[#617391] text-xs mb-2">
                         Student Review
                       </p>
@@ -836,9 +1075,11 @@ function Achievements() {
                       <p className="text-[#c7d8f5] text-sm leading-6 whitespace-pre-line">
                         "{achievement.studentReview}"
                       </p>
+
                     </div>
                   )}
 
+                  {/* Tags */}
                   {achievement.tags && (
                     <div className="mt-4 flex flex-wrap gap-2">
                       {achievement.tags
@@ -856,11 +1097,15 @@ function Achievements() {
                     </div>
                   )}
 
+                  {/* Actions */}
                   <div className="mt-5 pt-4 border-t border-blue-500/10 flex flex-wrap gap-2">
+
                     <button
                       type="button"
                       onClick={() =>
-                        handleVisibility(achievement)
+                        handleVisibility(
+                          achievement
+                        )
                       }
                       disabled={
                         visibilityId ===
@@ -904,10 +1149,12 @@ function Achievements() {
                         ? "Deleting..."
                         : "Delete"}
                     </button>
+
                   </div>
                 </article>
               );
             })}
+
           </div>
         )}
 
