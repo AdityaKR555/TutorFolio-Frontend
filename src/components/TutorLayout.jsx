@@ -13,10 +13,7 @@ function TutorLayout() {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        profileRef.current &&
-        !profileRef.current.contains(event.target)
-      ) {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
         setProfileOpen(false);
       }
     };
@@ -136,13 +133,7 @@ function TutorLayout() {
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="2"
-            d="M8 10h8M8 14h5"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M20 11.5a7.5 7.5 0 01-7.5 7.5H8l-4 2v-5.2A7.5 7.5 0 1112.5 4H13a7.5 7.5 0 017 7.5z"
+            d="M8 10h8M8 14h5M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
           />
         </svg>
       ),
