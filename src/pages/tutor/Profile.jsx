@@ -637,7 +637,11 @@ function Profile() {
             {!isEditing ? (
               <button
                 type="button"
-                onClick={handleEdit}
+                onClick={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleEdit();
+  }}
                 className="w-full sm:w-auto min-w-[150px] bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl transition-colors text-sm font-medium"
               >
                 Edit Profile

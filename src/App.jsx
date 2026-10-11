@@ -16,6 +16,8 @@ import TuitionDetails from "./pages/tutor/TuitionDetails";
 import Achievements from "./pages/tutor/Achievements";
 import Batches from "./pages/tutor/Batches";
 
+import Settings from "./pages/tutor/Settings";
+
 function ComingSoon({ title }) {
   return (
     <div className="p-5 sm:p-8">
@@ -36,7 +38,6 @@ function App() {
   return (
     <div>
       <Routes>
-
         {/* Public pages - blocked when already logged in */}
         <Route element={<PublicRoute />}>
           <Route path="/" element={<Home />} />
@@ -56,41 +57,25 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<TutorRoute />}>
             <Route element={<TutorLayout />}>
-              <Route
-                path="/dashboard"
-                element={<Dashboard />}
-              />
+              <Route path="/dashboard" element={<Dashboard />} />
 
-              <Route
-                path="/profile"
-                element={<Profile />}
-              />
+              <Route path="/profile" element={<Profile />} />
 
-              <Route
-                path="/tuition"
-                element={<TuitionDetails />}
-              />
+              <Route path="/settings" element={<Settings />} />
 
-              <Route
-                path="/achievements"
-                element={<Achievements />}
-              />
+              <Route path="/tuition" element={<TuitionDetails />} />
 
-              <Route
-                path="/batches"
-                element={<Batches />}
-              />
+              <Route path="/achievements" element={<Achievements />} />
+
+              <Route path="/batches" element={<Batches />} />
 
               <Route
                 path="/conversations"
-                element={
-                  <ComingSoon title="Conversations" />
-                }
+                element={<ComingSoon title="Conversations" />}
               />
             </Route>
           </Route>
         </Route>
-
       </Routes>
     </div>
   );

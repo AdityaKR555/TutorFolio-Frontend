@@ -9,7 +9,15 @@ function TutorLayout() {
 
   const profileRef = useRef(null);
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  const readUser = () => {
+    try {
+      return JSON.parse(localStorage.getItem("user")) || null;
+    } catch {
+      return null;
+    }
+  };
+
+  const [user, setUser] = useState(readUser);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -22,6 +30,22 @@ function TutorLayout() {
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    const refreshUser = () => {
+      setUser(readUser());
+    };
+
+    window.addEventListener("tutorfolio-user-updated", refreshUser);
+
+    window.addEventListener("storage", refreshUser);
+
+    return () => {
+      window.removeEventListener("tutorfolio-user-updated", refreshUser);
+
+      window.removeEventListener("storage", refreshUser);
     };
   }, []);
 
@@ -192,20 +216,31 @@ function TutorLayout() {
               className="flex items-center gap-2 p-2 rounded-xl hover:bg-[#0f1f36] transition-colors"
               aria-label="Profile menu"
             >
-              <div className="w-9 h-9 rounded-full bg-[#0f1f36] border border-blue-500/20 flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-[#c7d8f5]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M20 21a8 8 0 00-16 0M12 13a4 4 0 100-8 4 4 0 000 8z"
+              <div className="w-9 h-9 rounded-full bg-[#0f1f36] border border-blue-500/20 overflow-hidden flex items-center justify-center">
+                {user?.profilePicture ? (
+                  <img
+                    src={user.profilePicture}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
                   />
-                </svg>
+                ) : (
+                  <svg
+                    className="w-5 h-5 text-[#c7d8f5]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M20 21a8 8 0 00-16 0M12 13a4 4 0 100-8 4 4 0 000 8z"
+                    />
+                  </svg>
+                )}
               </div>
 
               <svg
@@ -258,6 +293,35 @@ function TutorLayout() {
                     />
                   </svg>
                   Profile
+                </button>
+
+                <button
+                  onClick={() => {
+                    setProfileOpen(false);
+                    navigate("/settings");
+                  }}
+                  className="w-full px-4 py-3 flex items-center gap-3 text-[#c7d8f5] hover:bg-[#142744] hover:text-white transition-colors text-left"
+                >
+                 <svg
+  className="w-5 h-5"
+  fill="none"
+  stroke="currentColor"
+  viewBox="0 0 24 24"
+>
+  <path
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    d="M12 15a3 3 0 100-6 3 3 0 000 6z"
+  />
+  <path
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
+  />
+</svg>
+                  Settings
                 </button>
 
                 <button
