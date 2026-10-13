@@ -18,6 +18,9 @@ import Batches from "./pages/tutor/Batches";
 
 import Settings from "./pages/tutor/Settings";
 
+import DiscoverTutors from "./pages/tutor/DiscoverTutors";
+import PublicTutorWebsite from "./pages/public/PublicTutorWebsite";
+
 function ComingSoon({ title }) {
   return (
     <div className="p-5 sm:p-8">
@@ -69,6 +72,8 @@ function App() {
 
               <Route path="/batches" element={<Batches />} />
 
+              <Route path="discover-tutors" element={<DiscoverTutors />} />
+
               <Route
                 path="/conversations"
                 element={<ComingSoon title="Conversations" />}
@@ -76,6 +81,10 @@ function App() {
             </Route>
           </Route>
         </Route>
+
+        {/* Public tutor website */}
+        <Route path="/tutor/:username" element={<PublicTutorWebsite />} />
+
       </Routes>
     </div>
   );
