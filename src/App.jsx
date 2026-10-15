@@ -21,6 +21,9 @@ import Settings from "./pages/tutor/Settings";
 import DiscoverTutors from "./pages/tutor/DiscoverTutors";
 import PublicTutorWebsite from "./pages/public/PublicTutorWebsite";
 
+import Conversations from "./pages/tutor/Conversations";
+import Notifications from "./pages/tutor/Notifications";
+
 function ComingSoon({ title }) {
   return (
     <div className="p-5 sm:p-8">
@@ -74,17 +77,16 @@ function App() {
 
               <Route path="discover-tutors" element={<DiscoverTutors />} />
 
-              <Route
-                path="/conversations"
-                element={<ComingSoon title="Conversations" />}
-              />
+              <Route path="/conversations" element={<Conversations />} />
+
+              <Route path="notifications" element={<Notifications />} />
+
             </Route>
           </Route>
         </Route>
 
         {/* Public tutor website */}
         <Route path="/tutor/:username" element={<PublicTutorWebsite />} />
-
       </Routes>
     </div>
   );

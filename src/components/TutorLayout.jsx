@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import NotificationBell from "./NotificationBell";
 
 function TutorLayout() {
   const navigate = useNavigate();
@@ -229,7 +230,9 @@ function TutorLayout() {
           </div>
 
           {/* Profile */}
-          <div className="relative" ref={profileRef}>
+          <div className="relative flex gap-2.5" ref={profileRef}>
+            <NotificationBell />
+
             <button
               onClick={() => setProfileOpen((prev) => !prev)}
               className="flex items-center gap-2 p-2 rounded-xl hover:bg-[#0f1f36] transition-colors"
