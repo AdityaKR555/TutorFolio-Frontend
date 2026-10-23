@@ -1,10 +1,12 @@
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
+import { getAccessToken, getStoredUser } from "../utils/auth";
 
 function ProtectedRoute() {
-  const user = localStorage.getItem("user");
+  const user = getStoredUser();
+  const token = getAccessToken();
 
-  if (!user) {
+  if (!user && !token) {
     return <Navigate to="/login" replace />;
   }
 

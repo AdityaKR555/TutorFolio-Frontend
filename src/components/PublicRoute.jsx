@@ -1,20 +1,12 @@
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
+import { clearAuthSession, getStoredUser } from "../utils/auth";
 
 function PublicRoute() {
-  const storedUser = localStorage.getItem("user");
+  const user = getStoredUser();
 
   // Not logged in → allow public pages
-  if (!storedUser) {
-    return <Outlet />;
-  }
-
-  let user;
-
-  try {
-    user = JSON.parse(storedUser);
-  } catch {
-    localStorage.removeItem("user");
+  if (!user) {
     return <Outlet />;
   }
 
@@ -30,8 +22,8 @@ function PublicRoute() {
     return <Navigate to="/student" replace />;
   }
 
-  // Invalid account type
-  localStorage.removeItem("user");
+  // Invalid account type or corrupted session
+  clearAuthSession();
   return <Outlet />;
 }
 

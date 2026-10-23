@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
+import { clearAuthSession, getStoredUser } from "../utils/auth";
 
 function TutorLayout() {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ function TutorLayout() {
 
   const readUser = () => {
     try {
-      return JSON.parse(localStorage.getItem("user")) || null;
+      return getStoredUser();
     } catch {
       return null;
     }
@@ -51,7 +52,7 @@ function TutorLayout() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
+    clearAuthSession();
     navigate("/login");
   };
 

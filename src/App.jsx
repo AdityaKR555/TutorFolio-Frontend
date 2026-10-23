@@ -4,6 +4,7 @@ import { Route, Routes } from "react-router-dom";
 import Home from "./Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import AuthCallback from "./pages/AuthCallback";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import TutorRoute from "./components/TutorRoute";
@@ -44,6 +45,10 @@ function App() {
   return (
     <div>
       <Routes>
+        {/* OAuth Callbacks */}
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/auth/google/callback" element={<AuthCallback />} />
+
         {/* Public pages - blocked when already logged in */}
         <Route element={<PublicRoute />}>
           <Route path="/" element={<Home />} />

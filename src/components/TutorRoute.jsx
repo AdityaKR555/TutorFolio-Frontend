@@ -1,19 +1,11 @@
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
+import { getStoredUser } from "../utils/auth";
 
 function TutorRoute() {
-  const storedUser = localStorage.getItem("user");
+  const user = getStoredUser();
 
-  if (!storedUser) {
-    return <Navigate to="/login" replace />;
-  }
-
-  let user;
-
-  try {
-    user = JSON.parse(storedUser);
-  } catch {
-    localStorage.removeItem("user");
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 
