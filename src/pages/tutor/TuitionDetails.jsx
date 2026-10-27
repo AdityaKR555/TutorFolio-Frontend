@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/axios";
+import ResumeExtractorModal from "../../components/ResumeExtractorModal";
 
 const initialForm = {
   tuitionName: "",
@@ -27,6 +28,42 @@ function TuitionDetails() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [showResumeModal, setShowResumeModal] = useState(false);
+
+  const handleApplyResume = (extracted) => {
+    if (!extracted) return;
+
+    let languages = formData.languages;
+    if (Array.isArray(extracted.teaching_languages) && extracted.teaching_languages.length > 0) {
+      languages = extracted.teaching_languages.join(", ");
+    }
+
+    let teachingSubjects = formData.teachingSubjects;
+    if (Array.isArray(extracted.teaching_subjects) && extracted.teaching_subjects.length > 0) {
+      teachingSubjects = extracted.teaching_subjects.join(", ");
+    }
+
+    let eligibleClasses = formData.eligibleClasses;
+    if (Array.isArray(extracted.eligible_classes) && extracted.eligible_classes.length > 0) {
+      eligibleClasses = extracted.eligible_classes.join(", ");
+    }
+
+    let city = formData.city;
+    if (extracted.location) {
+      city = extracted.location;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      languages: languages || prev.languages,
+      teachingSubjects: teachingSubjects || prev.teachingSubjects,
+      eligibleClasses: eligibleClasses || prev.eligibleClasses,
+      city: city || prev.city,
+    }));
+
+    setIsEditing(true);
+    setSuccess("Tuition details auto-filled from resume! Please review and click 'Save Changes'.");
+  };
 
   const getUserId = () => {
     try {
@@ -382,6 +419,12 @@ function TuitionDetails() {
       <div className="max-w-5xl mx-auto">
 
         {/* Header */}
+        <ResumeExtractorModal
+          isOpen={showResumeModal}
+          onClose={() => setShowResumeModal(false)}
+          onApply={handleApplyResume}
+          mode="tuition"
+        />
         <div className="mb-8">
           <p className="text-[#94a8c7] text-sm mb-2">
             Tutor Profile

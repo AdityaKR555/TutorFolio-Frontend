@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/axios";
+import ResumeExtractorModal from "../../components/ResumeExtractorModal";
 
 const initialForm = {
   firstName: "",
@@ -25,6 +26,47 @@ function Profile() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [showResumeModal, setShowResumeModal] = useState(false);
+
+  const handleApplyResume = (extracted) => {
+    if (!extracted) return;
+
+    let firstName = formData.firstName;
+    let lastName = formData.lastName;
+    if (extracted.tutor_name) {
+      const parts = extracted.tutor_name.trim().split(/\s+/);
+      firstName = parts[0] || firstName;
+      lastName = parts.slice(1).join(" ") || lastName;
+    }
+
+    let mobileNo = formData.mobileNo;
+    if (extracted.phone) {
+      const digitsOnly = extracted.phone.replace(/[^0-9]/g, "");
+      mobileNo = digitsOnly || extracted.phone;
+    }
+
+    let qualification = formData.qualification;
+    if (Array.isArray(extracted.qualifications) && extracted.qualifications.length > 0) {
+      qualification = extracted.qualifications.join(", ");
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      firstName: firstName || prev.firstName,
+      lastName: lastName || prev.lastName,
+      email: extracted.email || prev.email,
+      mobileNo: mobileNo || prev.mobileNo,
+      address: extracted.location || prev.address,
+      qualification: qualification || prev.qualification,
+      teachingYOE:
+        extracted.years_of_experience != null
+          ? extracted.years_of_experience
+          : prev.teachingYOE,
+    }));
+
+    setIsEditing(true);
+    setSuccess("Profile details auto-filled from resume! Please review and click 'Save Changes'.");
+  };
 
   const getUserId = () => {
     try {
@@ -292,7 +334,14 @@ function Profile() {
       <div className="max-w-5xl mx-auto">
 
         {/* Header */}
-        <div className="mb-8">
+        <ResumeExtractorModal
+          isOpen={showResumeModal}
+          onClose={() => setShowResumeModal(false)}
+          onApply={handleApplyResume}
+          mode="profile"
+        />
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
           <p className="text-[#94a8c7] text-sm mb-2">
             Tutor Profile
           </p>
@@ -305,6 +354,16 @@ function Profile() {
             Add and manage the information that will appear on your
             tutor profile.
           </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowResumeModal(true)}
+            className="inline-flex items-center gap-2 self-start sm:self-auto px-4 py-2.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 hover:text-white transition-all text-sm font-medium cursor-pointer shadow-sm"
+          >
+            <span>✨</span>
+            <span>Auto-fill from Resume</span>
+          </button>
         </div>
 
         {/* Error */}
