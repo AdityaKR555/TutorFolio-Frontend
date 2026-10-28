@@ -25,6 +25,10 @@ import PublicTutorWebsite from "./pages/public/PublicTutorWebsite";
 import Conversations from "./pages/tutor/Conversations";
 import Notifications from "./pages/tutor/Notifications";
 
+import FAQ from "./pages/tutor/FAQ";
+
+import Themes from "./pages/tutor/Themes";
+
 function ComingSoon({ title }) {
   return (
     <div className="p-5 sm:p-8">
@@ -85,6 +89,10 @@ function App() {
               <Route path="/conversations" element={<Conversations />} />
 
               <Route path="notifications" element={<Notifications />} />
+
+              <Route path="/faq" element={<FAQ />} />
+
+              <Route path="/themes" element={<Themes />} />
 
             </Route>
           </Route>
