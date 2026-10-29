@@ -94,6 +94,12 @@ function App() {
 
               <Route path="/themes" element={<Themes />} />
 
+              <Route path="/subscriptions" element={<div />} />
+
+              <Route path="/guide" element={<div />} />
+
+              <Route path="/report-bug" element={<div />} />
+
             </Route>
           </Route>
         </Route>
