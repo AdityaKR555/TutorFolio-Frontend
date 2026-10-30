@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/axios";
-import ResumeExtractorModal from "../../components/ResumeExtractorModal";
+import "./TuitionDetails.css";
 
 const initialForm = {
   tuitionName: "",
@@ -21,49 +21,15 @@ const initialForm = {
 
 function TuitionDetails() {
   const [formData, setFormData] = useState(initialForm);
-
+  const [savedFormData, setSavedFormData] = useState(initialForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-
+  const [coordinatesOpen, setCoordinatesOpen] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [showResumeModal, setShowResumeModal] = useState(false);
-
-  const handleApplyResume = (extracted) => {
-    if (!extracted) return;
-
-    let languages = formData.languages;
-    if (Array.isArray(extracted.teaching_languages) && extracted.teaching_languages.length > 0) {
-      languages = extracted.teaching_languages.join(", ");
-    }
-
-    let teachingSubjects = formData.teachingSubjects;
-    if (Array.isArray(extracted.teaching_subjects) && extracted.teaching_subjects.length > 0) {
-      teachingSubjects = extracted.teaching_subjects.join(", ");
-    }
-
-    let eligibleClasses = formData.eligibleClasses;
-    if (Array.isArray(extracted.eligible_classes) && extracted.eligible_classes.length > 0) {
-      eligibleClasses = extracted.eligible_classes.join(", ");
-    }
-
-    let city = formData.city;
-    if (extracted.location) {
-      city = extracted.location;
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      languages: languages || prev.languages,
-      teachingSubjects: teachingSubjects || prev.teachingSubjects,
-      eligibleClasses: eligibleClasses || prev.eligibleClasses,
-      city: city || prev.city,
-    }));
-
-    setIsEditing(true);
-    setSuccess("Tuition details auto-filled from resume! Please review and click 'Save Changes'.");
-  };
+  const [logoUrl, setLogoUrl] = useState("");
 
   const getUserId = () => {
     try {
@@ -86,27 +52,19 @@ function TuitionDetails() {
 
       try {
         setError("");
-
         const response = await api.get("/tuitionDetails", {
           params: { userId },
           timeout: 15000,
         });
-
         const data = response.data;
 
         if (data?.status === 200 && data?.data) {
           const tuition = data.data;
-
-          setFormData({
+          const loadedFormData = {
             tuitionName: tuition.tuitionName ?? "",
             owners: tuition.owners ?? "",
-
-            // Supports both the current backend typo and the correct key.
             description:
-              tuition["descript]ion"] ??
-              tuition.description ??
-              "",
-
+              tuition["descript]ion"] ?? tuition.description ?? "",
             languages: tuition.languages ?? "",
             teachingSubjects: tuition.teachingSubjects ?? "",
             establishedYear: tuition.establishedYear ?? "",
@@ -118,14 +76,18 @@ function TuitionDetails() {
             services: tuition.services ?? "",
             eligibleClasses: tuition.eligibleClasses ?? "",
             tags: tuition.tags ?? "",
-          });
-
-          // Existing tuition details = read-only
+          };
+          setLogoUrl(tuition.logo ?? "");
+          setFormData(loadedFormData);
+          setSavedFormData(loadedFormData);
+          setCoordinatesOpen(
+            loadedFormData.latitude !== "" || loadedFormData.longitude !== ""
+          );
           setIsEditing(false);
         } else if (data?.status === 404) {
-          // First time = directly editable
           setFormData(initialForm);
-          setIsEditing(true);
+          setSavedFormData(initialForm);
+          setIsEditing(false);
         } else {
           setError(
             data?.message ||
@@ -134,19 +96,13 @@ function TuitionDetails() {
         }
       } catch (err) {
         if (err.code === "ECONNABORTED") {
-          setError(
-            "The server is taking too long to respond. Please try again."
-          );
+          setError("The server is taking too long to respond. Please try again.");
         } else if (err.response?.status === 422) {
           setError("The tuition details request was invalid.");
         } else if (err.response?.status >= 500) {
-          setError(
-            "The server is currently unavailable. Please try again in a moment."
-          );
+          setError("The server is currently unavailable. Please try again in a moment.");
         } else if (err.request) {
-          setError(
-            "Could not connect to the server. Please check your internet connection."
-          );
+          setError("Could not connect to the server. Please check your internet connection.");
         } else {
           setError("Something went wrong while loading your tuition details.");
         }
@@ -158,38 +114,110 @@ function TuitionDetails() {
     fetchTuitionDetails();
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((previous) => ({ ...previous, [name]: value }));
     setError("");
     setSuccess("");
   };
 
-  const handleEdit = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
+  const handleEdit = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     setIsEditing(true);
     setError("");
     setSuccess("");
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleCancel = () => {
+    setFormData(savedFormData);
+    setIsEditing(false);
+    setError("");
+    setSuccess("");
+  };
 
-    // Extra protection: never submit while already saving.
-    if (saving) {
+  const handleLogoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    const supportedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!supportedTypes.includes(file.type)) {
+      setError("Choose a JPEG, PNG, or WebP image for your tuition logo.");
       return;
     }
 
+    const uploadData = new FormData();
+    uploadData.append("file", file);
+
+    try {
+      setUploadingLogo(true);
+      setError("");
+      setSuccess("");
+      const response = await api.post("/tuitionDetails/logo", uploadData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30000,
+      });
+      const data = response.data;
+
+      if (data?.status === 200) {
+        const uploadResult = data?.data;
+        const uploadedUrl =
+          (typeof uploadResult === "string" ? uploadResult : null) ??
+          uploadResult?.logoUrl ??
+          uploadResult?.logo ??
+          uploadResult?.fileUrl ??
+          data?.logoUrl ??
+          data?.logo ??
+          data?.fileUrl;
+        if (uploadedUrl) {
+          setLogoUrl(uploadedUrl);
+        } else {
+          const userId = getUserId();
+          if (userId) {
+            try {
+              const detailsResponse = await api.get("/tuitionDetails", {
+                params: { userId },
+                timeout: 15000,
+              });
+              const refreshedLogo = detailsResponse.data?.data?.logo;
+              if (refreshedLogo) {
+                setLogoUrl(refreshedLogo);
+              } else {
+                setError("Logo uploaded, but the server didn't return its preview URL. Reload the page to verify it.");
+              }
+            } catch {
+              setError("Logo uploaded, but its preview couldn't be refreshed. Reload the page to verify it.");
+            }
+          }
+        }
+        setSuccess("Tuition logo uploaded successfully.");
+      } else {
+        setError(data?.message || "Unable to upload your tuition logo. Please try again.");
+      }
+    } catch (err) {
+      if (err.response?.status === 413) {
+        setError("This image is too large to upload. Choose a smaller image.");
+      } else if (err.response?.status === 415 || err.response?.status === 422) {
+        setError("Choose a valid JPEG, PNG, or WebP image.");
+      } else if (err.response?.status >= 500) {
+        setError("The server is currently unavailable. Please try again in a moment.");
+      } else if (err.request) {
+        setError("Could not connect to the server. Please check your internet connection.");
+      } else {
+        setError("Something went wrong while uploading your tuition logo.");
+      }
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (saving) return;
+
     setError("");
     setSuccess("");
-
     const userId = getUserId();
 
     if (!userId) {
@@ -203,10 +231,7 @@ function TuitionDetails() {
     }
 
     const establishedYear =
-      formData.establishedYear === ""
-        ? null
-        : Number(formData.establishedYear);
-
+      formData.establishedYear === "" ? null : Number(formData.establishedYear);
     if (
       establishedYear !== null &&
       (!Number.isInteger(establishedYear) ||
@@ -217,16 +242,9 @@ function TuitionDetails() {
       return;
     }
 
-    const latitude =
-      formData.latitude === ""
-        ? null
-        : Number(formData.latitude);
-
+    const latitude = formData.latitude === "" ? null : Number(formData.latitude);
     const longitude =
-      formData.longitude === ""
-        ? null
-        : Number(formData.longitude);
-
+      formData.longitude === "" ? null : Number(formData.longitude);
     if (
       latitude !== null &&
       (Number.isNaN(latitude) || latitude < -90 || latitude > 90)
@@ -234,12 +252,9 @@ function TuitionDetails() {
       setError("Latitude must be between -90 and 90.");
       return;
     }
-
     if (
       longitude !== null &&
-      (Number.isNaN(longitude) ||
-        longitude < -180 ||
-        longitude > 180)
+      (Number.isNaN(longitude) || longitude < -180 || longitude > 180)
     ) {
       setError("Longitude must be between -180 and 180.");
       return;
@@ -265,105 +280,46 @@ function TuitionDetails() {
 
     try {
       setSaving(true);
-
       const response = await api.post("/tuitionDetails", payload, {
         timeout: 15000,
       });
-
       const data = response.data;
 
       if (data?.status === 200) {
+        const tuition = data.data ?? {};
+        const savedData = {
+          tuitionName: tuition.tuitionName ?? payload.tuitionName,
+          owners: tuition.owners ?? payload.owners ?? "",
+          description:
+            tuition["descript]ion"] ??
+            tuition.description ??
+            payload.description ??
+            "",
+          languages: tuition.languages ?? payload.languages ?? "",
+          teachingSubjects:
+            tuition.teachingSubjects ?? payload.teachingSubjects ?? "",
+          establishedYear:
+            tuition.establishedYear ?? payload.establishedYear ?? "",
+          state: tuition.state ?? payload.state ?? "",
+          district: tuition.district ?? payload.district ?? "",
+          city: tuition.city ?? payload.city ?? "",
+          latitude: tuition.latitude ?? payload.latitude ?? "",
+          longitude: tuition.longitude ?? payload.longitude ?? "",
+          services: tuition.services ?? payload.services ?? "",
+          eligibleClasses:
+            tuition.eligibleClasses ?? payload.eligibleClasses ?? "",
+          tags: tuition.tags ?? payload.tags ?? "",
+        };
+        setFormData(savedData);
+        setSavedFormData(savedData);
         setSuccess("Tuition details updated successfully.");
-
-        // After successful save, go back to read-only mode.
         setIsEditing(false);
-
-        // Use backend response when available.
-        if (data?.data) {
-          const tuition = data.data;
-
-          setFormData({
-            tuitionName: tuition.tuitionName ?? payload.tuitionName,
-            owners: tuition.owners ?? payload.owners ?? "",
-
-            description:
-              tuition["descript]ion"] ??
-              tuition.description ??
-              payload.description ??
-              "",
-
-            languages:
-              tuition.languages ??
-              payload.languages ??
-              "",
-
-            teachingSubjects:
-              tuition.teachingSubjects ??
-              payload.teachingSubjects ??
-              "",
-
-            establishedYear:
-              tuition.establishedYear ??
-              payload.establishedYear ??
-              "",
-
-            state: tuition.state ?? payload.state ?? "",
-            district: tuition.district ?? payload.district ?? "",
-            city: tuition.city ?? payload.city ?? "",
-
-            latitude:
-              tuition.latitude ??
-              payload.latitude ??
-              "",
-
-            longitude:
-              tuition.longitude ??
-              payload.longitude ??
-              "",
-
-            services:
-              tuition.services ??
-              payload.services ??
-              "",
-
-            eligibleClasses:
-              tuition.eligibleClasses ??
-              payload.eligibleClasses ??
-              "",
-
-            tags: tuition.tags ?? payload.tags ?? "",
-          });
-        } else {
-          // Fallback in case backend doesn't return data.
-          setFormData({
-            tuitionName: payload.tuitionName,
-            owners: payload.owners ?? "",
-            description: payload.description ?? "",
-            languages: payload.languages ?? "",
-            teachingSubjects: payload.teachingSubjects ?? "",
-            establishedYear: payload.establishedYear ?? "",
-            state: payload.state ?? "",
-            district: payload.district ?? "",
-            city: payload.city ?? "",
-            latitude: payload.latitude ?? "",
-            longitude: payload.longitude ?? "",
-            services: payload.services ?? "",
-            eligibleClasses: payload.eligibleClasses ?? "",
-            tags: payload.tags ?? "",
-          });
-        }
       } else if (data?.status === 404) {
-        setError(
-          data?.message ||
-            "User account was not found. Please login again."
-        );
+        setError(data?.message || "User account was not found. Please login again.");
       } else if (data?.status === 422) {
         setError("Please check the information you entered.");
       } else {
-        setError(
-          data?.message ||
-            "Unable to update tuition details. Please try again."
-        );
+        setError(data?.message || "Unable to update tuition details. Please try again.");
       }
     } catch (err) {
       if (err.code === "ECONNABORTED") {
@@ -371,464 +327,277 @@ function TuitionDetails() {
           "The server is taking too long to respond. Your changes may not have been saved. Please check your tuition details before trying again."
         );
       } else if (err.response?.status === 422) {
-        setError(
-          "Some tuition information is invalid. Please check the form."
-        );
+        setError("Some tuition information is invalid. Please check the form.");
       } else if (err.response?.status >= 500) {
-        setError(
-          "The server is currently unavailable. Please try again in a moment."
-        );
+        setError("The server is currently unavailable. Please try again in a moment.");
       } else if (err.request) {
-        setError(
-          "Could not connect to the server. Please check your internet connection."
-        );
+        setError("Could not connect to the server. Please check your internet connection.");
       } else {
-        setError(
-          "Something went wrong while updating your tuition details."
-        );
+        setError("Something went wrong while updating your tuition details.");
       }
     } finally {
       setSaving(false);
     }
   };
 
-  const inputClass =
-    "w-full bg-[#0a1628] border border-blue-500/10 rounded-xl px-4 py-3 text-white placeholder-[#617391] outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:focus:border-blue-500/10 disabled:focus:ring-0";
+  const chips = (value) =>
+    value.split(",").map((item) => item.trim()).filter(Boolean);
 
-  const labelClass =
-    "block text-sm text-[#c7d8f5] mb-2";
+  const field = (name, label, options = {}) => (
+    <div className={`tuition-field${options.full ? " tuition-field--full" : ""}`}>
+      {isEditing ? (
+        <>
+          <label htmlFor={name}>
+            {label}
+            {options.required && <span className="tuition-required"> *</span>}
+            {options.count && (
+              <span className="tuition-count">
+                {formData[name].length} / {options.maxLength}
+              </span>
+            )}
+          </label>
+          {options.multiline ? (
+            <textarea
+              id={name}
+              name={name}
+              value={formData[name]}
+              onChange={handleChange}
+              placeholder={options.placeholder}
+              maxLength={options.maxLength}
+              rows={options.rows ?? 4}
+            />
+          ) : (
+            <input
+              id={name}
+              name={name}
+              type={options.type ?? "text"}
+              value={formData[name]}
+              onChange={handleChange}
+              placeholder={options.placeholder}
+              maxLength={options.maxLength}
+              min={options.min}
+              max={options.max}
+              step={options.step}
+            />
+          )}
+          {options.hint && <span className="tuition-hint">{options.hint}</span>}
+          {options.chips && !!chips(formData[name]).length && (
+            <div className="tuition-chips" aria-live="polite">
+              {chips(formData[name]).map((item, index) => (
+                <span className="tuition-chip" key={`${item}-${index}`}>{item}</span>
+              ))}
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          <span className="tuition-view-label">{label}</span>
+          {options.chips ? (
+            chips(formData[name]).length ? (
+              <div className="tuition-chips">
+                {chips(formData[name]).map((item, index) => (
+                  <span className="tuition-chip" key={`${item}-${index}`}>{item}</span>
+                ))}
+              </div>
+            ) : (
+              <span className="tuition-view-value tuition-view-value--empty">Not provided</span>
+            )
+          ) : (
+            <span className={`tuition-view-value${options.multiline ? " tuition-view-value--multiline" : ""}`}>
+              {String(formData[name] ?? "").trim() || (
+                <span className="tuition-view-value--empty">Not provided</span>
+              )}
+            </span>
+          )}
+        </>
+      )}
+    </div>
+  );
 
   if (loading) {
     return (
-      <div className="p-5 sm:p-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-8 min-h-[400px] flex flex-col items-center justify-center">
-            <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-
-            <p className="text-[#94a8c7] mt-4 text-sm">
-              Loading tuition details...
-            </p>
-          </div>
+      <div className="tuition-page">
+        <div className="tuition-content tuition-loading">
+          <span className="tuition-spinner" aria-hidden="true" />
+          <p>Loading tuition details...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-5 sm:p-8">
-      <div className="max-w-5xl mx-auto">
-
-        {/* Header */}
-        <ResumeExtractorModal
-          isOpen={showResumeModal}
-          onClose={() => setShowResumeModal(false)}
-          onApply={handleApplyResume}
-          mode="tuition"
-        />
-        <div className="mb-8">
-          <p className="text-[#94a8c7] text-sm mb-2">
-            Tutor Profile
-          </p>
-
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">
-            Tuition Details
-          </h1>
-
-          <p className="text-[#94a8c7] mt-2 text-sm sm:text-base">
-            Add and manage information about your tuition or coaching.
-          </p>
-        </div>
-
-        {/* Error */}
-        {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 flex items-start gap-3">
-            <svg
-              className="w-5 h-5 text-red-400 mt-0.5 shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 9v3.5m0 3h.01M10.3 4.9L2.8 18a2 2 0 001.7 3h15a2 2 0 011.7-3L13.7 4.9a2 2 0 00-3.4 0z"
-              />
-            </svg>
-
-            <p className="text-red-300 text-sm">
-              {error}
-            </p>
+    <div className="tuition-page">
+      <main className="tuition-content">
+        <header className="tuition-heading">
+          <div>
+            <h1>Tuition details</h1>
+            <p>Manage the information students see about your tuition classes.</p>
           </div>
-        )}
-
-        {/* Success */}
-        {success && (
-          <div className="mb-6 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3 flex items-start gap-3">
-            <svg
-              className="w-5 h-5 text-green-400 mt-0.5 shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-
-            <p className="text-green-300 text-sm">
-              {success}
-            </p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-
-          {/* Tuition Information */}
-          <section className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7">
-            <div className="mb-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-white">
-                Tuition Information
-              </h2>
-
-              <p className="text-[#6f84a5] text-sm mt-1">
-                Basic information about your tuition.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-              {/* Tuition Name */}
-              <div>
-                <label className={labelClass}>
-                  Tuition Name{" "}
-                  <span className="text-red-400">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  name="tuitionName"
-                  value={formData.tuitionName}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  placeholder="Enter tuition name"
-                  maxLength={100}
-                  className={inputClass}
-                />
-              </div>
-
-              {/* Owners */}
-              <div>
-                <label className={labelClass}>
-                  Owner / Tutor Name
-                </label>
-
-                <input
-                  type="text"
-                  name="owners"
-                  value={formData.owners}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  placeholder="e.g. Aditya Kumar"
-                  maxLength={100}
-                  className={inputClass}
-                />
-              </div>
-
-              {/* Established Year */}
-              <div>
-                <label className={labelClass}>
-                  Established Year
-                </label>
-
-                <input
-                  type="number"
-                  name="establishedYear"
-                  value={formData.establishedYear}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  placeholder="e.g. 2022"
-                  min="1900"
-                  max={new Date().getFullYear()}
-                  className={inputClass}
-                />
-              </div>
-
-              {/* Languages */}
-              <div>
-                <label className={labelClass}>
-                  Languages
-                </label>
-
-                <input
-                  type="text"
-                  name="languages"
-                  value={formData.languages}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  placeholder="e.g. English, Hindi"
-                  className={inputClass}
-                />
-
-                <p className="text-[#617391] text-xs mt-2">
-                  Separate multiple languages with commas.
-                </p>
-              </div>
-
-              {/* Description */}
-              <div className="md:col-span-2">
-                <label className={labelClass}>
-                  Description
-                </label>
-
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  placeholder="Tell students about your tuition..."
-                  rows={5}
-                  maxLength={5000}
-                  className={`${inputClass} resize-none`}
-                />
-              </div>
-
-            </div>
-          </section>
-
-          {/* Teaching Information */}
-          <section className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7">
-            <div className="mb-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-white">
-                Teaching Information
-              </h2>
-
-              <p className="text-[#6f84a5] text-sm mt-1">
-                Tell students what and whom you teach.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-              {/* Subjects */}
-              <div>
-                <label className={labelClass}>
-                  Teaching Subjects
-                </label>
-
-                <input
-                  type="text"
-                  name="teachingSubjects"
-                  value={formData.teachingSubjects}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  placeholder="e.g. Mathematics, Science, English"
-                  className={inputClass}
-                />
-
-                <p className="text-[#617391] text-xs mt-2">
-                  Separate multiple subjects with commas.
-                </p>
-              </div>
-
-              {/* Eligible Classes */}
-              <div>
-                <label className={labelClass}>
-                  Eligible Classes
-                </label>
-
-                <input
-                  type="text"
-                  name="eligibleClasses"
-                  value={formData.eligibleClasses}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  placeholder="e.g. Class 6-10, Class 12"
-                  className={inputClass}
-                />
-              </div>
-
-              {/* Services */}
-              <div className="md:col-span-2">
-                <label className={labelClass}>
-                  Services
-                </label>
-
-                <textarea
-                  name="services"
-                  value={formData.services}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  placeholder="e.g. Home tuition, Online classes, Test preparation"
-                  rows={3}
-                  className={`${inputClass} resize-none`}
-                />
-              </div>
-
-              {/* Tags */}
-              <div className="md:col-span-2">
-                <label className={labelClass}>
-                  Tags
-                </label>
-
-                <input
-                  type="text"
-                  name="tags"
-                  value={formData.tags}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  placeholder="e.g. maths, science, cbse, online"
-                  className={inputClass}
-                />
-
-                <p className="text-[#617391] text-xs mt-2">
-                  Separate multiple tags with commas.
-                </p>
-              </div>
-
-            </div>
-          </section>
-
-          {/* Location */}
-          <section className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7">
-            <div className="mb-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-white">
-                Location
-              </h2>
-
-              <p className="text-[#6f84a5] text-sm mt-1">
-                Add the location of your tuition.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-              {/* State */}
-              <div>
-                <label className={labelClass}>
-                  State
-                </label>
-
-                <input
-                  type="text"
-                  name="state"
-                  value={formData.state}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  placeholder="e.g. Bihar"
-                  className={inputClass}
-                />
-              </div>
-
-              {/* District */}
-              <div>
-                <label className={labelClass}>
-                  District
-                </label>
-
-                <input
-                  type="text"
-                  name="district"
-                  value={formData.district}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  placeholder="e.g. Begusarai"
-                  className={inputClass}
-                />
-              </div>
-
-              {/* City */}
-              <div>
-                <label className={labelClass}>
-                  City
-                </label>
-
-                <input
-                  type="text"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  placeholder="e.g. Begusarai"
-                  className={inputClass}
-                />
-              </div>
-
-              {/* Latitude */}
-              <div>
-                <label className={labelClass}>
-                  Latitude
-                </label>
-
-                <input
-                  type="number"
-                  name="latitude"
-                  value={formData.latitude}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  placeholder="e.g. 25.4182"
-                  step="any"
-                  className={inputClass}
-                />
-              </div>
-
-              {/* Longitude */}
-              <div>
-                <label className={labelClass}>
-                  Longitude
-                </label>
-
-                <input
-                  type="number"
-                  name="longitude"
-                  value={formData.longitude}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  placeholder="e.g. 86.1274"
-                  step="any"
-                  className={inputClass}
-                />
-              </div>
-
-            </div>
-          </section>
-
-          {/* Action Button */}
-          <div className="flex justify-end pb-4">
-
-            {!isEditing ? (
+          <div className="tuition-heading-actions">
+            {isEditing ? (
               <button
+                className="tuition-button"
                 type="button"
-                onClick={handleEdit}
+                onClick={handleCancel}
                 disabled={saving}
-                className="w-full sm:w-auto min-w-[170px] bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl transition-colors text-sm font-medium"
               >
-                Edit Details
+                Cancel
               </button>
             ) : (
               <button
-                type="submit"
-                disabled={saving}
-                className="w-full sm:w-auto min-w-[170px] bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                className="tuition-button"
+                type="button"
+                onClick={handleEdit}
               >
-                {saving ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  "Save Changes"
-                )}
+                Edit details
               </button>
             )}
+          </div>
+        </header>
 
+        {error && <div className="tuition-alert tuition-alert--error" role="alert">{error}</div>}
+        {success && <div className="tuition-alert tuition-alert--success" role="status">{success}</div>}
+
+        <form className="tuition-form-grid" onSubmit={handleSubmit}>
+          <div className="tuition-main-stack">
+          <section className="tuition-card">
+            <div className="tuition-card-heading">
+              <div>
+                <h2>About your tuition</h2>
+                <p>Name, ownership and a short introduction.</p>
+              </div>
+              {!isEditing && <button className="tuition-edit-link" type="button" onClick={handleEdit}>Edit</button>}
+            </div>
+            <div className="tuition-fields">
+              {field("tuitionName", "Tuition name", { required: true, maxLength: 100, placeholder: "Enter tuition name" })}
+              {field("owners", "Owner or tutor name", { maxLength: 100, placeholder: "Enter owner or tutor name" })}
+              {field("establishedYear", "Established year", { type: "number", min: 1800, max: 2100, placeholder: "e.g. 2018" })}
+              {field("languages", "Languages taught in", { maxLength: 500, placeholder: "e.g. English, Hindi", hint: "Separate multiple languages with commas" })}
+              {field("description", "About the classes", { full: true, multiline: true, maxLength: 5000, count: true, placeholder: "Tell students about your tuition classes." })}
+            </div>
+          </section>
+
+          <section className="tuition-card">
+            <div className="tuition-card-heading">
+              <div>
+                <h2>Subjects and classes</h2>
+                <p>Help families find the right subject and grade.</p>
+              </div>
+              {!isEditing && <button className="tuition-edit-link" type="button" onClick={handleEdit}>Edit</button>}
+            </div>
+            <div className="tuition-fields">
+              {field("teachingSubjects", "Teaching subjects", { full: true, chips: true, maxLength: 500, placeholder: "e.g. Mathematics, Science, English" })}
+              {field("eligibleClasses", "Eligible classes", { full: true, maxLength: 1000, placeholder: "e.g. Class 6-10, Class 12" })}
+              {field("services", "Services and support", { full: true, multiline: true, maxLength: 2000, rows: 3, placeholder: "e.g. Practice tests, doubt-clearing, exam preparation" })}
+            </div>
+          </section>
+
+          <section className="tuition-card">
+            <div className="tuition-card-heading">
+              <div>
+                <h2>Location</h2>
+                <p>Where students can attend your classes.</p>
+              </div>
+              {!isEditing && <button className="tuition-edit-link" type="button" onClick={handleEdit}>Edit</button>}
+            </div>
+            <div className="tuition-location-fields">
+              {field("state", "State", { maxLength: 100, placeholder: "Enter state" })}
+              {field("district", "District", { maxLength: 100, placeholder: "Enter district" })}
+              {field("city", "City", { maxLength: 100, placeholder: "Enter city" })}
+              {isEditing ? (
+                <>
+                  <div className="tuition-map-row">
+                    <span>Coordinates help display your location accurately.</span>
+                    <button type="button" onClick={() => setCoordinatesOpen((current) => !current)}>
+                      {coordinatesOpen ? "Hide coordinates" : "Set coordinates"}
+                    </button>
+                  </div>
+                  {coordinatesOpen && (
+                    <>
+                      {field("latitude", "Latitude", { type: "number", min: -90, max: 90, step: "any", placeholder: "e.g. 25.4182" })}
+                      {field("longitude", "Longitude", { type: "number", min: -180, max: 180, step: "any", placeholder: "e.g. 86.1274" })}
+                    </>
+                  )}
+                </>
+              ) : (
+                (formData.latitude || formData.longitude) && (
+                  <>
+                    {field("latitude", "Latitude")}
+                    {field("longitude", "Longitude")}
+                  </>
+                )
+              )}
+            </div>
+          </section>
+
+          <footer className="tuition-footer">
+            <span>Profile details are saved to your account</span>
+            {isEditing && (
+              <div className="tuition-footer-actions">
+                <button className="tuition-button" type="button" onClick={handleCancel} disabled={saving}>Cancel</button>
+                <button className="tuition-button tuition-button--primary" type="submit" disabled={saving}>
+                  {saving && <span className="tuition-spinner tuition-spinner--small" aria-hidden="true" />}
+                  {saving ? "Saving..." : "Save changes"}
+                </button>
+              </div>
+            )}
+          </footer>
           </div>
 
+          <div className="tuition-side-stack">
+          <section className="tuition-card tuition-logo-card">
+            <div className="tuition-card-heading">
+              <div>
+                <h2>Tuition logo</h2>
+                <p>Upload a logo to represent your tuition classes.</p>
+              </div>
+            </div>
+            <input
+              className="tuition-file-input"
+              id="tuitionLogoFile"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleLogoUpload}
+              disabled={uploadingLogo}
+            />
+            <label
+              className={`tuition-upload-tile${uploadingLogo ? " is-uploading" : ""}`}
+              htmlFor="tuitionLogoFile"
+            >
+              {logoUrl ? (
+                <img
+                  className="tuition-logo-preview"
+                  src={logoUrl}
+                  alt={`${formData.tuitionName || "Tuition"} logo`}
+                />
+              ) : (
+                <span className="tuition-upload-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14.5v4A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5v-4" />
+                  </svg>
+                </span>
+              )}
+              <strong>{uploadingLogo ? "Uploading logo..." : logoUrl ? "Replace tuition logo" : "Upload tuition logo"}</strong>
+              <span className="tuition-upload-prompt">
+                {logoUrl ? "Choose a new image for your tuition logo" : "Choose an image for your tuition logo"}
+              </span>
+              <span className="tuition-upload-formats">JPG, PNG or WebP</span>
+            </label>
+          </section>
+
+          <section className="tuition-card tuition-tags-card">
+            <div className="tuition-card-heading">
+              <div>
+                <h2>Search tags</h2>
+                <p>Short keywords that help students discover you.</p>
+              </div>
+              {!isEditing && <button className="tuition-edit-link" type="button" onClick={handleEdit}>Edit</button>}
+            </div>
+            {field("tags", "Tags", { chips: true, maxLength: 1000, placeholder: "e.g. maths, science, exam preparation", hint: "Separate tags with commas" })}
+          </section>
+          </div>
         </form>
-      </div>
+      </main>
     </div>
   );
 }

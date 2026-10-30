@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import api from "../../api/axios";
+import "./Settings.css";
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_.-]+$/;
 
@@ -62,7 +63,6 @@ const getErrorMessage = (err, fallback) => {
 
 function Settings() {
   const storedUser = getStoredUser();
-  const userId = storedUser?.user_id;
 
   const [currentUsername, setCurrentUsername] = useState(
     storedUser?.username || ""
@@ -75,6 +75,7 @@ function Settings() {
     status: "idle",
     message: "",
   });
+  const [usernameEditing, setUsernameEditing] = useState(false);
 
   const availabilityRequest = useRef(0);
 
@@ -198,37 +199,32 @@ function Settings() {
   useEffect(() => {
     const requestId = ++availabilityRequest.current;
     const candidate = usernameDraft.trim();
-
+    let localResult = null;
     if (!candidate) {
-      setUsernameAvailability({
-        status: "idle",
-        message: "",
-      });
-      return;
-    }
-
-    if (candidate === currentUsername) {
-      setUsernameAvailability({
+      localResult = { status: "idle", message: "" };
+    } else if (candidate === currentUsername) {
+      localResult = {
         status: "same",
         message: "This is your current username.",
-      });
-      return;
-    }
-
-    if (
+      };
+    } else if (
       candidate.length < 3 ||
       candidate.length > 30 ||
       !USERNAME_REGEX.test(candidate)
     ) {
-      setUsernameAvailability({
+      localResult = {
         status: "invalid",
         message:
           "Use 3–30 characters: letters, numbers, dots, underscores or hyphens.",
-      });
-      return;
+      };
     }
 
     const timer = setTimeout(async () => {
+      if (localResult) {
+        setUsernameAvailability(localResult);
+        return;
+      }
+
       setUsernameAvailability({
         status: "checking",
         message: "Checking availability...",
@@ -286,10 +282,73 @@ function Settings() {
           ),
         });
       }
-    }, 450);
+    }, localResult ? 0 : 450);
 
     return () => clearTimeout(timer);
   }, [usernameDraft, currentUsername]);
+
+  const handleCheckUsername = async () => {
+    const candidate = usernameDraft.trim();
+
+    if (
+      candidate.length < 3 ||
+      candidate.length > 30 ||
+      !USERNAME_REGEX.test(candidate)
+    ) {
+      setUsernameAvailability({
+        status: "invalid",
+        message:
+          "Use 3–30 characters: letters, numbers, dots, underscores or hyphens.",
+      });
+      return;
+    }
+
+    if (candidate === currentUsername) {
+      setUsernameAvailability({
+        status: "same",
+        message: "This is your current username.",
+      });
+      return;
+    }
+
+    const requestId = ++availabilityRequest.current;
+    setUsernameAvailability({
+      status: "checking",
+      message: "Checking availability...",
+    });
+
+    try {
+      const response = await api.get(
+        "/profile/settings/username/availability",
+        { params: { username: candidate }, timeout: 10000 }
+      );
+      if (requestId !== availabilityRequest.current) return;
+
+      const result = response.data;
+      if (result?.status === 200 && result?.data?.available === true) {
+        setUsernameAvailability({
+          status: "available",
+          message: "Username is available.",
+        });
+      } else if (result?.status === 200 && result?.data?.available === false) {
+        setUsernameAvailability({
+          status: "taken",
+          message: "This username is already taken.",
+        });
+      } else {
+        setUsernameAvailability({
+          status: "error",
+          message: result?.message || "Could not verify username availability.",
+        });
+      }
+    } catch (err) {
+      if (requestId !== availabilityRequest.current) return;
+      setUsernameAvailability({
+        status: "error",
+        message: getErrorMessage(err, "Could not verify username availability."),
+      });
+    }
+  };
 
   const handleUsernameSubmit = async (e) => {
     e.preventDefault();
@@ -359,6 +418,7 @@ function Settings() {
           "success",
           "Username updated successfully."
         );
+        setUsernameEditing(false);
       } else {
         notify(
           "error",
@@ -564,27 +624,24 @@ function Settings() {
     }
   };
 
-  const inputClass =
-    "w-full bg-[#0a1628] border border-blue-500/10 rounded-xl px-4 py-3 text-white placeholder-[#617391] outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all";
-
-  const labelClass =
-    "block text-sm text-[#c7d8f5] mb-2";
+  const inputClass = "settings-input";
+  const labelClass = "settings-label";
 
   const availabilityColor = {
-    available: "text-green-400",
-    taken: "text-red-400",
-    invalid: "text-red-400",
-    error: "text-yellow-400",
-    checking: "text-[#94a8c7]",
-    same: "text-[#94a8c7]",
-    idle: "text-[#94a8c7]",
+    available: "is-ok",
+    taken: "is-bad",
+    invalid: "is-bad",
+    error: "is-bad",
+    checking: "",
+    same: "",
+    idle: "",
   }[usernameAvailability.status];
 
   const toggleButton = (visible, onClick, label) => (
     <button
       type="button"
       onClick={onClick}
-      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#94a8c7] hover:text-white"
+      className="settings-reveal"
       aria-label={visible ? `Hide ${label}` : `Show ${label}`}
     >
       {visible ? "Hide" : "Show"}
@@ -592,160 +649,138 @@ function Settings() {
   );
 
   return (
-    <div className="p-5 sm:p-8">
-      <div className="max-w-5xl mx-auto">
+    <div className="settings-page">
+      <div className="settings-content">
+        <header className="settings-heading">
+          <div>
+            <h1>Settings</h1>
+            <p>Manage your username, profile picture and password.</p>
+          </div>
+        </header>
 
-        {/* Page heading */}
-        <div className="mb-8">
-          <p className="text-[#94a8c7] text-sm mb-2">
-            Account
-          </p>
-
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">
-            Profile Settings
-          </h1>
-
-          <p className="text-[#94a8c7] mt-2 text-sm sm:text-base">
-            Manage your username, profile picture and password.
-          </p>
-        </div>
-
-        {/* Global feedback */}
         {notice.text && (
-          <div
-            className={`mb-6 rounded-xl border px-4 py-3 ${
-              notice.type === "success"
-                ? "bg-green-500/10 border-green-500/20 text-green-300"
-                : notice.type === "error"
-                ? "bg-red-500/10 border-red-500/20 text-red-300"
-                : "bg-blue-500/10 border-blue-500/20 text-blue-300"
-            }`}
-            role="status"
-          >
-            <p className="text-sm">{notice.text}</p>
+          <div className={`settings-notice settings-notice--${notice.type || "info"}`} role="status">
+            {notice.text}
           </div>
         )}
 
-        <div className="space-y-6">
-
-          {/* Username */}
-          <section className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7">
-            <div className="mb-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-white">
-                Change Username
-              </h2>
-
-              <p className="text-[#6f84a5] text-sm mt-1">
-                Your username identifies your TutorFolio account.
-              </p>
-            </div>
-
-            <form
-              onSubmit={handleUsernameSubmit}
-              className="space-y-4"
-            >
+        <div className="settings-layout">
+          <div className="settings-cards">
+          <section className="settings-card" id="account">
+            <div className="settings-card-head">
               <div>
-                <label className={labelClass}>
-                  Username
-                </label>
-
-                <input
-                  type="text"
-                  value={usernameDraft}
-                  onChange={(e) => {
-                    setUsernameDraft(e.target.value);
-                    setNotice({ type: "", text: "" });
-                  }}
-                  autoComplete="username"
-                  minLength={3}
-                  maxLength={30}
-                  placeholder="Enter a new username"
-                  className={inputClass}
-                  required
-                />
-
-                <p
-                  className={`text-xs mt-2 ${availabilityColor}`}
-                  aria-live="polite"
-                >
-                  {usernameAvailability.message}
-                </p>
+                <span className="settings-eyebrow">Account</span>
+                <h2>Username</h2>
+                <p>Choose how students identify you on Tutorfolio.</p>
               </div>
-
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  disabled={
-                    usernameSaving ||
-                    usernameDraft.trim() === currentUsername ||
-                    usernameAvailability.status === "taken" ||
-                    usernameAvailability.status === "invalid"
-                  }
-                  className="w-full sm:w-auto min-w-[160px] bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/40 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                >
-                  {usernameSaving ? (
-                    <>
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Username"
-                  )}
+            </div>
+            <div className="settings-row">
+              <div className="settings-row-main">
+                <strong>Current username</strong>
+                <span>{currentUsername || "Not set"}</span>
+              </div>
+              {!usernameEditing && (
+                <button type="button" className="settings-button" onClick={() => setUsernameEditing(true)}>
+                  Change username
                 </button>
-              </div>
-            </form>
+              )}
+            </div>
+            {usernameEditing && (
+              <form onSubmit={handleUsernameSubmit} className="settings-username-edit">
+                <div className="settings-field">
+                  <label className={labelClass}>New username</label>
+                  <div className="settings-input-row">
+                    <input
+                      type="text"
+                      value={usernameDraft}
+                      onChange={(e) => {
+                        setUsernameDraft(e.target.value);
+                        setNotice({ type: "", text: "" });
+                      }}
+                      autoComplete="username"
+                      minLength={3}
+                      maxLength={30}
+                      placeholder="Enter a new username"
+                      className={inputClass}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="settings-button"
+                      onClick={handleCheckUsername}
+                      disabled={usernameAvailability.status === "checking"}
+                    >
+                      Check availability
+                    </button>
+                  </div>
+                  <span className="settings-hint">Use 3 to 30 letters, numbers, dots, underscores, or hyphens.</span>
+                  <span className={`settings-status ${availabilityColor}`} aria-live="polite">{usernameAvailability.message}</span>
+                </div>
+                <div className="settings-card-actions">
+                  <button
+                    type="button"
+                    className="settings-button"
+                    onClick={() => {
+                      setUsernameEditing(false);
+                      setUsernameDraft(currentUsername);
+                      setNotice({ type: "", text: "" });
+                    }}
+                    disabled={usernameSaving}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="settings-button settings-button--primary"
+                    disabled={usernameSaving || usernameDraft.trim() === currentUsername || usernameAvailability.status === "taken" || usernameAvailability.status === "invalid"}
+                  >
+                    {usernameSaving ? "Updating…" : "Save username"}
+                  </button>
+                </div>
+              </form>
+            )}
           </section>
 
-          {/* Profile picture */}
-          <section className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7">
-            <div className="mb-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-white">
-                Profile Picture
-              </h2>
-
-              <p className="text-[#6f84a5] text-sm mt-1">
-                Update your profile picture using an image URL.
-              </p>
+          <section className="settings-card" id="profile-picture">
+            <div className="settings-card-head">
+              <div>
+                <span className="settings-eyebrow">Profile</span>
+                <h2>Profile picture</h2>
+                <p>Update your profile picture using an image URL.</p>
+              </div>
             </div>
 
             {profileLoading ? (
-              <p className="text-[#94a8c7] text-sm">
-                Loading profile picture...
-              </p>
+              <p className="settings-hint">Loading profile picture…</p>
             ) : (
               <>
                 {profilePicture && (
-                  <div className="mb-5 flex items-center gap-4">
+                  <div className="settings-picture-row">
                     <img
                       src={profilePicture}
                       alt="Current profile"
-                      className="w-16 h-16 rounded-full object-cover border border-blue-500/20 bg-[#0a1628]"
+                      className="settings-avatar"
                       onError={(e) => {
                         e.currentTarget.style.display = "none";
                       }}
                     />
 
-                    <div>
-                      <p className="text-white text-sm font-medium">
-                        Current profile picture
-                      </p>
-
-                      <p className="text-[#6f84a5] text-xs mt-1">
-                        Preview of your saved image URL.
-                      </p>
+                    <div className="settings-picture-copy">
+                      <strong>Current profile picture</strong>
+                      <span>Preview of your saved image URL.</span>
                     </div>
                   </div>
                 )}
 
                 {!hasProfile && (
-                  <p className="text-yellow-300 text-sm mb-4">
+                  <p className="settings-warning">
                     Complete your Personal Details first. The backend requires an existing profile row before it can update the picture.
                   </p>
                 )}
 
                 <form
                   onSubmit={handlePictureSubmit}
-                  className="space-y-4"
+                  className="settings-picture-form"
                 >
                   <div>
                     <label className={labelClass}>
@@ -766,7 +801,7 @@ function Settings() {
                     />
                   </div>
 
-                  <div className="flex justify-end">
+                  <div className="settings-card-actions">
                     <button
                       type="submit"
                       disabled={
@@ -774,7 +809,7 @@ function Settings() {
                         profileLoading ||
                         !hasProfile
                       }
-                      className="w-full sm:w-auto min-w-[160px] bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/40 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                      className="settings-button settings-button--primary"
                     >
                       {pictureSaving ? (
                         <>
@@ -792,28 +827,25 @@ function Settings() {
           </section>
 
           {/* Password */}
-          <section className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7">
-            <div className="mb-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-white">
-                Change Password
-              </h2>
-
-              <p className="text-[#6f84a5] text-sm mt-1">
-                Enter your current password before setting a new one.
-              </p>
+          <section className="settings-card" id="security">
+            <div className="settings-card-head">
+              <div>
+                <span className="settings-eyebrow">Security</span>
+                <h2>Change password</h2>
+                <p>Use a strong password that you do not use elsewhere.</p>
+              </div>
             </div>
 
             <form
               onSubmit={handlePasswordSubmit}
-              className="space-y-5"
+              className="settings-password-form"
             >
-              {/* Current password */}
-              <div>
+              <div className="settings-field settings-field--current">
                 <label className={labelClass}>
-                  Current Password
+                  Current password
                 </label>
 
-                <div className="relative">
+                <div className="settings-password-wrap">
                   <input
                     type={showCurrentPassword ? "text" : "password"}
                     value={currentPassword}
@@ -822,7 +854,7 @@ function Settings() {
                       setNotice({ type: "", text: "" });
                     }}
                     autoComplete="current-password"
-                    className={`${inputClass} pr-16`}
+                    className={inputClass}
                     placeholder="Enter current password"
                     required
                   />
@@ -837,12 +869,12 @@ function Settings() {
               </div>
 
               {/* New password */}
-              <div>
+              <div className="settings-field">
                 <label className={labelClass}>
-                  New Password
+                  New password
                 </label>
 
-                <div className="relative">
+                <div className="settings-password-wrap">
                   <input
                     type={showNewPassword ? "text" : "password"}
                     value={newPassword}
@@ -853,7 +885,7 @@ function Settings() {
                     autoComplete="new-password"
                     minLength={6}
                     maxLength={128}
-                    className={`${inputClass} pr-16`}
+                    className={inputClass}
                     placeholder="Enter new password"
                     required
                   />
@@ -865,18 +897,18 @@ function Settings() {
                   )}
                 </div>
 
-                <p className="text-[#617391] text-xs mt-2">
+                <p className="settings-hint">
                   Use between 6 and 128 characters.
                 </p>
               </div>
 
               {/* Confirm new password */}
-              <div>
+              <div className="settings-field">
                 <label className={labelClass}>
-                  Confirm New Password
+                  Confirm new password
                 </label>
 
-                <div className="relative">
+                <div className="settings-password-wrap">
                   <input
                     type={
                       showConfirmPassword ? "text" : "password"
@@ -887,7 +919,7 @@ function Settings() {
                       setNotice({ type: "", text: "" });
                     }}
                     autoComplete="new-password"
-                    className={`${inputClass} pr-16`}
+                    className={inputClass}
                     placeholder="Re-enter new password"
                     required
                   />
@@ -902,17 +934,22 @@ function Settings() {
 
                 {confirmNewPassword &&
                   confirmNewPassword !== newPassword && (
-                    <p className="text-red-400 text-xs mt-2">
+                    <p className="settings-inline-error">
                       Passwords do not match.
                     </p>
                   )}
               </div>
 
-              <div className="flex justify-end">
+              <div className="settings-security-tip">
+                  <span aria-hidden="true">✓</span>
+                  <span>Passwords must be 6 to 128 characters. Your new password and confirmation must match.</span>
+              </div>
+
+              <div className="settings-card-actions">
                 <button
                   type="submit"
                   disabled={passwordSaving}
-                  className="w-full sm:w-auto min-w-[160px] bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/40 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  className="settings-button settings-button--primary"
                 >
                   {passwordSaving ? (
                     <>
@@ -927,9 +964,9 @@ function Settings() {
             </form>
           </section>
 
+          <p className="settings-bottom-note">Account and security changes are saved to your Tutorfolio account.</p>
+          </div>
         </div>
-
-        <div className="pb-6" />
       </div>
     </div>
   );
