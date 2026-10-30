@@ -1,16 +1,16 @@
 .tuition-page {
-  --tuition-bg: #f4f8fd;
-  --tuition-surface: #fff;
-  --tuition-surface-soft: #f8fbff;
-  --tuition-ink: #162b49;
-  --tuition-copy: #536781;
-  --tuition-muted: #8292a8;
-  --tuition-line: #e1eaf4;
-  --tuition-blue: #1875d1;
-  --tuition-blue-hover: #0c5fb7;
-  --tuition-sky: #e9f5ff;
-  --tuition-good: #147d5a;
-  --tuition-good-bg: #eaf8f1;
+  --tuition-bg: var(--tf-bg);
+  --tuition-surface: var(--tf-surface);
+  --tuition-surface-soft: var(--tf-surface-soft);
+  --tuition-ink: var(--tf-ink);
+  --tuition-copy: var(--tf-copy);
+  --tuition-muted: var(--tf-muted);
+  --tuition-line: var(--tf-line);
+  --tuition-blue: var(--tf-blue);
+  --tuition-blue-hover: var(--tf-blue-pressed);
+  --tuition-sky: var(--tf-sky);
+  --tuition-good: var(--tf-success);
+  --tuition-good-bg: var(--tf-success-soft);
   min-height: calc(100vh - 72px);
   padding: 34px 42px 52px;
   background: var(--tuition-bg);
@@ -79,13 +79,13 @@
 .tuition-button--primary {
   border-color: var(--tuition-blue);
   background: var(--tuition-blue);
-  color: #fff;
+  color: var(--tf-on-primary);
 }
 
 .tuition-button--primary:hover:not(:disabled) {
   border-color: var(--tuition-blue-hover);
   background: var(--tuition-blue-hover);
-  color: #fff;
+  color: var(--tf-on-primary);
 }
 
 .tuition-button:disabled {
@@ -96,7 +96,7 @@
 .tuition-page button:focus-visible,
 .tuition-page input:focus-visible,
 .tuition-page textarea:focus-visible {
-  outline: 3px solid #82c7f5;
+  outline: 3px solid var(--tf-blue);
   outline-offset: 2px;
 }
 
@@ -207,7 +207,7 @@
 
 .tuition-field input::placeholder,
 .tuition-field textarea::placeholder {
-  color: #9aa9bb;
+  color: var(--tf-muted);
 }
 
 .tuition-field input[readonly],
@@ -265,10 +265,10 @@
 
 .tuition-chip {
   padding: 4px 9px;
-  border: 1px solid #d7ebfa;
+  border: 1px solid var(--tf-line);
   border-radius: 20px;
   background: var(--tuition-sky);
-  color: #276798;
+  color: var(--tf-blue);
   font-size: 11px;
 }
 
@@ -314,7 +314,7 @@
 }
 
 .tuition-file-input:focus-visible + .tuition-upload-tile {
-  outline: 3px solid #82c7f5;
+  outline: 3px solid var(--tf-blue);
   outline-offset: 2px;
 }
 
@@ -325,9 +325,9 @@
   align-items: center;
   gap: 7px;
   padding: 22px 16px 14px;
-  border: 1px dashed #a9d2fa;
+  border: 1px dashed var(--tf-blue);
   border-radius: 12px;
-  background: linear-gradient(145deg, #f3f9ff, #eaf5ff);
+  background: linear-gradient(145deg, var(--tf-surface-soft), var(--tf-sky));
   color: var(--tuition-copy);
   text-align: center;
   cursor: pointer;
@@ -349,7 +349,7 @@
   width: 46px;
   height: 46px;
   place-items: center;
-  border: 1px solid #d8e9f8;
+  border: 1px solid var(--tf-line);
   border-radius: 13px;
   background: var(--tuition-surface);
   color: var(--tuition-blue);
@@ -387,9 +387,9 @@
 .tuition-logo-preview {
   width: 48px;
   height: 48px;
-  border: 1px solid #d8e9f8;
+  border: 1px solid var(--tf-line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--tf-surface);
   object-fit: cover;
 }
 
@@ -413,13 +413,13 @@
 }
 
 .tuition-alert--error {
-  border-color: #f2c9c9;
-  background: #fff3f3;
-  color: #9d2929;
+  border-color: var(--tf-line);
+  background: var(--tf-danger-soft);
+  color: var(--tf-danger);
 }
 
 .tuition-alert--success {
-  border-color: #c8ead9;
+  border-color: var(--tf-line);
   background: var(--tuition-good-bg);
   color: var(--tuition-good);
 }
@@ -452,7 +452,7 @@
   height: 16px;
   border-width: 2px;
   border-color: rgb(255 255 255 / 35%);
-  border-top-color: #fff;
+  border-top-color: var(--tf-on-primary);
 }
 
 @keyframes tuition-spin {

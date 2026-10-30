@@ -1,26 +1,26 @@
 .tutor-shell {
-  --shell-bg: #f5faff;
-  --shell-surface: #fff;
-  --shell-surface-soft: #f0f8ff;
-  --shell-border: #d7eafa;
-  --shell-ink: #17324f;
-  --shell-muted: #66809a;
-  --shell-blue: #1883d5;
-  --shell-blue-dark: #096ab9;
+  --shell-bg: var(--tf-bg);
+  --shell-surface: var(--tf-surface);
+  --shell-surface-soft: var(--tf-surface-soft);
+  --shell-border: var(--tf-line);
+  --shell-ink: var(--tf-ink);
+  --shell-muted: var(--tf-copy);
+  --shell-blue: var(--tf-blue);
+  --shell-blue-dark: var(--tf-blue-pressed);
   min-height: 100vh;
   background: var(--shell-bg);
   color: var(--shell-ink);
 }
 
 .tutor-shell[data-theme="dark"] {
-  --shell-bg: #0a1628;
-  --shell-surface: #0f1f36;
-  --shell-surface-soft: #142744;
-  --shell-border: rgba(59, 130, 246, 0.16);
-  --shell-ink: #fff;
-  --shell-muted: #94a8c7;
-  --shell-blue: #2563eb;
-  --shell-blue-dark: #1d4ed8;
+  --shell-bg: var(--tf-bg);
+  --shell-surface: var(--tf-surface);
+  --shell-surface-soft: var(--tf-surface-soft);
+  --shell-border: var(--tf-line);
+  --shell-ink: var(--tf-ink);
+  --shell-muted: var(--tf-copy);
+  --shell-blue: var(--tf-blue);
+  --shell-blue-dark: var(--tf-blue-pressed);
 }
 
 .tutor-header,
@@ -166,14 +166,14 @@
 }
 
 .tutor-nav-link.active {
-  background: #e4f3ff;
-  color: #096ab9;
-  box-shadow: inset 3px 0 #1883d5;
+  background: var(--tf-sky);
+  color: var(--tf-blue-pressed);
+  box-shadow: inset 3px 0 var(--tf-blue);
 }
 
 .tutor-shell[data-theme="dark"] .tutor-nav-link.active {
-  background: #1d4ed8;
-  color: #fff;
+  background: var(--tf-sky);
+  color: var(--tf-ink);
   box-shadow: none;
 }
 
@@ -188,12 +188,12 @@
 .tutor-shell[data-theme="light"] .tutor-header .notification-action {
   border-color: var(--shell-border);
   background: var(--shell-surface-soft);
-  color: #37617f;
+  color: var(--tf-copy);
 }
 
 .tutor-shell[data-theme="light"] .tutor-header .notification-action:hover {
-  background: #e2f2ff;
-  color: #096ab9;
+  background: var(--tf-sky);
+  color: var(--tf-blue-pressed);
 }
 
 .tutor-shell[data-theme="light"] .tutor-header .notification-menu {

@@ -1,8 +1,8 @@
 .settings-page {
   min-height: 100%;
   padding: 34px 32px 56px;
-  background: #f4f8fd;
-  color: #162b49;
+  background: var(--tf-bg);
+  color: var(--tf-ink);
   font: 14px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
@@ -21,7 +21,7 @@
 
 .settings-heading h1 {
   margin: 0 0 7px;
-  color: #162b49;
+  color: var(--tf-ink);
   font-size: 26px;
   line-height: 1.2;
   letter-spacing: -.5px;
@@ -29,34 +29,34 @@
 
 .settings-heading p {
   margin: 0;
-  color: #536781;
+  color: var(--tf-copy);
   font-size: 13px;
 }
 
 .settings-notice {
   margin-bottom: 16px;
   padding: 10px 12px;
-  border: 1px solid #e1eaf4;
+  border: 1px solid var(--tf-line);
   border-radius: 8px;
   font-size: 11px;
 }
 
 .settings-notice--success {
-  border-color: #bfe5d3;
-  background: #eaf8f1;
-  color: #147d5a;
+  border-color: var(--tf-line);
+  background: var(--tf-success-soft);
+  color: var(--tf-success);
 }
 
 .settings-notice--error {
-  border-color: #f1d4d7;
-  background: #fff2f3;
-  color: #c74755;
+  border-color: var(--tf-line);
+  background: var(--tf-danger-soft);
+  color: var(--tf-danger);
 }
 
 .settings-notice--info {
-  border-color: #d7eaf8;
-  background: #edf8ff;
-  color: #1875d1;
+  border-color: var(--tf-line);
+  background: var(--tf-sky);
+  color: var(--tf-blue);
 }
 
 .settings-layout {
@@ -72,9 +72,9 @@
 .settings-card {
   min-width: 0;
   padding: 20px;
-  border: 1px solid #e1eaf4;
+  border: 1px solid var(--tf-line);
   border-radius: 13px;
-  background: #fff;
+  background: var(--tf-surface);
   box-shadow: 0 2px 8px rgba(31, 62, 99, .025);
 }
 
@@ -89,7 +89,7 @@
 .settings-eyebrow {
   display: block;
   margin-bottom: 3px;
-  color: #8292a8;
+  color: var(--tf-muted);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: .08em;
@@ -98,13 +98,13 @@
 
 .settings-card-head h2 {
   margin: 0 0 4px;
-  color: #162b49;
+  color: var(--tf-ink);
   font-size: 15px;
 }
 
 .settings-card-head p {
   margin: 0;
-  color: #8292a8;
+  color: var(--tf-muted);
   font-size: 11px;
 }
 
@@ -113,7 +113,7 @@
   align-items: center;
   gap: 14px;
   padding: 12px 0;
-  border-top: 1px solid #e1eaf4;
+  border-top: 1px solid var(--tf-line);
 }
 
 .settings-row-main {
@@ -128,12 +128,12 @@
 
 .settings-row-main strong {
   margin-bottom: 2px;
-  color: #162b49;
+  color: var(--tf-ink);
   font-size: 12px;
 }
 
 .settings-row-main span {
-  color: #8292a8;
+  color: var(--tf-muted);
   font-size: 11px;
   overflow-wrap: anywhere;
 }
@@ -145,10 +145,10 @@
   justify-content: center;
   gap: 7px;
   padding: 8px 12px;
-  border: 1px solid #e1eaf4;
+  border: 1px solid var(--tf-line);
   border-radius: 8px;
-  background: #fff;
-  color: #536781;
+  background: var(--tf-surface);
+  color: var(--tf-copy);
   font: inherit;
   font-size: 11px;
   font-weight: 600;
@@ -158,9 +158,9 @@
 }
 
 .settings-button:hover {
-  border-color: #93c5e8;
-  background: #f5faff;
-  color: #0c5fb7;
+  border-color: var(--tf-line);
+  background: var(--tf-surface-soft);
+  color: var(--tf-blue-pressed);
 }
 
 .settings-button:disabled {
@@ -169,15 +169,15 @@
 }
 
 .settings-button--primary {
-  border-color: #1875d1;
-  background: #1875d1;
-  color: #fff;
+  border-color: var(--tf-blue);
+  background: var(--tf-blue);
+  color: var(--tf-on-primary);
 }
 
 .settings-button--primary:hover {
-  border-color: #0c5fb7;
-  background: #0c5fb7;
-  color: #fff;
+  border-color: var(--tf-blue-pressed);
+  background: var(--tf-blue-pressed);
+  color: var(--tf-on-primary);
 }
 
 .settings-username-edit {
@@ -185,7 +185,7 @@
   gap: 13px;
   margin-top: 12px;
   padding-top: 13px;
-  border-top: 1px solid #e1eaf4;
+  border-top: 1px solid var(--tf-line);
 }
 
 .settings-field {
@@ -197,7 +197,7 @@
 .settings-label {
   display: block;
   margin: 0;
-  color: #536781;
+  color: var(--tf-copy);
   font-size: 11px;
   font-weight: 650;
 }
@@ -212,33 +212,33 @@
   width: 100%;
   min-height: 39px;
   padding: 10px 11px;
-  border: 1px solid #e1eaf4;
+  border: 1px solid var(--tf-line);
   border-radius: 8px;
   outline: none;
-  background: #fff;
-  color: #162b49;
+  background: var(--tf-surface);
+  color: var(--tf-ink);
   font: inherit;
   font-size: 13px;
 }
 
 .settings-input::placeholder {
-  color: #9aa9bb;
+  color: var(--tf-muted);
 }
 
 .settings-input:focus {
-  border-color: #79b7e3;
+  border-color: var(--tf-blue);
   box-shadow: 0 0 0 3px rgba(24, 117, 209, .1);
 }
 
 .settings-input:disabled {
-  background: #f8fbff;
-  color: #8292a8;
+  background: var(--tf-surface-soft);
+  color: var(--tf-muted);
   cursor: not-allowed;
 }
 
 .settings-hint,
 .settings-status {
-  color: #8292a8;
+  color: var(--tf-muted);
   font-size: 10px;
 }
 
@@ -247,12 +247,12 @@
 }
 
 .settings-status.is-ok {
-  color: #147d5a;
+  color: var(--tf-success);
 }
 
 .settings-status.is-bad,
 .settings-inline-error {
-  color: #c74755;
+  color: var(--tf-danger);
 }
 
 .settings-card-actions {
@@ -294,14 +294,14 @@
   padding: 4px;
   border: 0;
   background: transparent;
-  color: #8292a8;
+  color: var(--tf-muted);
   font: inherit;
   font-size: 10px;
   cursor: pointer;
 }
 
 .settings-reveal:hover {
-  color: #1875d1;
+  color: var(--tf-blue);
 }
 
 .settings-inline-error {
@@ -315,15 +315,15 @@
   gap: 9px;
   margin-top: 1px;
   padding: 10px 12px;
-  border: 1px solid #e1eaf4;
+  border: 1px solid var(--tf-line);
   border-radius: 8px;
-  background: #f8fbff;
-  color: #536781;
+  background: var(--tf-surface-soft);
+  color: var(--tf-copy);
   font-size: 10px;
 }
 
 .settings-security-tip > span:first-child {
-  color: #1875d1;
+  color: var(--tf-blue);
   font-weight: 700;
 }
 
@@ -347,9 +347,9 @@
   overflow: hidden;
   border: 2px solid #fff;
   border-radius: 50%;
-  background: #e9f5ff;
+  background: var(--tf-sky);
   box-shadow: 0 0 0 1px #e1eaf4;
-  color: #0c5fb7;
+  color: var(--tf-blue-pressed);
   font-size: 18px;
   font-weight: 750;
 }
@@ -366,12 +366,12 @@
 }
 
 .settings-picture-copy strong {
-  color: #162b49;
+  color: var(--tf-ink);
   font-size: 12px;
 }
 
 .settings-picture-copy span {
-  color: #8292a8;
+  color: var(--tf-muted);
   font-size: 10px;
 }
 
@@ -380,14 +380,14 @@
   padding: 10px 12px;
   border: 1px solid #f1dfbf;
   border-radius: 8px;
-  background: #fff7e9;
-  color: #93621a;
+  background: var(--tf-warning-soft);
+  color: var(--tf-warning);
   font-size: 11px;
 }
 
 .settings-bottom-note {
   margin: 0;
-  color: #8292a8;
+  color: var(--tf-muted);
   font-size: 10px;
   text-align: right;
 }

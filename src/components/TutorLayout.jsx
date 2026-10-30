@@ -548,6 +548,7 @@ function TutorLayout() {
   }, []);
 
   useEffect(() => {
+    document.documentElement.dataset.theme = theme;
     try {
       localStorage.setItem("tutorfolio-theme", theme);
     } catch {
