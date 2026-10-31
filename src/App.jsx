@@ -29,6 +29,8 @@ import FAQ from "./pages/tutor/FAQ";
 
 import Themes from "./pages/tutor/Themes";
 
+import Subscription from "./pages/tutor/Subscription";
+
 function ComingSoon({ title }) {
   return (
     <div className="p-5 sm:p-8">
@@ -93,6 +95,12 @@ function App() {
               <Route path="/faq" element={<FAQ />} />
 
               <Route path="/themes" element={<Themes />} />
+
+              <Route path="/subscription" element={<Subscription />} />
+
+              <Route path="/billing" element={<Subscription />} />
+
+              <Route path="/plans" element={<Subscription />} />
 
             </Route>
           </Route>
