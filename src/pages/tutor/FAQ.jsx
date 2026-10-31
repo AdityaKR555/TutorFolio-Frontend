@@ -1,11 +1,10 @@
-
 import React, { useCallback, useEffect, useState } from "react";
 import api from "../../api/axios";
 import { getStoredUser } from "../../utils/auth";
+import "./FAQ.css";
 
 const getUserId = () => {
   const user = getStoredUser();
-
   return (
     user?.userId ??
     user?.userid ??
@@ -95,16 +94,13 @@ const FAQ = () => {
 
   const closeModal = () => {
     if (saving) return;
-
     setIsModalOpen(false);
     setEditingFaq(null);
     setForm(initialForm);
-    setError("");
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
     setForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -113,60 +109,79 @@ const FAQ = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    const title = form.title.trim();
-    const description = form.description.trim();
-
-    if (!title || !description) {
-      setError("Please fill in both the question and answer.");
-      return;
-    }
 
     if (!userId) {
-      setError("Unable to identify your account. Please log in again.");
+      setError("User session expired. Please log in again.");
       return;
     }
 
-    const payload = {
-      title,
-      description,
-      visibleOnWebsite: form.visibleOnWebsite,
-    };
+    const trimmedTitle = form.title.trim();
+    const trimmedDescription = form.description.trim();
+
+    if (!trimmedTitle || !trimmedDescription) {
+      setError("Question and answer are both required.");
+      return;
+    }
+
+    setError("");
+    setSuccess("");
+    setSaving(true);
 
     try {
-      setSaving(true);
-
-      let response;
-
       if (editingFaq) {
         const faqId = editingFaq.faqId ?? editingFaq.faq_id ?? editingFaq.id;
 
-        response = await api.put(`/faqs/${faqId}`, payload);
-      } else {
-        response = await api.post("/faqs/new", {
-          userId: Number(userId),
+        const payload = {
+          title: trimmedTitle,
+          description: trimmedDescription,
+          visibleOnWebsite: form.visibleOnWebsite,
+        };
+
+        const response = await api.put(`/faqs/${faqId}`, payload);
+        const result = response.data;
+
+        if (result?.status !== 200) {
+          throw new Error(result?.message || "Failed to update FAQ.");
+        }
+
+        const updated = result.data || {
+          ...editingFaq,
           ...payload,
-        });
+        };
+
+        setFaqs((prev) =>
+          prev.map((item) => {
+            const itemId = item.faqId ?? item.faq_id ?? item.id;
+            return itemId === faqId ? { ...item, ...updated } : item;
+          })
+        );
+
+        setSuccess("FAQ updated successfully.");
+      } else {
+        const payload = {
+          userId,
+          title: trimmedTitle,
+          description: trimmedDescription,
+          visibleOnWebsite: form.visibleOnWebsite,
+        };
+
+        const response = await api.post("/faqs/new", payload);
+        const result = response.data;
+
+        if (result?.status !== 200 && result?.status !== 201) {
+          throw new Error(result?.message || "Failed to create FAQ.");
+        }
+
+        const created = result.data || {
+          faqId: Date.now(),
+          ...payload,
+        };
+
+        setFaqs((prev) => [created, ...prev]);
+        setSuccess("FAQ created successfully.");
       }
 
-      const result = response.data;
-
-      if (![200, 201].includes(result?.status)) {
-        throw new Error(result?.message || "Unable to save FAQ.");
-      }
-
-      setIsModalOpen(false);
-      setEditingFaq(null);
-      setForm(initialForm);
-      setSuccess(
-        editingFaq
-          ? "FAQ updated successfully."
-          : "FAQ created successfully."
-      );
-
-      await fetchFaqs();
+      closeModal();
     } catch (err) {
       setError(
         err.response?.data?.detail ||
@@ -185,24 +200,20 @@ const FAQ = () => {
 
     setError("");
     setSuccess("");
+    setActionId(faqId);
 
     try {
-      setActionId(faqId);
-
-      const response = await api.patch(`/faqs/visibility/${faqId}`, {
-        visibleOnWebsite: newVisibility,
-      });
+      const response = await api.patch(
+        `/faqs/visibility/${faqId}?visibleOnWebsite=${newVisibility}`
+      );
 
       if (response.data?.status !== 200) {
-        throw new Error(
-          response.data?.message || "Unable to update FAQ visibility."
-        );
+        throw new Error(response.data?.message || "Failed to update visibility.");
       }
 
       setFaqs((prev) =>
         prev.map((item) => {
           const itemId = item.faqId ?? item.faq_id ?? item.id;
-
           return itemId === faqId
             ? { ...item, visibleOnWebsite: newVisibility }
             : item;
@@ -237,22 +248,21 @@ const FAQ = () => {
 
     setError("");
     setSuccess("");
+    setActionId(faqId);
 
     try {
-      setActionId(faqId);
-
       const response = await api.delete(`/faqs/${faqId}`);
 
       if (response.data?.status !== 200) {
         throw new Error(response.data?.message || "Unable to delete FAQ.");
       }
 
-      setFaqs((prev) =>
-        prev.filter((item) => {
+      setFaqs((prev) => {
+        return prev.filter((item) => {
           const itemId = item.faqId ?? item.faq_id ?? item.id;
           return itemId !== faqId;
-        })
-      );
+        });
+      });
 
       setSuccess("FAQ deleted successfully.");
     } catch (err) {
@@ -283,238 +293,196 @@ const FAQ = () => {
   const visibleCount = faqs.filter((faq) => faq.visibleOnWebsite).length;
   const hiddenCount = faqs.length - visibleCount;
 
-  const inputClass =
-    "w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-red-500 focus:ring-2 focus:ring-red-100";
-
-  const primaryButton =
-    "inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60";
-
-  const secondaryButton =
-    "inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60";
-
-  const statusBadge = (visible) =>
-    visible
-      ? "inline-flex items-center rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700"
-      : "inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600";
-
   return (
-    <div className="min-h-screen bg-gray-50/70 px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        {/* Page heading */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="faq-page">
+      <div className="faq-content">
+        {/* ================= PAGE HEADING ================= */}
+        <header className="faq-heading">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
-              FAQs
-            </h1>
-            <p className="mt-1.5 text-sm leading-6 text-gray-500">
-              Manage frequently asked questions for your tutoring website.
+            <h1>Frequently Asked Questions</h1>
+            <p>
+              Manage questions and answers shown on your public tutoring website.
             </p>
           </div>
 
           <button
             type="button"
             onClick={openCreateModal}
-            className={`${primaryButton} w-full sm:w-auto`}
+            className="faq-btn-primary"
           >
-            <span className="text-lg leading-none">+</span>
-            Add FAQ
+            <span className="text-base leading-none">+</span>
+            <span>Add FAQ</span>
           </button>
-        </div>
+        </header>
 
-        {/* Feedback */}
+        {/* ================= FEEDBACK NOTICES ================= */}
         {error && !isModalOpen && (
-          <div
-            role="alert"
-            className="flex items-start justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-          >
-            <p>{error}</p>
+          <div role="alert" className="faq-notice faq-notice--error">
+            <span>{error}</span>
             <button
               type="button"
               onClick={() => setError("")}
-              className="font-semibold"
+              className="faq-notice-dismiss"
               aria-label="Dismiss error"
             >
-              ×
+              &times;
             </button>
           </div>
         )}
 
         {success && (
-          <div
-            role="status"
-            className="flex items-start justify-between gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700"
-          >
-            <p>{success}</p>
+          <div role="status" className="faq-notice faq-notice--success">
+            <span>{success}</span>
             <button
               type="button"
               onClick={() => setSuccess("")}
-              className="font-semibold"
+              className="faq-notice-dismiss"
               aria-label="Dismiss message"
             >
-              ×
+              &times;
             </button>
           </div>
         )}
 
-        {/* Summary cards */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <p className="text-sm font-medium text-gray-500">Total FAQs</p>
-            <p className="mt-2 text-3xl font-semibold text-gray-900">
-              {faqs.length}
-            </p>
+        {/* ================= STATS CARDS ================= */}
+        <div className="faq-stats-grid">
+          <div className="faq-stat-card">
+            <p className="faq-stat-label">Total FAQs</p>
+            <p className="faq-stat-value">{faqs.length}</p>
           </div>
 
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <p className="text-sm font-medium text-gray-500">
-              Visible on website
-            </p>
-            <p className="mt-2 text-3xl font-semibold text-green-600">
+          <div className="faq-stat-card">
+            <p className="faq-stat-label">Visible on website</p>
+            <p className="faq-stat-value faq-stat-value--visible">
               {visibleCount}
             </p>
           </div>
 
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <p className="text-sm font-medium text-gray-500">
-              Hidden FAQs
-            </p>
-            <p className="mt-2 text-3xl font-semibold text-gray-700">
+          <div className="faq-stat-card">
+            <p className="faq-stat-label">Hidden FAQs</p>
+            <p className="faq-stat-value" style={{ color: "var(--tf-muted)" }}>
               {hiddenCount}
             </p>
           </div>
         </div>
 
-        {/* FAQ list */}
-        <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-200 p-4 sm:p-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Your questions
-                </h2>
-                <p className="mt-1 text-sm text-gray-500">
-                  Add, edit, or control which FAQs appear on your website.
-                </p>
-              </div>
-
-              <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
-                <div className="relative w-full sm:min-w-64 lg:w-72">
-                  <svg
-                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    aria-hidden="true"
-                  >
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="m20 20-4-4" />
-                  </svg>
-                  <input
-                    type="search"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search FAQs..."
-                    className={`${inputClass} py-2.5 pl-9`}
-                    aria-label="Search FAQs"
-                  />
-                </div>
-
-                <select
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
-                  className={`${inputClass} py-2.5 sm:w-40`}
-                  aria-label="Filter FAQs"
-                >
-                  <option value="all">All FAQs</option>
-                  <option value="visible">Visible</option>
-                  <option value="hidden">Hidden</option>
-                </select>
-              </div>
+        {/* ================= FAQ LIST CONTAINER ================= */}
+        <section className="faq-card">
+          <div className="faq-card-head">
+            <div>
+              <h2 className="faq-card-title">All Questions</h2>
+              <p className="faq-card-subtitle">
+                Add, edit, or control which FAQs appear on your tutor website.
+              </p>
             </div>
-          </div>
 
-          {loading ? (
-            <div className="flex min-h-64 flex-col items-center justify-center gap-3 p-8">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-red-600" />
-              <p className="text-sm text-gray-500">Loading FAQs...</p>
-            </div>
-          ) : filteredFaqs.length === 0 ? (
-            <div className="flex min-h-64 flex-col items-center justify-center px-5 py-12 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-600">
+            {/* Search & Filter Controls */}
+            <div className="faq-controls">
+              <div className="faq-search-wrapper">
                 <svg
-                  className="h-7 w-7"
+                  className="faq-search-icon"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="1.6"
+                  strokeWidth="2"
                   aria-hidden="true"
                 >
-                  <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
-                  <path d="M12 17h.01" />
-                  <circle cx="12" cy="12" r="9" />
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-4-4" />
                 </svg>
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search questions..."
+                  className="faq-search-input"
+                  aria-label="Search FAQs"
+                />
               </div>
 
-              <h3 className="mt-4 text-base font-semibold text-gray-900">
+              <select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                className="faq-filter-select"
+                aria-label="Filter FAQs"
+              >
+                <option value="all">All FAQs</option>
+                <option value="visible">Visible only</option>
+                <option value="hidden">Hidden only</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Loading State */}
+          {loading ? (
+            <div className="faq-state-box">
+              <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent text-blue-500" />
+              <p className="text-sm" style={{ color: "var(--tf-copy)" }}>
+                Loading FAQs...
+              </p>
+            </div>
+          ) : filteredFaqs.length === 0 ? (
+            /* Empty State */
+            <div className="faq-state-box">
+              <div className="faq-state-icon">💡</div>
+              <h3 className="faq-state-title">
                 {search || filter !== "all"
-                  ? "No matching FAQs"
+                  ? "No matching FAQs found"
                   : "No FAQs added yet"}
               </h3>
-
-              <p className="mt-1 max-w-sm text-sm leading-6 text-gray-500">
+              <p className="faq-state-text">
                 {search || filter !== "all"
-                  ? "Try changing your search or filter."
-                  : "Add answers to common questions so students can learn more about your tuition."}
+                  ? "Try adjusting your search query or visibility filter."
+                  : "Answer common questions about tuition fees, timings, subjects, and demo classes so students can enroll faster."}
               </p>
 
               {!search && filter === "all" && (
                 <button
                   type="button"
                   onClick={openCreateModal}
-                  className={`${primaryButton} mt-5`}
+                  className="faq-btn-primary"
                 >
                   + Add your first FAQ
                 </button>
               )}
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
+            /* FAQ Items List */
+            <div>
               {filteredFaqs.map((faq, index) => {
                 const faqId = faq.faqId ?? faq.faq_id ?? faq.id;
                 const isBusy = actionId === faqId;
 
                 return (
-                  <article
-                    key={faqId ?? index}
-                    className="p-4 transition hover:bg-gray-50/70 sm:p-5"
-                  >
+                  <article key={faqId ?? index} className="faq-item">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-xs font-medium text-gray-400">
-                            FAQ {index + 1}
+                        <div className="faq-item-head">
+                          <span className="faq-item-index">
+                            Q{index + 1}
                           </span>
-                          <span className={statusBadge(faq.visibleOnWebsite)}>
-                            {faq.visibleOnWebsite ? "Visible" : "Hidden"}
+                          <span
+                            className={`faq-badge ${
+                              faq.visibleOnWebsite
+                                ? "faq-badge--visible"
+                                : "faq-badge--hidden"
+                            }`}
+                          >
+                            {faq.visibleOnWebsite ? "● Visible" : "○ Hidden"}
                           </span>
                         </div>
 
-                        <h3 className="mt-2 break-words text-base font-semibold text-gray-900">
-                          {faq.title}
-                        </h3>
-
-                        <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-gray-600">
-                          {faq.description}
-                        </p>
+                        <h3 className="faq-item-title">{faq.title}</h3>
+                        <p className="faq-item-desc">{faq.description}</p>
                       </div>
 
+                      {/* Action buttons */}
                       <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
                         <button
                           type="button"
                           onClick={() => openEditModal(faq)}
                           disabled={isBusy}
-                          className={secondaryButton}
+                          className="faq-btn-action"
                         >
                           Edit
                         </button>
@@ -523,7 +491,7 @@ const FAQ = () => {
                           type="button"
                           onClick={() => toggleVisibility(faq)}
                           disabled={isBusy}
-                          className={secondaryButton}
+                          className="faq-btn-action"
                         >
                           {isBusy
                             ? "Updating..."
@@ -536,7 +504,7 @@ const FAQ = () => {
                           type="button"
                           onClick={() => deleteFaq(faq)}
                           disabled={isBusy}
-                          className="inline-flex items-center justify-center rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="faq-btn-delete"
                         >
                           Delete
                         </button>
@@ -548,20 +516,19 @@ const FAQ = () => {
             </div>
           )}
 
+          {/* Footer showing count */}
           {!loading && filteredFaqs.length > 0 && (
-            <div className="border-t border-gray-200 bg-gray-50/70 px-4 py-3 sm:px-5">
-              <p className="text-xs text-gray-500">
-                Showing {filteredFaqs.length} of {faqs.length} FAQs
-              </p>
+            <div className="faq-card-footer">
+              Showing {filteredFaqs.length} of {faqs.length} FAQs
             </div>
           )}
         </section>
       </div>
 
-      {/* Create / Edit modal */}
+      {/* ================= CREATE / EDIT MODAL ================= */}
       {isModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-gray-900/50 p-0 sm:items-center sm:p-4"
+          className="faq-modal-overlay"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) closeModal();
           }}
@@ -570,18 +537,15 @@ const FAQ = () => {
             role="dialog"
             aria-modal="true"
             aria-labelledby="faq-modal-title"
-            className="max-h-[92dvh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-xl sm:max-w-xl sm:rounded-2xl"
+            className="faq-modal-card"
           >
-            <div className="flex items-start justify-between border-b border-gray-200 px-5 py-4 sm:px-6">
+            <div className="faq-modal-header">
               <div>
-                <h2
-                  id="faq-modal-title"
-                  className="text-lg font-semibold text-gray-900"
-                >
-                  {editingFaq ? "Edit FAQ" : "Add a new FAQ"}
+                <h2 id="faq-modal-title" className="faq-modal-title">
+                  {editingFaq ? "Edit FAQ" : "Add New FAQ"}
                 </h2>
-                <p className="mt-1 text-sm text-gray-500">
-                  Add a question and its answer for your students.
+                <p className="faq-modal-subtitle">
+                  Provide a common question and answer for prospective students.
                 </p>
               </div>
 
@@ -589,29 +553,27 @@ const FAQ = () => {
                 type="button"
                 onClick={closeModal}
                 disabled={saving}
-                className="rounded-lg p-2 text-xl leading-none text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 disabled:opacity-50"
+                className="faq-modal-close"
                 aria-label="Close modal"
               >
-                ×
+                &times;
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5 p-5 sm:p-6">
+            <form onSubmit={handleSubmit} className="faq-modal-body">
               {error && (
-                <div
-                  role="alert"
-                  className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-                >
+                <div role="alert" className="faq-notice faq-notice--error">
                   {error}
                 </div>
               )}
 
-              <div>
-                <label
-                  htmlFor="faq-title"
-                  className="mb-2 block text-sm font-medium text-gray-700"
-                >
-                  Question <span className="text-red-600">*</span>
+              {/* Question Field */}
+              <div className="faq-form-field">
+                <label htmlFor="faq-title" className="faq-form-label">
+                  <span>Question <span className="text-red-500">*</span></span>
+                  <span className="faq-form-counter">
+                    {form.title.length}/500
+                  </span>
                 </label>
                 <input
                   id="faq-title"
@@ -619,72 +581,69 @@ const FAQ = () => {
                   type="text"
                   value={form.title}
                   onChange={handleChange}
-                  placeholder="e.g. What are your tuition timings?"
+                  placeholder="e.g. What are your batch timings and duration?"
                   maxLength={500}
                   required
-                  className={inputClass}
+                  className="faq-form-input"
                 />
-                <p className="mt-1.5 text-right text-xs text-gray-400">
-                  {form.title.length}/500
-                </p>
               </div>
 
-              <div>
-                <label
-                  htmlFor="faq-description"
-                  className="mb-2 block text-sm font-medium text-gray-700"
-                >
-                  Answer <span className="text-red-600">*</span>
+              {/* Answer Field */}
+              <div className="faq-form-field">
+                <label htmlFor="faq-description" className="faq-form-label">
+                  <span>Answer <span className="text-red-500">*</span></span>
+                  <span className="faq-form-counter">
+                    {form.description.length}/10000
+                  </span>
                 </label>
                 <textarea
                   id="faq-description"
                   name="description"
                   value={form.description}
                   onChange={handleChange}
-                  placeholder="Write a clear answer..."
-                  rows={5}
+                  placeholder="Write a clear and comprehensive answer..."
                   maxLength={10000}
                   required
-                  className={`${inputClass} resize-y`}
+                  className="faq-form-textarea"
                 />
-                <p className="mt-1.5 text-right text-xs text-gray-400">
-                  {form.description.length}/10000
-                </p>
               </div>
 
-              <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 p-4 transition hover:bg-gray-50">
+              {/* Visibility Checkbox */}
+              <label className="faq-checkbox-label">
                 <input
                   type="checkbox"
                   name="visibleOnWebsite"
                   checked={form.visibleOnWebsite}
                   onChange={handleChange}
-                  className="mt-0.5 h-4 w-4 rounded border-gray-300 accent-red-600 focus:ring-red-500"
+                  className="faq-checkbox"
                 />
-                <span>
-                  <span className="block text-sm font-medium text-gray-800">
-                    Show on my website
+                <div>
+                  <span className="faq-checkbox-title">
+                    Display on public website
                   </span>
-                  <span className="mt-1 block text-xs leading-5 text-gray-500">
-                    Students can see this FAQ on your public tutor website when
-                    enabled.
+                  <span className="faq-checkbox-desc">
+                    When checked, students visiting your portfolio can read this FAQ.
                   </span>
-                </span>
+                </div>
               </label>
 
-              <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end">
+              {/* Modal Actions */}
+              <div className="faq-modal-actions">
                 <button
                   type="button"
                   onClick={closeModal}
                   disabled={saving}
-                  className={`${secondaryButton} w-full sm:w-auto`}
+                  className="faq-btn-action"
+                  style={{ minWidth: "90px" }}
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  disabled={saving}
-                  className={`${primaryButton} w-full sm:w-auto`}
+                  disabled={saving || !form.title.trim() || !form.description.trim()}
+                  className="faq-btn-primary"
+                  style={{ minWidth: "130px" }}
                 >
                   {saving
                     ? "Saving..."
