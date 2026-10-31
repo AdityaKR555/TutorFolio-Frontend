@@ -1439,6 +1439,18 @@ function Batches() {
                     </div>
                   </div>
 
+                  {batch.imageUrl && (
+                    <img
+                      className="mb-[13px] max-h-[220px] w-full rounded-[9px] bg-[var(--tf-surface-soft)] object-cover"
+                      src={batch.imageUrl}
+                      alt={`Batch: ${batch.title}`}
+                      loading="lazy"
+                      onError={(event) => {
+                        event.currentTarget.hidden = true;
+                      }}
+                    />
+                  )}
+
                   {batch.description && (
                     <p className={pageStyles.description}>
                       {batch.description}
