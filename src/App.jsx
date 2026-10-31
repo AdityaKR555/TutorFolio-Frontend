@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Route, Routes } from "react-router-dom";
 
 import Home from "./Home";
@@ -28,6 +28,9 @@ import Notifications from "./pages/tutor/Notifications";
 import FAQ from "./pages/tutor/FAQ";
 
 import Themes from "./pages/tutor/Themes";
+
+import Subscription from "./pages/tutor/Subscription";
+import ReportBug from "./pages/tutor/ReportBug";
 
 function ComingSoon({ title }) {
   return (
@@ -94,11 +97,17 @@ function App() {
 
               <Route path="/themes" element={<Themes />} />
 
-              <Route path="/subscriptions" element={<div />} />
+              <Route path="/subscription" element={<Subscription />} />
 
-              <Route path="/guide" element={<div />} />
+              <Route path="/subscriptions" element={<Subscription />} />
 
-              <Route path="/report-bug" element={<div />} />
+              <Route path="/billing" element={<Subscription />} />
+
+              <Route path="/plans" element={<Subscription />} />
+
+              <Route path="/guide" element={<ComingSoon title="User Guide" />} />
+
+              <Route path="/report-bug" element={<ReportBug />} />
 
             </Route>
           </Route>
