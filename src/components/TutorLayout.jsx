@@ -224,7 +224,6 @@ function TutorLayout() {
   // Secondary navigation items
   const secondaryNavItems = [
     {
-<<<<<<< HEAD
       name: "Plans & Billing",
       path: "/subscription",
       icon: (
@@ -240,13 +239,6 @@ function TutorLayout() {
             strokeWidth="2"
             d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
           />
-=======
-      name: "Subscriptions",
-      path: "/subscriptions",
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="3" y="5" width="18" height="14" rx="2" strokeWidth="2" />
-          <path strokeLinecap="round" strokeWidth="2" d="M3 10h18M7 15h4" />
         </svg>
       ),
     },
@@ -265,7 +257,6 @@ function TutorLayout() {
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 9V7a4 4 0 018 0v2m-9 0h10a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2v-5a2 2 0 012-2Zm-5 2h3m12 0h3M4 17h3m10 0h3m-8-5v2" />
->>>>>>> e2d2c2f3f6df4b29c8516e8c8742c47024afae84
         </svg>
       ),
     },

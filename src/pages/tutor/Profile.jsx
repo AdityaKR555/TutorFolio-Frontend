@@ -337,7 +337,6 @@ function Profile() {
 
           // Existing profile opens in read-only mode.
           setIsEditing(false);
-<<<<<<< HEAD
         } else if (
           data?.status === 404 ||
           data?.status === 500 ||
@@ -347,19 +346,15 @@ function Profile() {
           const storedUser = (() => {
             try { return JSON.parse(localStorage.getItem("user")); } catch { return null; }
           })();
-          setFormData({
+          const newForm = {
             ...initialForm,
             firstName: storedUser?.username || "",
             email: storedUser?.email || "",
-          });
-=======
-        } else if (data?.status === 404) {
-          // New profile opens in editing mode.
-          setFormData(initialForm);
-          setSavedFormData(initialForm);
+          };
+          setFormData(newForm);
+          setSavedFormData(newForm);
           setSocialLinks(initialSocialLinks);
           setSavedSocialLinks(initialSocialLinks);
->>>>>>> e2d2c2f3f6df4b29c8516e8c8742c47024afae84
           setImagePreview("");
           setIsEditing(true);
         } else {
@@ -370,7 +365,6 @@ function Profile() {
       } catch (err) {
         if (cancelled) return;
 
-<<<<<<< HEAD
         const isNewUserOrMissingProfile =
           err.response?.status === 404 ||
           err.response?.status === 500 ||
@@ -383,18 +377,15 @@ function Profile() {
           const storedUser = (() => {
             try { return JSON.parse(localStorage.getItem("user")); } catch { return null; }
           })();
-          setFormData({
+          const newForm = {
             ...initialForm,
             firstName: storedUser?.username || "",
             email: storedUser?.email || "",
-          });
-=======
-        if (err.response?.status === 404) {
-          setFormData(initialForm);
-          setSavedFormData(initialForm);
+          };
+          setFormData(newForm);
+          setSavedFormData(newForm);
           setSocialLinks(initialSocialLinks);
           setSavedSocialLinks(initialSocialLinks);
->>>>>>> e2d2c2f3f6df4b29c8516e8c8742c47024afae84
           setImagePreview("");
           setIsEditing(true);
           setError("");
@@ -681,20 +672,9 @@ function Profile() {
           </div>
         </header>
 
-<<<<<<< HEAD
-          <button
-            type="button"
-            onClick={() => setShowResumeModal(true)}
-            className="inline-flex items-center gap-2 self-start sm:self-auto px-4 py-2.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 hover:text-white transition-all text-sm font-medium cursor-pointer shadow-sm"
-          >
-            <span>âœ¨</span>
-            <span>Auto-fill from Resume</span>
-          </button>
-=======
         <div className="profile-resume-help">
           <span aria-hidden="true">ⓘ</span>
           <p><strong>Save time filling out your profile.</strong> Upload your resume to fill in your details automatically, then review them before saving.</p>
->>>>>>> e2d2c2f3f6df4b29c8516e8c8742c47024afae84
         </div>
 
         {error && (
@@ -922,47 +902,6 @@ function Profile() {
               <div><h2>Address</h2><p>Add your current or teaching location.</p></div>
             </div>
 
-<<<<<<< HEAD
-                <div className="flex flex-col gap-3">
-                  {imagePreview && (
-                    <img
-                      src={imagePreview}
-                      alt="Profile preview"
-                      className="w-24 h-24 rounded-full object-cover border border-blue-500/20"
-                    />
-                  )}
-
-                  <input
-                    ref={photoInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePhotoChange}
-                    disabled={!isEditing}
-                    className="block w-full text-sm text-[#94a8c7] file:mr-4 file:rounded-lg file:border-0 file:bg-blue-600/20 file:px-4 file:py-2 file:text-blue-300 hover:file:bg-blue-600/30 disabled:opacity-60"
-                  />
-
-                  <p className="text-xs text-[#94a8c7]">
-                    Select an image up to 20 KB.
-                  </p>
-
-                  {imageError && (
-                    <div className="space-y-2">
-                      <p className="text-sm text-red-300">{imageError}</p>
-
-                      {imageTooLarge && (
-                        <a
-                          href={PIXEL_KIT_URL}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-lg bg-blue-600/20 border border-blue-500/30 px-4 py-2 text-sm font-medium text-blue-300 hover:bg-blue-600/30 hover:text-white transition-colors"
-                        >
-                          Compress Image on Pixel Kit â†—
-                        </a>
-                      )}
-                    </div>
-                  )}
-                </div>
-=======
             <div className="profile-fields">
               <div className="profile-field-full">
                 <label className={labelClass}>Address</label>
@@ -975,7 +914,6 @@ function Profile() {
                   rows={4}
                   className={`${inputClass} resize-none`}
                 />
->>>>>>> e2d2c2f3f6df4b29c8516e8c8742c47024afae84
               </div>
             </div>
           </section>

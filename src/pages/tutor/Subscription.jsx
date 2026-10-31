@@ -12,6 +12,7 @@ import {
   fetchSubscriptionStatus,
   verifyPaymentSignature,
 } from "../../api/payment";
+import "./Subscription.css";
 
 function Subscription() {
   const [billingCycle, setBillingCycle] = useState(BILLING_CYCLES.MONTHLY);
@@ -22,6 +23,54 @@ function Subscription() {
   const [error, setError] = useState("");
   const [successModalData, setSuccessModalData] = useState(null);
   const [sandboxPromptOrder, setSandboxPromptOrder] = useState(null);
+
+  // Active theme tracking (light / dark)
+  const [theme, setTheme] = useState(() => {
+    try {
+      return document.documentElement.dataset.theme === "dark" ||
+        localStorage.getItem("tutorfolio-theme") === "dark"
+        ? "dark"
+        : "light";
+    } catch {
+      return "light";
+    }
+  });
+
+  useEffect(() => {
+    const checkTheme = () => {
+      const currentTheme =
+        document.documentElement.dataset.theme === "dark" ||
+        localStorage.getItem("tutorfolio-theme") === "dark"
+          ? "dark"
+          : "light";
+      setTheme(currentTheme);
+    };
+
+    checkTheme();
+
+    // Listen to theme changes from TutorLayout or other tabs
+    const observer = new MutationObserver(() => {
+      checkTheme();
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
+    const handleStorage = (e) => {
+      if (e.key === "tutorfolio-theme") {
+        checkTheme();
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, []);
+
+  const isDark = theme === "dark";
 
   // Read stored user
   const getUser = () => {
@@ -88,7 +137,6 @@ function Subscription() {
     }
 
     if (currentSub?.planId === plan.id && currentSub?.status === "active") {
-      // Already on this plan
       return;
     }
 
@@ -119,7 +167,6 @@ function Subscription() {
       const isLoaded = await loadRazorpayScript();
 
       if (!isLoaded || !window.Razorpay) {
-        // If CDN script blocked or failed, trigger sandbox testing flow
         setSandboxPromptOrder({
           plan,
           orderData,
@@ -138,7 +185,7 @@ function Subscription() {
         name: "TutorFolio",
         description: `${plan.name} (${billingCycle === BILLING_CYCLES.YEARLY ? "Annual" : "Monthly"})`,
         image: "https://alpha.tutorfolio.site/favicon.ico",
-        order_id: orderData.orderId,
+        ...(orderData.isSimulated ? {} : { order_id: orderData.orderId }),
         handler: async (response) => {
           await completeVerification({
             plan,
@@ -160,8 +207,8 @@ function Subscription() {
           billingCycle,
         },
         theme: {
-          color: "#2563eb",
-          backdrop_color: "rgba(10, 22, 40, 0.85)",
+          color: "#1875d1",
+          backdrop_color: isDark ? "rgba(10, 22, 40, 0.85)" : "rgba(15, 23, 42, 0.6)",
         },
         modal: {
           ondismiss: () => {
@@ -183,7 +230,6 @@ function Subscription() {
 
         rzp.open();
       } catch (rzpInitErr) {
-        // Key might be placeholder or invalid during backend development
         console.warn("Razorpay instance initialization notice:", rzpInitErr);
         setSandboxPromptOrder({
           plan,
@@ -279,28 +325,26 @@ function Subscription() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="sub-page">
+      <div className="sub-container space-y-8">
         {/* ================= HEADER ================= */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-1.5">
               <span className="text-2xl">👑</span>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                Plans &amp; Billing
-              </h1>
+              <h1 className="sub-title">Plans &amp; Billing</h1>
             </div>
-            <p className="text-[#94a8c7] text-sm sm:text-base max-w-2xl">
+            <p className="sub-subtitle max-w-2xl">
               Supercharge your tutoring presence. Accept inquiries, display
               unlimited batches, and build credibility with instant Razorpay
               checkout.
             </p>
           </div>
 
-          {/* Secure Badge */}
-          <div className="flex items-center gap-2 self-start md:self-auto bg-blue-500/10 border border-blue-500/20 px-3.5 py-2 rounded-xl text-xs text-blue-300">
+          {/* Secure Trust Badge */}
+          <div className="sub-trust-badge self-start md:self-auto">
             <svg
-              className="w-4 h-4 text-blue-400 shrink-0"
+              className="w-4 h-4 shrink-0 text-blue-500"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -318,9 +362,9 @@ function Subscription() {
 
         {/* Error message */}
         {error && (
-          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm flex items-start gap-3">
+          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-300 text-sm flex items-start gap-3">
             <svg
-              className="w-5 h-5 text-red-400 shrink-0 mt-0.5"
+              className="w-5 h-5 text-red-500 shrink-0 mt-0.5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -332,10 +376,10 @@ function Subscription() {
                 d="M12 9v3.5m0 3h.01M10.3 4.9L2.8 18a2 2 0 001.7 3h15a2 2 0 001.7-3L13.7 4.9a2 2 0 00-3.4 0z"
               />
             </svg>
-            <div className="flex-1">{error}</div>
+            <div className="flex-1 font-medium">{error}</div>
             <button
               onClick={() => setError("")}
-              className="text-red-400 hover:text-white"
+              className="text-red-500 hover:text-red-700 cursor-pointer text-lg leading-none"
             >
               &times;
             </button>
@@ -344,30 +388,30 @@ function Subscription() {
 
         {/* ================= ACTIVE SUBSCRIPTION BANNER ================= */}
         {currentSub && currentSub.status === "active" && (
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-900/40 via-[#0f1f36] to-purple-900/30 border border-blue-500/30 p-6 sm:p-7 shadow-xl">
+          <div className="sub-active-banner">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
               <div className="space-y-1">
                 <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     ACTIVE PLAN
                   </span>
-                  <span className="text-white text-lg font-bold">
+                  <span className="text-lg font-bold" style={{ color: "var(--tf-ink)" }}>
                     {currentSub.planName || "Pro Tutor"}
                   </span>
                 </div>
-                <p className="text-[#94a8c7] text-xs sm:text-sm">
+                <p className="text-xs sm:text-sm" style={{ color: "var(--tf-copy)" }}>
                   Billing Cycle:{" "}
-                  <span className="text-white capitalize">
+                  <strong className="capitalize" style={{ color: "var(--tf-ink)" }}>
                     {currentSub.billingCycle || "Monthly"}
-                  </span>{" "}
+                  </strong>{" "}
                   &bull; Valid until:{" "}
-                  <span className="text-white font-medium">
+                  <strong style={{ color: "var(--tf-ink)" }}>
                     {formatDate(currentSub.validUntil)}
-                  </span>
+                  </strong>
                 </p>
                 {currentSub.paymentId && (
-                  <p className="text-[#64748b] text-xs font-mono">
+                  <p className="text-xs font-mono" style={{ color: "var(--tf-muted)" }}>
                     Ref ID: {currentSub.paymentId}
                   </p>
                 )}
@@ -376,7 +420,7 @@ function Subscription() {
               <div className="flex items-center gap-3">
                 <a
                   href="#pricing-cards"
-                  className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-medium transition-colors cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-medium transition-colors cursor-pointer shadow-md shadow-blue-600/20"
                 >
                   Change Plan
                 </a>
@@ -386,35 +430,27 @@ function Subscription() {
         )}
 
         {/* ================= BILLING CYCLE TOGGLE ================= */}
-        <div id="pricing-cards" className="flex flex-col items-center gap-4 pt-2">
-          <div className="inline-flex items-center bg-[#0f1f36] border border-blue-500/20 rounded-2xl p-1.5 shadow-inner">
+        <div id="pricing-cards" className="flex flex-col items-center gap-3 pt-2">
+          <div className="sub-toggle-wrapper">
             <button
               type="button"
               onClick={() => setBillingCycle(BILLING_CYCLES.MONTHLY)}
-              className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-                billingCycle === BILLING_CYCLES.MONTHLY
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
-                  : "text-[#94a8c7] hover:text-white"
-              }`}
+              className={`sub-toggle-btn ${billingCycle === BILLING_CYCLES.MONTHLY ? "active" : ""}`}
             >
               Monthly Billing
             </button>
             <button
               type="button"
               onClick={() => setBillingCycle(BILLING_CYCLES.YEARLY)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-                billingCycle === BILLING_CYCLES.YEARLY
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
-                  : "text-[#94a8c7] hover:text-white"
-              }`}
+              className={`sub-toggle-btn flex items-center gap-2 ${billingCycle === BILLING_CYCLES.YEARLY ? "active" : ""}`}
             >
               <span>Annual Billing</span>
-              <span className="bg-emerald-500/20 text-emerald-300 text-[11px] px-2 py-0.5 rounded-full font-bold">
+              <span className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[11px] px-2 py-0.5 rounded-full font-bold">
                 Save ~17%
               </span>
             </button>
           </div>
-          <p className="text-xs text-[#6b7f9f]">
+          <p className="text-xs" style={{ color: "var(--tf-muted)" }}>
             {billingCycle === BILLING_CYCLES.YEARLY
               ? "Billed annually. 2 months free included in each tier!"
               : "Billed monthly. Cancel or change plans anytime."}
@@ -422,7 +458,7 @@ function Subscription() {
         </div>
 
         {/* ================= 3 PRICING CARDS ================= */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
+        <div className="sub-cards-grid">
           {PLANS.map((plan) => {
             const price =
               billingCycle === BILLING_CYCLES.YEARLY
@@ -434,61 +470,53 @@ function Subscription() {
             return (
               <div
                 key={plan.id}
-                className={`relative flex flex-col justify-between rounded-3xl p-6 sm:p-8 transition-all duration-200 ${
-                  plan.popular
-                    ? "bg-gradient-to-b from-[#132746] to-[#0a1628] border-2 border-blue-500/50 shadow-2xl shadow-blue-900/30 lg:-translate-y-2"
-                    : "bg-[#0f1f36] border border-blue-500/15 hover:border-blue-500/30 shadow-xl"
-                }`}
+                className={`sub-card ${plan.popular ? "sub-card--popular" : ""}`}
               >
                 {/* Popular / Recommended Badge */}
                 {plan.popular && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[11px] font-bold uppercase tracking-wider px-3.5 py-1 rounded-full shadow-lg">
-                      {plan.badge}
-                    </span>
-                  </div>
+                  <span className="sub-card-popular-badge">
+                    {plan.badge}
+                  </span>
                 )}
 
                 <div>
                   {/* Card Header */}
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xl font-bold text-white">{plan.name}</h3>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="sub-card-name">{plan.name}</h3>
                     {!plan.popular && plan.badge && (
-                      <span className="text-[11px] font-semibold text-[#8ba3c7] bg-white/5 border border-white/10 px-2.5 py-0.5 rounded-full">
-                        {plan.badge}
-                      </span>
+                      <span className="sub-card-badge">{plan.badge}</span>
                     )}
                   </div>
 
-                  <p className="text-[#94a8c7] text-xs sm:text-sm min-h-[38px] mb-5">
-                    {plan.description}
-                  </p>
+                  <p className="sub-card-desc">{plan.description}</p>
 
                   {/* Price */}
-                  <div className="flex items-baseline gap-1 pb-6 border-b border-blue-500/10 mb-6">
-                    <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                  <div className="sub-card-pricing">
+                    <span className="sub-card-amount">
                       {plan.currencySymbol}
                       {price}
                     </span>
-                    <span className="text-[#94a8c7] text-xs sm:text-sm font-medium">
+                    <span className="sub-card-cycle">
                       /{billingCycle === BILLING_CYCLES.YEARLY ? "year" : "month"}
                     </span>
                   </div>
 
                   {/* Features List */}
-                  <div className="space-y-3 mb-8">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[#6b7f9f]">
-                      What's Included
-                    </p>
-                    <ul className="space-y-2.5">
+                  <div className="mb-8">
+                    <p className="sub-feature-title">What's Included</p>
+                    <ul>
                       {plan.features.map((feature, idx) => (
                         <li
                           key={idx}
-                          className="flex items-start gap-2.5 text-xs sm:text-sm"
+                          className={`sub-feature-item ${
+                            feature.included
+                              ? "sub-feature-item--included"
+                              : "sub-feature-item--excluded"
+                          }`}
                         >
                           {feature.included ? (
                             <svg
-                              className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"
+                              className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -502,7 +530,7 @@ function Subscription() {
                             </svg>
                           ) : (
                             <svg
-                              className="w-4 h-4 text-[#475569] shrink-0 mt-0.5"
+                              className="w-4 h-4 text-slate-400 dark:text-slate-600 shrink-0 mt-0.5"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -515,13 +543,7 @@ function Subscription() {
                               />
                             </svg>
                           )}
-                          <span
-                            className={
-                              feature.included ? "text-[#c7d8f5]" : "text-[#506380]"
-                            }
-                          >
-                            {feature.text}
-                          </span>
+                          <span>{feature.text}</span>
                         </li>
                       ))}
                     </ul>
@@ -534,23 +556,23 @@ function Subscription() {
                     type="button"
                     onClick={() => handleSelectPlan(plan)}
                     disabled={isCurrent || isProcessing}
-                    className={`w-full py-3.5 px-4 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    className={`${
                       isCurrent
-                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 cursor-default"
+                        ? "sub-btn-current"
                         : plan.popular
-                        ? "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50"
-                        : "bg-white/10 hover:bg-white/15 text-white border border-white/10"
+                        ? "sub-btn-primary"
+                        : "sub-btn-secondary"
                     } ${isProcessing ? "opacity-75 cursor-wait" : ""}`}
                   >
                     {isProcessing ? (
                       <>
-                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                         <span>Opening Razorpay...</span>
                       </>
                     ) : isCurrent ? (
                       <>
                         <svg
-                          className="w-4 h-4 text-emerald-400"
+                          className="w-4 h-4"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -578,29 +600,29 @@ function Subscription() {
         </div>
 
         {/* ================= PAYMENT METHODS & ASSURANCES ================= */}
-        <div className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-6 sm:p-8">
+        <div className="sub-panel">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
             <div>
-              <h4 className="text-white font-bold text-base mb-1">
+              <h4 className="sub-panel-title mb-1">
                 Accepted Payment Methods via Razorpay
               </h4>
-              <p className="text-[#94a8c7] text-xs sm:text-sm">
+              <p className="sub-panel-desc">
                 UPI (GPay, PhonePe, Paytm, BHIM), Cards (Visa, MasterCard, RuPay),
                 NetBanking (50+ Banks) &amp; Wallets.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <span className="bg-[#0a1628] border border-blue-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#c7d8f5]">
+            <div className="flex flex-wrap items-center justify-center gap-2.5">
+              <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-gray-200 dark:border-slate-700">
                 UPI / QR
               </span>
-              <span className="bg-[#0a1628] border border-blue-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#c7d8f5]">
+              <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-gray-200 dark:border-slate-700">
                 Debit &amp; Credit Cards
               </span>
-              <span className="bg-[#0a1628] border border-blue-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#c7d8f5]">
+              <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-gray-200 dark:border-slate-700">
                 NetBanking
               </span>
-              <span className="bg-[#0a1628] border border-blue-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#c7d8f5]">
+              <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-gray-200 dark:border-slate-700">
                 Wallets
               </span>
             </div>
@@ -608,25 +630,25 @@ function Subscription() {
         </div>
 
         {/* ================= TRANSACTION HISTORY ================= */}
-        <div className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-6 sm:p-8">
+        <div className="sub-panel">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="text-lg font-bold text-white">Billing History</h3>
-              <p className="text-[#94a8c7] text-xs sm:text-sm mt-0.5">
+              <h3 className="sub-panel-title">Billing History</h3>
+              <p className="sub-panel-desc mt-0.5">
                 Past transactions and downloadable tax receipts
               </p>
             </div>
           </div>
 
           {paymentHistory.length === 0 ? (
-            <div className="text-center py-8 text-[#6b7f9f] text-sm">
+            <div className="text-center py-8 text-sm" style={{ color: "var(--tf-muted)" }}>
               No transactions recorded yet. When you upgrade via Razorpay, receipts will appear here.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead>
-                  <tr className="border-b border-blue-500/10 text-[#6b7f9f] uppercase text-[11px] tracking-wider">
+                  <tr className="border-b uppercase text-[11px] tracking-wider" style={{ borderColor: "var(--tf-line)", color: "var(--tf-muted)" }}>
                     <th className="pb-3 font-semibold">Date</th>
                     <th className="pb-3 font-semibold">Plan</th>
                     <th className="pb-3 font-semibold">Billing</th>
@@ -635,16 +657,16 @@ function Subscription() {
                     <th className="pb-3 font-semibold text-right">Receipt</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-blue-500/5 text-[#c7d8f5]">
+                <tbody className="divide-y" style={{ borderColor: "var(--tf-line)" }}>
                   {paymentHistory.map((item, idx) => (
-                    <tr key={item.id || idx} className="hover:bg-white/5 transition-colors">
-                      <td className="py-3.5 text-white">{formatDate(item.date)}</td>
-                      <td className="py-3.5 font-medium text-white">{item.planName || "Pro Tutor"}</td>
-                      <td className="py-3.5 capitalize">{item.billingCycle || "Monthly"}</td>
-                      <td className="py-3.5 font-semibold text-emerald-400">
+                    <tr key={item.id || idx} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                      <td className="py-3.5 font-medium" style={{ color: "var(--tf-ink)" }}>{formatDate(item.date)}</td>
+                      <td className="py-3.5 font-semibold" style={{ color: "var(--tf-ink)" }}>{item.planName || "Pro Tutor"}</td>
+                      <td className="py-3.5 capitalize" style={{ color: "var(--tf-copy)" }}>{item.billingCycle || "Monthly"}</td>
+                      <td className="py-3.5 font-bold text-emerald-600 dark:text-emerald-400">
                         ₹{item.amount}
                       </td>
-                      <td className="py-3.5 font-mono text-[11px] text-[#94a8c7] truncate max-w-[120px]">
+                      <td className="py-3.5 font-mono text-[11px] truncate max-w-[120px]" style={{ color: "var(--tf-muted)" }}>
                         {item.id || "N/A"}
                       </td>
                       <td className="py-3.5 text-right">
@@ -661,7 +683,7 @@ function Subscription() {
                               validUntil: item.date,
                             });
                           }}
-                          className="text-blue-400 hover:text-blue-300 text-xs font-medium cursor-pointer underline"
+                          className="text-blue-600 dark:text-blue-400 hover:underline text-xs font-semibold cursor-pointer"
                         >
                           View Receipt
                         </button>
@@ -675,23 +697,18 @@ function Subscription() {
         </div>
 
         {/* ================= BILLING FAQS ================= */}
-        <div className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-6 sm:p-8">
-          <h3 className="text-xl font-bold text-white mb-2">
-            Frequently Asked Questions
-          </h3>
-          <p className="text-[#94a8c7] text-xs sm:text-sm mb-6">
+        <div className="sub-panel">
+          <h3 className="sub-panel-title mb-1.5">Frequently Asked Questions</h3>
+          <p className="sub-panel-desc mb-6">
             Everything you need to know about TutorFolio subscriptions and Razorpay
             billing.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {PAYMENT_FAQS.map((faq, idx) => (
-              <div
-                key={idx}
-                className="p-5 rounded-2xl bg-[#0a1628]/60 border border-blue-500/10 space-y-2"
-              >
-                <h4 className="text-white font-semibold text-sm">{faq.q}</h4>
-                <p className="text-[#94a8c7] text-xs leading-relaxed">{faq.a}</p>
+              <div key={idx} className="sub-faq-item">
+                <h4 className="sub-faq-q">{faq.q}</h4>
+                <p className="sub-faq-a">{faq.a}</p>
               </div>
             ))}
           </div>
@@ -700,65 +717,65 @@ function Subscription() {
 
       {/* ================= SUCCESS & RECEIPT MODAL ================= */}
       {successModalData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="relative w-full max-w-lg bg-[#0f1f36] border border-emerald-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
+          <div className="relative w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl border" style={{ background: "var(--tf-surface)", borderColor: "var(--tf-line)", color: "var(--tf-ink)" }}>
             <button
               onClick={() => setSuccessModalData(null)}
-              className="absolute top-5 right-5 text-[#94a8c7] hover:text-white p-1 rounded-lg cursor-pointer"
+              className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 dark:hover:text-white p-1 rounded-lg cursor-pointer text-xl"
               aria-label="Close"
             >
               &times;
             </button>
 
-            <div className="text-center space-y-3 pb-6 border-b border-blue-500/10">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-3xl mx-auto">
+            <div className="text-center space-y-3 pb-6 border-b" style={{ borderColor: "var(--tf-line)" }}>
+              <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-3xl mx-auto">
                 ✓
               </div>
-              <h3 className="text-2xl font-bold text-white">
+              <h3 className="text-2xl font-bold" style={{ color: "var(--tf-ink)" }}>
                 Payment Successful!
               </h3>
-              <p className="text-[#94a8c7] text-xs sm:text-sm">
+              <p className="text-xs sm:text-sm" style={{ color: "var(--tf-copy)" }}>
                 Your subscription to{" "}
-                <span className="text-emerald-400 font-semibold">
+                <strong className="text-emerald-600 dark:text-emerald-400">
                   {successModalData.planName}
-                </span>{" "}
+                </strong>{" "}
                 has been activated successfully.
               </p>
             </div>
 
             {/* Receipt Summary */}
-            <div className="my-6 p-4 rounded-2xl bg-[#0a1628] border border-blue-500/10 space-y-3 text-xs sm:text-sm">
+            <div className="my-6 p-4 rounded-2xl border space-y-3 text-xs sm:text-sm" style={{ background: "var(--tf-surface-soft)", borderColor: "var(--tf-line)" }}>
               <div className="flex justify-between">
-                <span className="text-[#94a8c7]">Amount Paid</span>
-                <span className="font-bold text-white text-base">
+                <span style={{ color: "var(--tf-copy)" }}>Amount Paid</span>
+                <span className="font-bold text-base" style={{ color: "var(--tf-ink)" }}>
                   {successModalData.currency}
                   {successModalData.amount}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#94a8c7]">Billing Frequency</span>
-                <span className="text-white capitalize">
+                <span style={{ color: "var(--tf-copy)" }}>Billing Frequency</span>
+                <span className="capitalize font-medium" style={{ color: "var(--tf-ink)" }}>
                   {successModalData.billingCycle}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#94a8c7]">Payment Ref ID</span>
-                <span className="font-mono text-blue-300 text-xs">
+                <span style={{ color: "var(--tf-copy)" }}>Payment Ref ID</span>
+                <span className="font-mono text-xs font-semibold text-blue-600 dark:text-blue-400">
                   {successModalData.paymentId || "N/A"}
                 </span>
               </div>
               {successModalData.orderId && (
                 <div className="flex justify-between">
-                  <span className="text-[#94a8c7]">Order ID</span>
-                  <span className="font-mono text-[#94a8c7] text-xs">
+                  <span style={{ color: "var(--tf-copy)" }}>Order ID</span>
+                  <span className="font-mono text-xs" style={{ color: "var(--tf-muted)" }}>
                     {successModalData.orderId}
                   </span>
                 </div>
               )}
               {successModalData.validUntil && (
                 <div className="flex justify-between">
-                  <span className="text-[#94a8c7]">Active Until</span>
-                  <span className="text-emerald-400 font-medium">
+                  <span style={{ color: "var(--tf-copy)" }}>Active Until</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                     {formatDate(successModalData.validUntil)}
                   </span>
                 </div>
@@ -770,14 +787,15 @@ function Subscription() {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="flex-1 py-3 px-4 rounded-xl border border-blue-500/20 text-[#c7d8f5] hover:bg-white/5 text-xs sm:text-sm font-medium transition-colors cursor-pointer"
+                className="flex-1 py-3 px-4 rounded-xl border text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+                style={{ borderColor: "var(--tf-line)", color: "var(--tf-ink)", background: "var(--tf-surface-soft)" }}
               >
                 🖨️ Print Receipt
               </button>
               <button
                 type="button"
                 onClick={() => setSuccessModalData(null)}
-                className="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer shadow-lg shadow-blue-600/30"
+                className="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer shadow-lg shadow-blue-600/25"
               >
                 Done
               </button>
@@ -788,51 +806,51 @@ function Subscription() {
 
       {/* ================= SANDBOX DEV TESTING MODAL ================= */}
       {sandboxPromptOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
-          <div className="relative w-full max-w-lg bg-[#0f1f36] border border-blue-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="relative w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl border" style={{ background: "var(--tf-surface)", borderColor: "var(--tf-line)", color: "var(--tf-ink)" }}>
             <button
               onClick={() => setSandboxPromptOrder(null)}
-              className="absolute top-5 right-5 text-[#94a8c7] hover:text-white p-1 rounded-lg cursor-pointer"
+              className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 dark:hover:text-white p-1 rounded-lg cursor-pointer text-xl"
               aria-label="Close"
             >
               &times;
             </button>
 
-            <div className="space-y-3 pb-5 border-b border-blue-500/10">
-              <div className="flex items-center gap-2 text-blue-400">
+            <div className="space-y-2 pb-5 border-b" style={{ borderColor: "var(--tf-line)" }}>
+              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
                 <span className="text-xl">⚡</span>
                 <span className="text-xs font-bold uppercase tracking-wider">
                   Razorpay Gateway Simulation
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-white">
+              <h3 className="text-xl font-bold" style={{ color: "var(--tf-ink)" }}>
                 Complete Sandbox Payment
               </h3>
-              <p className="text-[#94a8c7] text-xs sm:text-sm">
+              <p className="text-xs sm:text-sm" style={{ color: "var(--tf-copy)" }}>
                 {sandboxPromptOrder.reason}
               </p>
             </div>
 
-            <div className="my-5 p-4 rounded-2xl bg-[#0a1628] border border-blue-500/10 space-y-2 text-xs">
+            <div className="my-5 p-4 rounded-2xl border space-y-2 text-xs" style={{ background: "var(--tf-surface-soft)", borderColor: "var(--tf-line)" }}>
               <div className="flex justify-between">
-                <span className="text-[#94a8c7]">Selected Plan</span>
-                <span className="text-white font-semibold">
+                <span style={{ color: "var(--tf-copy)" }}>Selected Plan</span>
+                <span className="font-semibold" style={{ color: "var(--tf-ink)" }}>
                   {sandboxPromptOrder.plan.name}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#94a8c7]">Amount</span>
-                <span className="text-emerald-400 font-bold text-sm">
+                <span style={{ color: "var(--tf-copy)" }}>Amount</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">
                   ₹{sandboxPromptOrder.price}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#94a8c7]">Order ID</span>
-                <span className="font-mono text-blue-300">
+                <span style={{ color: "var(--tf-copy)" }}>Order ID</span>
+                <span className="font-mono text-blue-600 dark:text-blue-400">
                   {sandboxPromptOrder.orderData.orderId}
                 </span>
               </div>
-              <p className="text-[#64748b] pt-1 text-[11px]">
+              <p className="pt-1 text-[11px]" style={{ color: "var(--tf-muted)" }}>
                 Note for backend dev: The API will automatically call your{" "}
                 <code>/payments/create-order</code> &amp;{" "}
                 <code>/payments/verify-payment</code> endpoints as soon as they are
@@ -844,7 +862,8 @@ function Subscription() {
               <button
                 type="button"
                 onClick={() => setSandboxPromptOrder(null)}
-                className="flex-1 py-3 px-4 rounded-xl border border-blue-500/10 text-[#94a8c7] hover:text-white text-xs sm:text-sm font-medium transition-colors cursor-pointer"
+                className="flex-1 py-3 px-4 rounded-xl border text-xs sm:text-sm font-medium transition-colors cursor-pointer"
+                style={{ borderColor: "var(--tf-line)", color: "var(--tf-copy)", background: "transparent" }}
               >
                 Cancel
               </button>
@@ -873,4 +892,3 @@ function Subscription() {
 }
 
 export default Subscription;
-
