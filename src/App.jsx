@@ -30,6 +30,7 @@ import FAQ from "./pages/tutor/FAQ";
 import Themes from "./pages/tutor/Themes";
 
 import Subscription from "./pages/tutor/Subscription";
+import ReportBug from "./pages/tutor/ReportBug";
 
 function ComingSoon({ title }) {
   return (
@@ -106,7 +107,7 @@ function App() {
 
               <Route path="/guide" element={<ComingSoon title="User Guide" />} />
 
-              <Route path="/report-bug" element={<ComingSoon title="Report a Bug" />} />
+              <Route path="/report-bug" element={<ReportBug />} />
 
             </Route>
           </Route>
