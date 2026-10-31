@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/axios";
-import "./TuitionDetails.css";
 
 const initialForm = {
   tuitionName: "",
@@ -344,14 +343,14 @@ function TuitionDetails() {
     value.split(",").map((item) => item.trim()).filter(Boolean);
 
   const field = (name, label, options = {}) => (
-    <div className={`tuition-field${options.full ? " tuition-field--full" : ""}`}>
+    <div className={`flex min-w-0 flex-col gap-1.5${options.full ? " col-span-full" : ""}`}>
       {isEditing ? (
         <>
-          <label htmlFor={name}>
+          <label className="text-xs font-semibold text-[var(--tf-copy)]" htmlFor={name}>
             {label}
-            {options.required && <span className="tuition-required"> *</span>}
+            {options.required && <span className="text-[var(--tf-blue)]"> *</span>}
             {options.count && (
-              <span className="tuition-count">
+              <span className="float-right font-normal text-[var(--tf-muted)]">
                 {formData[name].length} / {options.maxLength}
               </span>
             )}
@@ -365,6 +364,7 @@ function TuitionDetails() {
               placeholder={options.placeholder}
               maxLength={options.maxLength}
               rows={options.rows ?? 4}
+              className="tf-field min-h-[86px] resize-y"
             />
           ) : (
             <input
@@ -378,34 +378,35 @@ function TuitionDetails() {
               min={options.min}
               max={options.max}
               step={options.step}
+              className="tf-field"
             />
           )}
-          {options.hint && <span className="tuition-hint">{options.hint}</span>}
+          {options.hint && <span className="text-[11px] text-[var(--tf-muted)]">{options.hint}</span>}
           {options.chips && !!chips(formData[name]).length && (
-            <div className="tuition-chips" aria-live="polite">
+            <div className={`${options.full ? "-mt-1.5" : "mt-2"} flex flex-wrap gap-[7px]`} aria-live="polite">
               {chips(formData[name]).map((item, index) => (
-                <span className="tuition-chip" key={`${item}-${index}`}>{item}</span>
+                <span className="rounded-full border border-[var(--tf-line)] bg-[var(--tf-sky)] px-[9px] py-1 text-[11px] text-[var(--tf-blue)]" key={`${item}-${index}`}>{item}</span>
               ))}
             </div>
           )}
         </>
       ) : (
         <>
-          <span className="tuition-view-label">{label}</span>
+          <span className="text-[11px] font-semibold text-[var(--tf-muted)]">{label}</span>
           {options.chips ? (
             chips(formData[name]).length ? (
-              <div className="tuition-chips">
+              <div className={`${options.full ? "-mt-1.5" : "mt-2"} flex flex-wrap gap-[7px]`}>
                 {chips(formData[name]).map((item, index) => (
-                  <span className="tuition-chip" key={`${item}-${index}`}>{item}</span>
+                  <span className="rounded-full border border-[var(--tf-line)] bg-[var(--tf-sky)] px-[9px] py-1 text-[11px] text-[var(--tf-blue)]" key={`${item}-${index}`}>{item}</span>
                 ))}
               </div>
             ) : (
-              <span className="tuition-view-value tuition-view-value--empty">Not provided</span>
+              <span className="text-[13px] font-normal text-[var(--tf-muted)]">Not provided</span>
             )
           ) : (
-            <span className={`tuition-view-value${options.multiline ? " tuition-view-value--multiline" : ""}`}>
+            <span className={`break-words text-[13px] font-medium text-[var(--tf-ink)]${options.multiline ? " whitespace-pre-line" : ""}`}>
               {String(formData[name] ?? "").trim() || (
-                <span className="tuition-view-value--empty">Not provided</span>
+                <span className="font-normal text-[var(--tf-muted)]">Not provided</span>
               )}
             </span>
           )}
@@ -416,27 +417,27 @@ function TuitionDetails() {
 
   if (loading) {
     return (
-      <div className="tuition-page">
-        <div className="tuition-content tuition-loading">
-          <span className="tuition-spinner" aria-hidden="true" />
-          <p>Loading tuition details...</p>
+      <div className="min-h-[calc(100vh-72px)] bg-[var(--tf-bg)] px-[42px] py-[34px] text-[var(--tf-ink)] [font:14px/1.5_Inter,ui-sans-serif,system-ui,-apple-system,'Segoe_UI',sans-serif] max-[1000px]:px-6 max-[1000px]:py-[26px] max-[760px]:px-4 max-[760px]:py-[22px] max-[560px]:px-[14px] max-[560px]:pb-[38px]">
+        <div className="mx-auto flex min-h-[400px] w-full max-w-[1120px] flex-col items-center justify-center">
+          <span className="h-[38px] w-[38px] animate-spin rounded-full border-4 border-[var(--tf-line)] border-t-[var(--tf-blue)]" aria-hidden="true" />
+          <p className="mt-[14px] text-[13px]">Loading tuition details...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="tuition-page">
-      <main className="tuition-content">
-        <header className="tuition-heading">
+    <div className="min-h-[calc(100vh-72px)] bg-[var(--tf-bg)] px-[42px] py-[34px] text-[var(--tf-ink)] [font:14px/1.5_Inter,ui-sans-serif,system-ui,-apple-system,'Segoe_UI',sans-serif] [&:where([data-theme=dark] *)]:bg-[var(--tf-bg)] [&:where([data-theme=dark] *)]:text-[var(--tf-ink)] max-[1000px]:px-6 max-[1000px]:py-[26px] max-[760px]:px-4 max-[760px]:py-[22px] max-[560px]:px-[14px] max-[560px]:pb-[38px]">
+    <main className="mx-auto w-full max-w-[1120px]">
+      <header className="mb-6 flex items-start justify-between gap-5 max-[760px]:flex-col">
           <div>
-            <h1>Tuition details</h1>
-            <p>Manage the information students see about your tuition classes.</p>
+            <h1 className="tf-page-title mt-0 mb-2">Tuition details</h1>
+            <p className="m-0 text-[var(--tf-copy)]">Manage the information students see about your tuition classes.</p>
           </div>
-          <div className="tuition-heading-actions">
+          <div className="flex items-center gap-[9px] self-start max-[560px]:flex-wrap">
             {isEditing ? (
               <button
-                className="tuition-button"
+                className="inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[14px] py-[9px] font-semibold text-[var(--tf-copy)] transition-colors hover:not-disabled:border-[var(--tf-blue)] hover:not-disabled:text-[var(--tf-blue)] disabled:cursor-not-allowed disabled:opacity-[.62] [&:where([data-theme=dark] *)]:bg-[var(--tf-surface)]"
                 type="button"
                 onClick={handleCancel}
                 disabled={saving}
@@ -445,7 +446,7 @@ function TuitionDetails() {
               </button>
             ) : (
               <button
-                className="tuition-button"
+                className="inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[14px] py-[9px] font-semibold text-[var(--tf-copy)] transition-colors hover:not-disabled:border-[var(--tf-blue)] hover:not-disabled:text-[var(--tf-blue)] disabled:cursor-not-allowed disabled:opacity-[.62] [&:where([data-theme=dark] *)]:bg-[var(--tf-surface)]"
                 type="button"
                 onClick={handleEdit}
               >
@@ -455,20 +456,20 @@ function TuitionDetails() {
           </div>
         </header>
 
-        {error && <div className="tuition-alert tuition-alert--error" role="alert">{error}</div>}
-        {success && <div className="tuition-alert tuition-alert--success" role="status">{success}</div>}
+        {error && <div className="mb-4 rounded-[10px] border border-[var(--tf-line)] bg-[var(--tf-danger-soft)] px-[14px] py-3 text-[13px] text-[var(--tf-danger)]" role="alert">{error}</div>}
+        {success && <div className="mb-4 rounded-[10px] border border-[var(--tf-line)] bg-[var(--tf-success-soft)] px-[14px] py-3 text-[13px] text-[var(--tf-success)]" role="status">{success}</div>}
 
-        <form className="tuition-form-grid" onSubmit={handleSubmit}>
-          <div className="tuition-main-stack">
-          <section className="tuition-card">
-            <div className="tuition-card-heading">
+        <form className="grid grid-cols-[minmax(0,1fr)_294px] items-start gap-[18px] max-[900px]:grid-cols-1" onSubmit={handleSubmit}>
+          <div className="grid gap-4">
+          <section className="tf-card p-5 shadow-sm max-[560px]:p-4">
+            <div className="mb-[17px] flex items-start justify-between">
               <div>
-                <h2>About your tuition</h2>
-                <p>Name, ownership and a short introduction.</p>
+                <h2 className="tf-section-title mt-0 mb-1">About your tuition</h2>
+                <p className="m-0 text-xs text-[var(--tf-muted)]">Name, ownership and a short introduction.</p>
               </div>
-              {!isEditing && <button className="tuition-edit-link" type="button" onClick={handleEdit}>Edit</button>}
+              {!isEditing && <button className="cursor-pointer border-0 bg-transparent p-[3px] text-xs font-semibold text-[var(--tf-blue)]" type="button" onClick={handleEdit}>Edit</button>}
             </div>
-            <div className="tuition-fields">
+            <div className="grid grid-cols-2 gap-x-[15px] gap-y-[14px] max-[560px]:grid-cols-1">
               {field("tuitionName", "Tuition name", { required: true, maxLength: 100, placeholder: "Enter tuition name" })}
               {field("owners", "Owner or tutor name", { maxLength: 100, placeholder: "Enter owner or tutor name" })}
               {field("establishedYear", "Established year", { type: "number", min: 1800, max: 2100, placeholder: "e.g. 2018" })}
@@ -477,38 +478,38 @@ function TuitionDetails() {
             </div>
           </section>
 
-          <section className="tuition-card">
-            <div className="tuition-card-heading">
+          <section className="tf-card p-5 shadow-sm max-[560px]:p-4">
+            <div className="mb-[17px] flex items-start justify-between">
               <div>
-                <h2>Subjects and classes</h2>
-                <p>Help families find the right subject and grade.</p>
+                <h2 className="tf-section-title mt-0 mb-1">Subjects and classes</h2>
+                <p className="m-0 text-xs text-[var(--tf-muted)]">Help families find the right subject and grade.</p>
               </div>
-              {!isEditing && <button className="tuition-edit-link" type="button" onClick={handleEdit}>Edit</button>}
+              {!isEditing && <button className="cursor-pointer border-0 bg-transparent p-[3px] text-xs font-semibold text-[var(--tf-blue)]" type="button" onClick={handleEdit}>Edit</button>}
             </div>
-            <div className="tuition-fields">
+            <div className="grid grid-cols-2 gap-x-[15px] gap-y-[14px] max-[560px]:grid-cols-1">
               {field("teachingSubjects", "Teaching subjects", { full: true, chips: true, maxLength: 500, placeholder: "e.g. Mathematics, Science, English" })}
               {field("eligibleClasses", "Eligible classes", { full: true, maxLength: 1000, placeholder: "e.g. Class 6-10, Class 12" })}
               {field("services", "Services and support", { full: true, multiline: true, maxLength: 2000, rows: 3, placeholder: "e.g. Practice tests, doubt-clearing, exam preparation" })}
             </div>
           </section>
 
-          <section className="tuition-card">
-            <div className="tuition-card-heading">
+          <section className="tf-card p-5 shadow-sm max-[560px]:p-4">
+            <div className="mb-[17px] flex items-start justify-between">
               <div>
-                <h2>Location</h2>
-                <p>Where students can attend your classes.</p>
+                <h2 className="tf-section-title mt-0 mb-1">Location</h2>
+                <p className="m-0 text-xs text-[var(--tf-muted)]">Where students can attend your classes.</p>
               </div>
-              {!isEditing && <button className="tuition-edit-link" type="button" onClick={handleEdit}>Edit</button>}
+              {!isEditing && <button className="cursor-pointer border-0 bg-transparent p-[3px] text-xs font-semibold text-[var(--tf-blue)]" type="button" onClick={handleEdit}>Edit</button>}
             </div>
-            <div className="tuition-location-fields">
+            <div className="grid grid-cols-3 gap-3 max-[560px]:grid-cols-1">
               {field("state", "State", { maxLength: 100, placeholder: "Enter state" })}
               {field("district", "District", { maxLength: 100, placeholder: "Enter district" })}
               {field("city", "City", { maxLength: 100, placeholder: "Enter city" })}
               {isEditing ? (
                 <>
-                  <div className="tuition-map-row">
+                  <div className="col-span-full flex items-center justify-between gap-3 rounded-lg border border-dashed border-[var(--tf-line)] bg-[var(--tf-surface-soft)] px-3 py-2.5 text-[11px] text-[var(--tf-copy)] max-[560px]:col-auto">
                     <span>Coordinates help display your location accurately.</span>
-                    <button type="button" onClick={() => setCoordinatesOpen((current) => !current)}>
+                    <button className="shrink-0 cursor-pointer border-0 bg-transparent p-0 font-semibold text-[var(--tf-blue)]" type="button" onClick={() => setCoordinatesOpen((current) => !current)}>
                       {coordinatesOpen ? "Hide coordinates" : "Set coordinates"}
                     </button>
                   </div>
@@ -530,13 +531,13 @@ function TuitionDetails() {
             </div>
           </section>
 
-          <footer className="tuition-footer">
+          <footer className="flex min-h-[58px] items-center justify-between gap-4 px-0.5 pt-2 text-[11px] text-[var(--tf-muted)] max-[560px]:flex-col max-[560px]:items-start">
             <span>Profile details are saved to your account</span>
             {isEditing && (
-              <div className="tuition-footer-actions">
-                <button className="tuition-button" type="button" onClick={handleCancel} disabled={saving}>Cancel</button>
-                <button className="tuition-button tuition-button--primary" type="submit" disabled={saving}>
-                  {saving && <span className="tuition-spinner tuition-spinner--small" aria-hidden="true" />}
+              <div className="flex items-center gap-[9px] max-[560px]:flex-wrap">
+                <button className="inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[14px] py-[9px] font-semibold text-[var(--tf-copy)] transition-colors hover:not-disabled:border-[var(--tf-blue)] hover:not-disabled:text-[var(--tf-blue)] disabled:cursor-not-allowed disabled:opacity-[.62] [&:where([data-theme=dark] *)]:bg-[var(--tf-surface)]" type="button" onClick={handleCancel} disabled={saving}>Cancel</button>
+                <button className="inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-blue)] bg-[var(--tf-blue)] px-[14px] py-[9px] font-semibold text-[var(--tf-on-primary)] transition-colors hover:not-disabled:border-[var(--tf-blue-pressed)] hover:not-disabled:bg-[var(--tf-blue-pressed)] disabled:cursor-not-allowed disabled:opacity-[.62]" type="submit" disabled={saving}>
+                  {saving && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/35 border-t-[var(--tf-on-primary)]" aria-hidden="true" />}
                   {saving ? "Saving..." : "Save changes"}
                 </button>
               </div>
@@ -544,16 +545,16 @@ function TuitionDetails() {
           </footer>
           </div>
 
-          <div className="tuition-side-stack">
-          <section className="tuition-card tuition-logo-card">
-            <div className="tuition-card-heading">
+          <div className="sticky top-[92px] grid gap-4 max-[900px]:static">
+          <section className="tf-card p-5 shadow-sm max-[560px]:p-4">
+            <div className="mb-[17px] flex items-start justify-between">
               <div>
-                <h2>Tuition logo</h2>
-                <p>Upload a logo to represent your tuition classes.</p>
+                <h2 className="tf-section-title mt-0 mb-1">Tuition logo</h2>
+                <p className="m-0 text-xs text-[var(--tf-muted)]">Upload a logo to represent your tuition classes.</p>
               </div>
             </div>
             <input
-              className="tuition-file-input"
+              className="absolute h-px w-px overflow-hidden [clip:rect(0,0,0,0)] whitespace-nowrap [clip-path:inset(50%)] focus-visible:[&+label]:outline focus-visible:[&+label]:outline-3 focus-visible:[&+label]:outline-[var(--tf-blue)] focus-visible:[&+label]:outline-offset-2"
               id="tuitionLogoFile"
               type="file"
               accept="image/jpeg,image/png,image/webp"
@@ -561,37 +562,37 @@ function TuitionDetails() {
               disabled={uploadingLogo}
             />
             <label
-              className={`tuition-upload-tile${uploadingLogo ? " is-uploading" : ""}`}
+              className={`flex min-h-[194px] cursor-pointer flex-col items-center gap-[7px] rounded-xl border border-dashed border-[var(--tf-blue)] bg-gradient-to-br from-[var(--tf-surface-soft)] to-[var(--tf-sky)] px-4 pb-[14px] pt-[22px] text-center text-[var(--tf-copy)] transition-all hover:border-[var(--tf-blue)] hover:shadow-[0_5px_16px_rgb(24_117_209_/_8%)] ${uploadingLogo ? "cursor-progress opacity-75" : ""}`}
               htmlFor="tuitionLogoFile"
             >
               {logoUrl ? (
                 <img
-                  className="tuition-logo-preview"
+                  className="h-12 w-12 rounded-xl border border-[var(--tf-line)] bg-[var(--tf-surface)] object-cover"
                   src={logoUrl}
                   alt={`${formData.tuitionName || "Tuition"} logo`}
                 />
               ) : (
-                <span className="tuition-upload-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none">
+                <span className="grid h-[46px] w-[46px] place-items-center rounded-[13px] border border-[var(--tf-line)] bg-[var(--tf-surface)] text-[var(--tf-blue)] [&:where([data-theme=dark] *)]:bg-[var(--tf-surface)]" aria-hidden="true">
+                  <svg className="h-[22px] w-[22px] stroke-current stroke-[1.8] [stroke-linecap:round] [stroke-linejoin:round]" viewBox="0 0 24 24" fill="none">
                     <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14.5v4A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5v-4" />
                   </svg>
                 </span>
               )}
-              <strong>{uploadingLogo ? "Uploading logo..." : logoUrl ? "Replace tuition logo" : "Upload tuition logo"}</strong>
-              <span className="tuition-upload-prompt">
+              <strong className="text-[13px] font-semibold text-[var(--tf-ink)]">{uploadingLogo ? "Uploading logo..." : logoUrl ? "Replace tuition logo" : "Upload tuition logo"}</strong>
+              <span className="text-[11px] text-[var(--tf-muted)]">
                 {logoUrl ? "Choose a new image for your tuition logo" : "Choose an image for your tuition logo"}
               </span>
-              <span className="tuition-upload-formats">JPG, PNG or WebP</span>
+              <span className="mt-auto self-stretch pt-3 text-left text-[11px] text-[var(--tf-muted)]">JPG, PNG or WebP</span>
             </label>
           </section>
 
-          <section className="tuition-card tuition-tags-card">
-            <div className="tuition-card-heading">
+          <section className="tf-card p-5 shadow-sm max-[560px]:p-4">
+            <div className="mb-[17px] flex items-start justify-between">
               <div>
-                <h2>Search tags</h2>
-                <p>Short keywords that help students discover you.</p>
+                <h2 className="tf-section-title mt-0 mb-1">Search tags</h2>
+                <p className="m-0 text-xs text-[var(--tf-muted)]">Short keywords that help students discover you.</p>
               </div>
-              {!isEditing && <button className="tuition-edit-link" type="button" onClick={handleEdit}>Edit</button>}
+              {!isEditing && <button className="cursor-pointer border-0 bg-transparent p-[3px] text-xs font-semibold text-[var(--tf-blue)]" type="button" onClick={handleEdit}>Edit</button>}
             </div>
             {field("tags", "Tags", { chips: true, maxLength: 1000, placeholder: "e.g. maths, science, exam preparation", hint: "Separate tags with commas" })}
           </section>

@@ -600,7 +600,6 @@
 
 // export default Home;
 
-import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 function Home() {
@@ -608,7 +607,7 @@ function Home() {
     <div>
       <section
         id="navbar"
-        className="bg-[#0a1628] border-b border-blue-500/10 px-5 md:px-35 sm:px-8 flex justify-between items-center py-3 md:gap-24"
+        className="bg-tf-surface border-b border-tf-line px-5 md:px-35 sm:px-8 flex justify-between items-center py-3 md:gap-24"
       >
         <div>
           <img src="/tf-logo.png" alt="Logo" className="w-28 sm:w-49" />
@@ -617,19 +616,19 @@ function Home() {
         <div className="hidden md:flex gap-8">
           <a
             href="#home"
-            className="text-[#9cb2d2] font-semibold hover:text-white text-lg transition-colors duration-150"
+            className="text-tf-copy font-semibold hover:text-tf-ink text-lg transition-colors duration-150"
           >
             Home
           </a>
           <a
             href="#services"
-            className="text-[#9cb2d2] font-semibold hover:text-white text-lg transition-colors duration-150"
+            className="text-tf-copy font-semibold hover:text-tf-ink text-lg transition-colors duration-150"
           >
             Services
           </a>
           <a
             href="#how-it-works"
-            className="text-[#9cb2d2] font-semibold hover:text-white text-lg transition-colors duration-150"
+            className="text-tf-copy font-semibold hover:text-tf-ink text-lg transition-colors duration-150"
           >
             How it Works
           </a>
@@ -638,7 +637,7 @@ function Home() {
         <div className="flex gap-2 sm:gap-4">
           <Link
             to="/login"
-            className="text-sm sm:text-lg text-[#94a8c7] border-2 border-blue-400/30 hover:text-white hover:border-blue-400/60 px-3 sm:px-4 py-1.5 rounded-md transition-all duration-150"
+            className="text-sm sm:text-lg text-tf-copy border-2 border-tf-line hover:text-tf-ink hover:border-tf-blue px-3 sm:px-4 py-1.5 rounded-md transition-all duration-150"
           >
             Login
           </Link>
@@ -653,7 +652,7 @@ function Home() {
 
       <section
         id="home"
-        className="relative bg-[#0a1628] px-5 sm:px-8 md:px-35 py-16 md:py-24 overflow-hidden"
+        className="relative bg-tf-bg px-5 sm:px-8 md:px-35 py-16 md:py-24 overflow-hidden"
       >
         {/* <div
           className="absolute inset-0 pointer-events-none transition-all duration-200"
@@ -668,18 +667,18 @@ function Home() {
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-14">
           {/* LEFT CONTENT */}
           <div className="max-w-2xl text-center lg:text-left">
-            <span className="inline-flex items-center border border-blue-500/20 bg-blue-500/10 text-blue-400 px-4 py-1.5 rounded-full text-sm font-medium">
+            <span className="inline-flex items-center border border-tf-line bg-tf-sky text-tf-blue-pressed px-4 py-1.5 rounded-full text-sm font-medium">
               India's Tutor Portfolio Platform
             </span>
 
-            <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
+            <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold text-tf-ink leading-tight">
               Build Your
-              <span className="text-blue-500"> Teaching Portfolio</span>
+              <span className="text-tf-blue"> Teaching Portfolio</span>
               <br />
               Get Discovered By Students.
             </h1>
 
-            <p className="mt-6 text-lg text-[#94a8c7] leading-relaxed max-w-xl mx-auto lg:mx-0">
+            <p className="mt-6 text-lg text-tf-copy leading-relaxed max-w-xl mx-auto lg:mx-0">
               Create a professional tutor profile, showcase your expertise,
               teaching experience, qualifications and connect directly with
               students looking for the right tutor.
@@ -742,15 +741,15 @@ function Home() {
           gap-3
         "
             >
-              <div className="bg-[#11213c] border border-blue-500/10 px-4 py-2 rounded-full text-sm text-[#c7d8f5]">
+              <div className="bg-tf-surface border border-tf-line px-4 py-2 rounded-full text-sm text-tf-copy">
                 Portfolio-Based Profiles
               </div>
 
-              <div className="bg-[#11213c] border border-blue-500/10 px-4 py-2 rounded-full text-sm text-[#c7d8f5]">
+              <div className="bg-tf-surface border border-tf-line px-4 py-2 rounded-full text-sm text-tf-copy">
                 Direct Student Connections
               </div>
 
-              <div className="bg-[#11213c] border border-blue-500/10 px-4 py-2 rounded-full text-sm text-[#c7d8f5]">
+              <div className="bg-tf-surface border border-tf-line px-4 py-2 rounded-full text-sm text-tf-copy">
                 Built For Indian Tutors
               </div>
             </div>
@@ -760,9 +759,9 @@ function Home() {
           <div className="hidden md:block w-full max-w-lg">
             <div
               className="
-          bg-[#0f1f36]
+          bg-tf-surface
           border
-          border-blue-500/10
+          border-tf-line
           rounded-3xl
           p-5
           shadow-2xl
@@ -775,44 +774,44 @@ function Home() {
                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
               </div>
 
-              <div className="bg-[#132846] rounded-2xl p-5">
+              <div className="bg-tf-surface-soft rounded-2xl p-5">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center">
                     <span className="text-2xl">🎓</span>
                   </div>
 
                   <div>
-                    <h3 className="text-white font-semibold text-lg">
+                    <h3 className="text-tf-ink font-semibold text-lg">
                       Tutor Portfolio
                     </h3>
 
-                    <p className="text-[#94a8c7] text-sm">
+                    <p className="text-tf-copy text-sm">
                       Professional profile preview
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="bg-[#0a1628] rounded-xl p-4">
+                  <div className="bg-tf-bg rounded-xl p-4">
                     <p className="text-blue-400 text-sm mb-1">Subjects</p>
 
-                    <p className="text-white">
+                    <p className="text-tf-ink">
                       Mathematics • Physics • Chemistry
                     </p>
                   </div>
 
-                  <div className="bg-[#0a1628] rounded-xl p-4">
+                  <div className="bg-tf-bg rounded-xl p-4">
                     <p className="text-blue-400 text-sm mb-1">Showcase</p>
 
-                    <p className="text-white">
+                    <p className="text-tf-ink">
                       Experience, Qualifications & Achievements
                     </p>
                   </div>
 
-                  <div className="bg-[#0a1628] rounded-xl p-4">
+                  <div className="bg-tf-bg rounded-xl p-4">
                     <p className="text-blue-400 text-sm mb-1">Connect</p>
 
-                    <p className="text-white">
+                    <p className="text-tf-ink">
                       Receive enquiries from students directly
                     </p>
                   </div>
@@ -840,7 +839,7 @@ function Home() {
 
       <section
         id="services"
-        className="bg-[#0a1628] px-5 sm:px-8 md:px-35 py-20"
+        className="bg-tf-bg px-5 sm:px-8 md:px-35 py-20"
       >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-14">
@@ -848,11 +847,11 @@ function Home() {
               WHY TUTORFOLIO
             </span>
 
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mt-3">
+            <h2 className="text-3xl sm:text-4xl font-bold text-tf-ink mt-3">
               Everything A Tutor Needs To Stand Out
             </h2>
 
-            <p className="text-[#94a8c7] mt-4 max-w-2xl mx-auto">
+            <p className="text-tf-copy mt-4 max-w-2xl mx-auto">
               Built to help tutors present themselves professionally, get
               discovered by students, and manage enquiries effortlessly.
             </p>
@@ -864,22 +863,22 @@ function Home() {
             <div
               className="
           lg:col-span-3
-          bg-[#0f1f36]
-          border border-blue-500/10
+          bg-tf-surface
+          border border-tf-line
           rounded-3xl
           p-8
-          hover:border-blue-500/20
+          hover:border-tf-blue/40
           transition-all
         "
             >
               <div className="max-w-2xl">
-                <span className="text-blue-400 text-sm">PORTFOLIO FIRST</span>
+                <span className="text-tf-blue-pressed text-sm">PORTFOLIO FIRST</span>
 
-                <h3 className="text-white text-2xl font-semibold mt-2">
+                <h3 className="text-tf-ink text-2xl font-semibold mt-2">
                   Create a profile that speaks for you.
                 </h3>
 
-                <p className="text-[#94a8c7] mt-4 leading-relaxed">
+                <p className="text-tf-copy mt-4 leading-relaxed">
                   Showcase your qualifications, teaching experience, subjects,
                   achievements and teaching style in one professional portfolio.
                 </p>
@@ -890,21 +889,21 @@ function Home() {
 
             <div
               className="
-          bg-[#0f1f36]
-          border border-blue-500/10
+          bg-tf-surface
+          border border-tf-line
           rounded-3xl
           p-7
-          hover:border-blue-500/20
+          hover:border-tf-blue/40
           transition-all
         "
             >
               <div className="text-4xl mb-5">🔍</div>
 
-              <h3 className="text-white text-xl font-semibold">
+              <h3 className="text-tf-ink text-xl font-semibold">
                 Get Discovered
               </h3>
 
-              <p className="text-[#94a8c7] mt-3 leading-relaxed">
+              <p className="text-tf-copy mt-3 leading-relaxed">
                 Students can browse and compare tutors based on expertise,
                 subjects and experience.
               </p>
@@ -914,21 +913,21 @@ function Home() {
 
             <div
               className="
-          bg-[#0f1f36]
-          border border-blue-500/10
+          bg-tf-surface
+          border border-tf-line
           rounded-3xl
           p-7
-          hover:border-blue-500/20
+          hover:border-tf-blue/40
           transition-all
         "
             >
               <div className="text-4xl mb-5">💬</div>
 
-              <h3 className="text-white text-xl font-semibold">
+              <h3 className="text-tf-ink text-xl font-semibold">
                 Direct Enquiries
               </h3>
 
-              <p className="text-[#94a8c7] mt-3 leading-relaxed">
+              <p className="text-tf-copy mt-3 leading-relaxed">
                 Receive student enquiries directly and start conversations
                 without unnecessary steps.
               </p>
@@ -938,21 +937,21 @@ function Home() {
 
             <div
               className="
-          bg-[#0f1f36]
-          border border-blue-500/10
+          bg-tf-surface
+          border border-tf-line
           rounded-3xl
           p-7
-          hover:border-blue-500/20
+          hover:border-tf-blue/40
           transition-all
         "
             >
               <div className="text-4xl mb-5">📍</div>
 
-              <h3 className="text-white text-xl font-semibold">
+              <h3 className="text-tf-ink text-xl font-semibold">
                 Local Discovery
               </h3>
 
-              <p className="text-[#94a8c7] mt-3 leading-relaxed">
+              <p className="text-tf-copy mt-3 leading-relaxed">
                 Help nearby students find tutors in their city or preferred
                 learning mode.
               </p>
@@ -962,7 +961,7 @@ function Home() {
       </section>
       <section
         id="how-it-works"
-        className="bg-[#0a1628] px-5 sm:px-8 md:px-35 py-24"
+        className="bg-tf-bg px-5 sm:px-8 md:px-35 py-24"
       >
         <div className="max-w-6xl mx-auto">
           {/* Heading */}
@@ -972,11 +971,11 @@ function Home() {
               HOW IT WORKS
             </span>
 
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mt-3">
+            <h2 className="text-3xl sm:text-4xl font-bold text-tf-ink mt-3">
               From Profile To Student Connection
             </h2>
 
-            <p className="text-[#94a8c7] mt-4 max-w-2xl mx-auto">
+            <p className="text-tf-copy mt-4 max-w-2xl mx-auto">
               TutorFolio keeps the process simple so tutors can focus on
               teaching instead of marketing themselves.
             </p>
@@ -995,11 +994,11 @@ function Home() {
                   1
                 </div>
 
-                <h3 className="text-white text-xl font-semibold">
+                <h3 className="text-tf-ink text-xl font-semibold">
                   Create Your Portfolio
                 </h3>
 
-                <p className="text-[#94a8c7] mt-3 leading-relaxed">
+                <p className="text-tf-copy mt-3 leading-relaxed">
                   Add your subjects, qualifications, experience and teaching
                   approach in a professional portfolio.
                 </p>
@@ -1008,15 +1007,15 @@ function Home() {
               {/* Step 2 */}
 
               <div>
-                <div className="w-12 h-12 rounded-full bg-[#11213c] border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold mb-6">
+                <div className="w-12 h-12 rounded-full bg-tf-surface border border-tf-line flex items-center justify-center text-tf-blue-pressed font-bold mb-6">
                   2
                 </div>
 
-                <h3 className="text-white text-xl font-semibold">
+                <h3 className="text-tf-ink text-xl font-semibold">
                   Get Discovered
                 </h3>
 
-                <p className="text-[#94a8c7] mt-3 leading-relaxed">
+                <p className="text-tf-copy mt-3 leading-relaxed">
                   Students explore tutor portfolios and find educators that
                   match their learning needs.
                 </p>
@@ -1025,15 +1024,15 @@ function Home() {
               {/* Step 3 */}
 
               <div>
-                <div className="w-12 h-12 rounded-full bg-[#11213c] border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold mb-6">
+                <div className="w-12 h-12 rounded-full bg-tf-surface border border-tf-line flex items-center justify-center text-tf-blue-pressed font-bold mb-6">
                   3
                 </div>
 
-                <h3 className="text-white text-xl font-semibold">
+                <h3 className="text-tf-ink text-xl font-semibold">
                   Start Connecting
                 </h3>
 
-                <p className="text-[#94a8c7] mt-3 leading-relaxed">
+                <p className="text-tf-copy mt-3 leading-relaxed">
                   Receive enquiries and continue the conversation directly with
                   interested students.
                 </p>
@@ -1073,11 +1072,11 @@ function Home() {
                 </div>
 
                 <div className="pb-6">
-                  <h3 className="text-white text-lg font-semibold">
+                  <h3 className="text-tf-ink text-lg font-semibold">
                     {item.title}
                   </h3>
 
-                  <p className="text-[#94a8c7] mt-2 leading-relaxed">
+                  <p className="text-tf-copy mt-2 leading-relaxed">
                     {item.desc}
                   </p>
                 </div>
@@ -1088,84 +1087,84 @@ function Home() {
       </section>
 
       <section>
-        <footer className="bg-[#0a1628] border-t border-blue-500/10 px-5 sm:px-8 py-10 sm:py-12">
+        <footer className="bg-tf-surface border-t border-tf-line px-5 sm:px-8 py-10 sm:py-12">
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start justify-between gap-8">
             <div>
               <img src="/tf-logo.png" alt="Logo" className="w-38 sm:w-50" />
-              <p className="text-sm text-[#94a8c7] max-w-xs leading-relaxed mt-2">
+              <p className="text-sm text-tf-copy max-w-xs leading-relaxed mt-2">
                 The tuition marketplace for India - local, verified,
                 portfolio-first.
               </p>
             </div>
 
-            <div className="grid grid-cols-3 sm:flex sm:flex-row gap-6 sm:gap-8 text-[#94a8c7] w-full sm:w-auto">
+            <div className="grid grid-cols-3 sm:flex sm:flex-row gap-6 sm:gap-8 text-tf-copy w-full sm:w-auto">
               <div className="flex flex-col gap-2 text-sm">
-                <span className="font-bold text-[#e2eaf7] mb-1 uppercase tracking-wider text-[11px] sm:text-[12px]">
+                <span className="font-bold text-tf-ink mb-1 uppercase tracking-wider text-[11px] sm:text-[12px]">
                   Platform
                 </span>
                 <a
                   href="#how-it-works"
-                  className="hover:text-white transition-colors duration-150"
+                  className="hover:text-tf-ink transition-colors duration-150"
                 >
                   How it works
                 </a>
                 <a
                   href="#tutors"
-                  className="hover:text-white transition-colors duration-150"
+                  className="hover:text-tf-ink transition-colors duration-150"
                 >
                   Find tutors
                 </a>
                 <a
                   href="#services"
-                  className="hover:text-white transition-colors duration-150"
+                  className="hover:text-tf-ink transition-colors duration-150"
                 >
                   Services
                 </a>
               </div>
 
               <div className="flex flex-col gap-2 text-sm">
-                <span className="font-bold text-[#e2eaf7] mb-1 uppercase tracking-wider text-[11px] sm:text-[12px]">
+                <span className="font-bold text-tf-ink mb-1 uppercase tracking-wider text-[11px] sm:text-[12px]">
                   Account
                 </span>
                 <Link
                   to="/login"
-                  className="hover:text-white transition-colors duration-150"
+                  className="hover:text-tf-ink transition-colors duration-150"
                 >
                   Log in
                 </Link>
                 <Link
                   to="/signup"
-                  className="hover:text-white transition-colors duration-150"
+                  className="hover:text-tf-ink transition-colors duration-150"
                 >
                   Sign up
                 </Link>
                 <Link
                   to="/signup?role=tutor"
-                  className="hover:text-white transition-colors duration-150"
+                  className="hover:text-tf-ink transition-colors duration-150"
                 >
                   Join as tutor
                 </Link>
               </div>
 
               <div className="flex flex-col gap-2 text-sm">
-                <span className="font-bold text-[#e2eaf7] mb-1 uppercase tracking-wider text-[11px] sm:text-[12px]">
+                <span className="font-bold text-tf-ink mb-1 uppercase tracking-wider text-[11px] sm:text-[12px]">
                   Company
                 </span>
                 <a
                   href="#about"
-                  className="hover:text-white transition-colors duration-150"
+                  className="hover:text-tf-ink transition-colors duration-150"
                 >
                   About
                 </a>
                 <a
                   href="#blog"
-                  className="hover:text-white transition-colors duration-150"
+                  className="hover:text-tf-ink transition-colors duration-150"
                 >
                   Blog
                 </a>
                 <a
                   href="#privacy"
-                  className="hover:text-white transition-colors duration-150"
+                  className="hover:text-tf-ink transition-colors duration-150"
                 >
                   Privacy
                 </a>
@@ -1173,7 +1172,7 @@ function Home() {
             </div>
           </div>
 
-          <div className="max-w-6xl mx-auto mt-8 sm:mt-10 pt-6 border-t border-blue-500/10 text-xs text-[#4a6080]">
+          <div className="max-w-6xl mx-auto mt-8 sm:mt-10 pt-6 border-t border-tf-line text-xs text-tf-muted">
             © 2025 TutorFolio. Made in India 🇮🇳
           </div>
         </footer>

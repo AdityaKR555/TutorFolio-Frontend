@@ -148,10 +148,10 @@ function Dashboard() {
     return (
       <div className="p-5 sm:p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl min-h-[500px] flex flex-col items-center justify-center">
-            <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+          <div className="bg-tf-surface border border-tf-line rounded-3xl min-h-[500px] flex flex-col items-center justify-center">
+            <div className="w-10 h-10 border-4 border-blue-200 dark:border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
 
-            <p className="text-[#94a8c7] mt-4 text-sm">Loading dashboard...</p>
+            <p className="text-tf-copy mt-4 text-sm">Loading dashboard...</p>
           </div>
         </div>
       </div>
@@ -162,10 +162,10 @@ function Dashboard() {
     return (
       <div className="p-5 sm:p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-[#0f1f36] border border-red-500/20 rounded-3xl min-h-[400px] flex flex-col items-center justify-center p-8 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center">
+          <div className="bg-tf-surface border border-red-200 dark:border-red-500/20 rounded-3xl min-h-[400px] flex flex-col items-center justify-center p-8 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
               <svg
-                className="w-8 h-8 text-red-400"
+                className="w-8 h-8 text-red-600 dark:text-red-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -179,11 +179,11 @@ function Dashboard() {
               </svg>
             </div>
 
-            <h2 className="text-xl font-semibold text-white mt-5">
+            <h2 className="text-xl font-semibold text-tf-ink mt-5">
               Unable to load dashboard
             </h2>
 
-            <p className="text-[#94a8c7] text-sm mt-2 max-w-md">{error}</p>
+            <p className="text-tf-copy text-sm mt-2 max-w-md">{error}</p>
 
             <button
               type="button"
@@ -258,13 +258,13 @@ function Dashboard() {
         {/* Header */}
         <div className="mb-8 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
           <div>
-            <p className="text-[#94a8c7] text-sm mb-2">Tutor Dashboard</p>
+            <p className="text-tf-copy text-sm mb-2">Tutor Dashboard</p>
 
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">
+            <h1 className="tf-page-title">
               Hello, {user?.username || "Tutor"} 👋
             </h1>
 
-            <p className="text-[#94a8c7] mt-2 text-sm sm:text-base">
+            <p className="text-tf-copy mt-2 text-sm sm:text-base">
               Here's an overview of your tutoring activity and performance.
             </p>
           </div>
@@ -273,7 +273,7 @@ function Dashboard() {
             type="button"
             onClick={() => fetchDashboard(true)}
             disabled={refreshing}
-            className="w-full sm:w-auto bg-[#0f1f36] border border-blue-500/10 hover:bg-[#142744] text-[#c7d8f5] px-4 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full sm:w-auto bg-tf-surface border border-tf-line hover:bg-tf-surface-soft text-tf-copy px-4 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <svg
               className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
@@ -295,28 +295,28 @@ function Dashboard() {
 
         {/* Error while dashboard is already loaded */}
         {error && (
-          <div className="mb-6 bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-4 py-3">
-            <p className="text-yellow-300 text-sm">{error}</p>
+          <div className="mb-6 bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 rounded-xl px-4 py-3">
+            <p className="text-yellow-800 dark:text-yellow-300 text-sm">{error}</p>
           </div>
         )}
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
           {/* Rating */}
-          <div className="bg-[#0f1f36] border border-blue-500/10 rounded-2xl p-5">
+          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-[#94a8c7] text-sm">Average Rating</p>
+                <p className="text-tf-copy text-sm">Average Rating</p>
 
-                <h2 className="text-3xl font-bold text-white mt-2">
+                <h2 className="text-3xl font-bold text-tf-ink mt-2">
                   {Number(kpis.averageRating || 0).toFixed(1)}
-                  <span className="text-[#6f84a5] text-lg font-medium">/5</span>
+                  <span className="text-tf-muted text-lg font-medium">/5</span>
                 </h2>
               </div>
 
-              <div className="w-11 h-11 rounded-xl bg-yellow-500/10 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-yellow-50 dark:bg-yellow-500/10 flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-yellow-400"
+                  className="w-6 h-6 text-yellow-700 dark:text-yellow-400"
                   viewBox="0 0 24 24"
                   fill="currentColor"
                 >
@@ -325,25 +325,25 @@ function Dashboard() {
               </div>
             </div>
 
-            <p className="text-[#6f84a5] text-xs mt-3">
+            <p className="text-tf-muted text-xs mt-3">
               {formatNumber(kpis.totalReviews)} total reviews
             </p>
           </div>
 
           {/* Batches */}
-          <div className="bg-[#0f1f36] border border-blue-500/10 rounded-2xl p-5">
+          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-[#94a8c7] text-sm">Total Batches</p>
+                <p className="text-tf-copy text-sm">Total Batches</p>
 
-                <h2 className="text-3xl font-bold text-white mt-2">
+                <h2 className="text-3xl font-bold text-tf-ink mt-2">
                   {formatNumber(kpis.totalBatches)}
                 </h2>
               </div>
 
-              <div className="w-11 h-11 rounded-xl bg-blue-500/10 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-blue-400"
+                  className="w-6 h-6 text-blue-700 dark:text-blue-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -358,25 +358,25 @@ function Dashboard() {
               </div>
             </div>
 
-            <p className="text-[#6f84a5] text-xs mt-3">
+            <p className="text-tf-muted text-xs mt-3">
               Current + upcoming + completed
             </p>
           </div>
 
           {/* Achievements */}
-          <div className="bg-[#0f1f36] border border-blue-500/10 rounded-2xl p-5">
+          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-[#94a8c7] text-sm">Achievements</p>
+                <p className="text-tf-copy text-sm">Achievements</p>
 
-                <h2 className="text-3xl font-bold text-white mt-2">
+                <h2 className="text-3xl font-bold text-tf-ink mt-2">
                   {formatNumber(kpis.totalAchievements)}
                 </h2>
               </div>
 
-              <div className="w-11 h-11 rounded-xl bg-purple-500/10 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-purple-400"
+                  className="w-6 h-6 text-purple-700 dark:text-purple-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -391,25 +391,25 @@ function Dashboard() {
               </div>
             </div>
 
-            <p className="text-[#6f84a5] text-xs mt-3">
+            <p className="text-tf-muted text-xs mt-3">
               Student success stories
             </p>
           </div>
 
           {/* Capacity */}
-          <div className="bg-[#0f1f36] border border-blue-500/10 rounded-2xl p-5">
+          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-[#94a8c7] text-sm">Student Capacity</p>
+                <p className="text-tf-copy text-sm">Student Capacity</p>
 
-                <h2 className="text-3xl font-bold text-white mt-2">
+                <h2 className="text-3xl font-bold text-tf-ink mt-2">
                   {formatNumber(kpis.totalStudentsCapacity)}
                 </h2>
               </div>
 
-              <div className="w-11 h-11 rounded-xl bg-cyan-500/10 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-cyan-400"
+                  className="w-6 h-6 text-cyan-700 dark:text-cyan-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -424,25 +424,25 @@ function Dashboard() {
               </div>
             </div>
 
-            <p className="text-[#6f84a5] text-xs mt-3">
+            <p className="text-tf-muted text-xs mt-3">
               Maximum seats across batches
             </p>
           </div>
 
           {/* Enrolled */}
-          <div className="bg-[#0f1f36] border border-blue-500/10 rounded-2xl p-5">
+          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-[#94a8c7] text-sm">Enrolled Students</p>
+                <p className="text-tf-copy text-sm">Enrolled Students</p>
 
-                <h2 className="text-3xl font-bold text-white mt-2">
+                <h2 className="text-3xl font-bold text-tf-ink mt-2">
                   {formatNumber(kpis.totalEnrolledStudents)}
                 </h2>
               </div>
 
-              <div className="w-11 h-11 rounded-xl bg-green-500/10 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-green-50 dark:bg-green-500/10 flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-green-400"
+                  className="w-6 h-6 text-green-700 dark:text-green-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -457,26 +457,26 @@ function Dashboard() {
               </div>
             </div>
 
-            <p className="text-[#6f84a5] text-xs mt-3">
+            <p className="text-tf-muted text-xs mt-3">
               Currently allotted seats
             </p>
           </div>
 
           {/* Occupancy */}
-          <div className="bg-[#0f1f36] border border-blue-500/10 rounded-2xl p-5">
+          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-[#94a8c7] text-sm">Overall Occupancy</p>
+                <p className="text-tf-copy text-sm">Overall Occupancy</p>
 
-                <h2 className="text-3xl font-bold text-white mt-2">
+                <h2 className="text-3xl font-bold text-tf-ink mt-2">
                   {Number(occupancyData.overallOccupancyRate || 0).toFixed(1)}
-                  <span className="text-[#6f84a5] text-lg font-medium">%</span>
+                  <span className="text-tf-muted text-lg font-medium">%</span>
                 </h2>
               </div>
 
-              <div className="w-11 h-11 rounded-xl bg-orange-500/10 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-orange-400"
+                  className="w-6 h-6 text-orange-700 dark:text-orange-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -491,7 +491,7 @@ function Dashboard() {
               </div>
             </div>
 
-            <p className="text-[#6f84a5] text-xs mt-3">
+            <p className="text-tf-muted text-xs mt-3">
               {formatNumber(occupancyData.totalRemainingSeats)} seats remaining
             </p>
           </div>
@@ -500,13 +500,13 @@ function Dashboard() {
         {/* Row: Batch Distribution + Ratings */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
           {/* Batch Distribution */}
-          <section className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7">
+          <section className="bg-tf-surface border border-tf-line rounded-3xl p-5 sm:p-7">
             <div className="mb-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-white">
+              <h2 className="text-lg sm:text-xl font-semibold text-tf-ink">
                 {batchChart.title || "Batch Status Distribution"}
               </h2>
 
-              <p className="text-[#6f84a5] text-sm mt-1">
+              <p className="text-tf-muted text-sm mt-1">
                 {batchChart.description ||
                   "Distribution of your batches by status."}
               </p>
@@ -522,12 +522,12 @@ function Dashboard() {
                   }}
                 />
 
-                <div className="absolute inset-6 bg-[#0f1f36] rounded-full flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold text-white">
+                <div className="absolute inset-6 bg-tf-surface rounded-full flex flex-col items-center justify-center">
+                  <span className="text-3xl font-bold text-tf-ink">
                     {formatNumber(batchData.total)}
                   </span>
 
-                  <span className="text-[#6f84a5] text-xs mt-1">
+                  <span className="text-tf-muted text-xs mt-1">
                     Total Batches
                   </span>
                 </div>
@@ -550,17 +550,17 @@ function Dashboard() {
                         }}
                       />
 
-                      <span className="text-[#c7d8f5] text-sm truncate">
+                      <span className="text-tf-copy text-sm truncate">
                         {item.label}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-white font-medium text-sm">
+                      <span className="text-tf-ink font-medium text-sm">
                         {formatNumber(item.value)}
                       </span>
 
-                      <span className="text-[#6f84a5] text-xs">
+                      <span className="text-tf-muted text-xs">
                         {Number(item.percentage || 0).toFixed(0)}%
                       </span>
                     </div>
@@ -571,25 +571,25 @@ function Dashboard() {
           </section>
 
           {/* Ratings */}
-          <section className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7">
+          <section className="bg-tf-surface border border-tf-line rounded-3xl p-5 sm:p-7">
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
-                <h2 className="text-lg sm:text-xl font-semibold text-white">
+                <h2 className="text-lg sm:text-xl font-semibold text-tf-ink">
                   {ratingChart.title || "Review Ratings"}
                 </h2>
 
-                <p className="text-[#6f84a5] text-sm mt-1">
+                <p className="text-tf-muted text-sm mt-1">
                   {ratingChart.description ||
                     "Breakdown of your student reviews."}
                 </p>
               </div>
 
               <div className="text-right shrink-0">
-                <p className="text-2xl font-bold text-white">
+                <p className="text-2xl font-bold text-tf-ink">
                   {Number(ratingData.averageRating || 0).toFixed(1)}
                 </p>
 
-                <p className="text-[#6f84a5] text-xs">
+                <p className="text-tf-muted text-xs">
                   {formatNumber(ratingData.totalReviews)} reviews
                 </p>
               </div>
@@ -602,17 +602,17 @@ function Dashboard() {
                 return (
                   <div key={item.star || item.label}>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[#c7d8f5] text-sm">
+                      <span className="text-tf-copy text-sm">
                         {item.label}
                       </span>
 
-                      <span className="text-[#6f84a5] text-xs">
+                      <span className="text-tf-muted text-xs">
                         {formatNumber(item.value)} ({percentage.toFixed(0)}
                         %)
                       </span>
                     </div>
 
-                    <div className="h-2 bg-[#0a1628] rounded-full overflow-hidden">
+                    <div className="h-2 bg-tf-surface-soft rounded-full overflow-hidden">
                       <div
                         className="h-full bg-blue-500 rounded-full transition-all duration-500"
                         style={{
@@ -628,33 +628,33 @@ function Dashboard() {
         </div>
 
         {/* Seat Occupancy */}
-        <section className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7 mb-6">
+        <section className="bg-tf-surface border border-tf-line rounded-3xl p-5 sm:p-7 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
             <div>
-              <h2 className="text-lg sm:text-xl font-semibold text-white">
+              <h2 className="text-lg sm:text-xl font-semibold text-tf-ink">
                 {occupancyChart.title || "Seat Occupancy"}
               </h2>
 
-              <p className="text-[#6f84a5] text-sm mt-1">
+              <p className="text-tf-muted text-sm mt-1">
                 {occupancyChart.description ||
                   "Student intake across your batches."}
               </p>
             </div>
 
             <div className="text-left sm:text-right">
-              <p className="text-white font-semibold">
+              <p className="text-tf-ink font-semibold">
                 {formatNumber(occupancyData.totalAllottedSeats)} /{" "}
                 {formatNumber(occupancyData.totalMaximumSeats)}
               </p>
 
-              <p className="text-[#6f84a5] text-xs mt-1">
+              <p className="text-tf-muted text-xs mt-1">
                 Overall enrolled / capacity
               </p>
             </div>
           </div>
 
           {occupancyBatches.length === 0 ? (
-            <p className="text-[#6f84a5] text-sm">
+            <p className="text-tf-muted text-sm">
               No batch occupancy data available yet.
             </p>
           ) : (
@@ -663,27 +663,27 @@ function Dashboard() {
                 <div key={batch.batchId}>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                     <div className="min-w-0">
-                      <p className="text-[#c7d8f5] text-sm font-medium truncate">
+                      <p className="text-tf-copy text-sm font-medium truncate">
                         {batch.title}
                       </p>
 
-                      <p className="text-[#617391] text-xs mt-1 capitalize">
+                      <p className="text-tf-muted text-xs mt-1 capitalize">
                         {batch.batchType}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-[#94a8c7] text-xs">
+                      <span className="text-tf-copy text-xs">
                         {batch.allottedSeats} / {batch.maximumSeats}
                       </span>
 
-                      <span className="text-white text-xs font-medium">
+                      <span className="text-tf-ink text-xs font-medium">
                         {Number(batch.occupancyRate || 0).toFixed(0)}%
                       </span>
                     </div>
                   </div>
 
-                  <div className="h-2.5 bg-[#0a1628] rounded-full overflow-hidden">
+                  <div className="h-2.5 bg-tf-surface-soft rounded-full overflow-hidden">
                     <div
                       className="h-full bg-blue-500 rounded-full transition-all duration-500"
                       style={{
@@ -695,7 +695,7 @@ function Dashboard() {
                     />
                   </div>
 
-                  <p className="text-[#617391] text-xs mt-2">
+                  <p className="text-tf-muted text-xs mt-2">
                     {formatNumber(batch.remainingSeats)} seats remaining
                   </p>
                 </div>
@@ -707,47 +707,47 @@ function Dashboard() {
         {/* Revenue + Achievement Performance */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
           {/* Revenue */}
-          <section className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7">
+          <section className="bg-tf-surface border border-tf-line rounded-3xl p-5 sm:p-7">
             <div className="mb-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-white">
+              <h2 className="text-lg sm:text-xl font-semibold text-tf-ink">
                 {revenueChart.title || "Revenue & Fee Analytics"}
               </h2>
 
-              <p className="text-[#6f84a5] text-sm mt-1">
+              <p className="text-tf-muted text-sm mt-1">
                 {revenueChart.description ||
                   "Projected revenue and fee structure."}
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-[#0a1628] rounded-2xl p-4">
-                <p className="text-[#617391] text-xs">Projected Revenue</p>
+              <div className="bg-tf-surface-soft rounded-2xl p-4">
+                <p className="text-tf-muted text-xs">Projected Revenue</p>
 
-                <p className="text-white text-xl font-semibold mt-2">
+                <p className="text-tf-ink text-xl font-semibold mt-2">
                   {formatCurrency(revenueData.totalProjectedRevenue)}
                 </p>
               </div>
 
-              <div className="bg-[#0a1628] rounded-2xl p-4">
-                <p className="text-[#617391] text-xs">Avg Fee / Batch</p>
+              <div className="bg-tf-surface-soft rounded-2xl p-4">
+                <p className="text-tf-muted text-xs">Avg Fee / Batch</p>
 
-                <p className="text-white text-xl font-semibold mt-2">
+                <p className="text-tf-ink text-xl font-semibold mt-2">
                   {formatCurrency(revenueData.averageFeePerBatch)}
                 </p>
               </div>
 
-              <div className="bg-[#0a1628] rounded-2xl p-4">
-                <p className="text-[#617391] text-xs">Minimum Fee</p>
+              <div className="bg-tf-surface-soft rounded-2xl p-4">
+                <p className="text-tf-muted text-xs">Minimum Fee</p>
 
-                <p className="text-white text-lg font-semibold mt-2">
+                <p className="text-tf-ink text-lg font-semibold mt-2">
                   {formatCurrency(revenueData.minFee)}
                 </p>
               </div>
 
-              <div className="bg-[#0a1628] rounded-2xl p-4">
-                <p className="text-[#617391] text-xs">Maximum Fee</p>
+              <div className="bg-tf-surface-soft rounded-2xl p-4">
+                <p className="text-tf-muted text-xs">Maximum Fee</p>
 
-                <p className="text-white text-lg font-semibold mt-2">
+                <p className="text-tf-ink text-lg font-semibold mt-2">
                   {formatCurrency(revenueData.maxFee)}
                 </p>
               </div>
@@ -756,7 +756,7 @@ function Dashboard() {
             {/* Payment Types */}
             {paymentBreakdown.length > 0 && (
               <div className="mb-6">
-                <p className="text-[#94a8c7] text-sm mb-4">Payment Type</p>
+                <p className="text-tf-copy text-sm mb-4">Payment Type</p>
 
                 <div className="space-y-3">
                   {paymentBreakdown.map((item) => (
@@ -764,14 +764,14 @@ function Dashboard() {
                       key={item.label}
                       className="flex items-center justify-between"
                     >
-                      <span className="text-[#c7d8f5] text-sm capitalize">
+                      <span className="text-tf-copy text-sm capitalize">
                         {item.label}
                       </span>
 
                       <div className="flex items-center gap-3">
-                        <span className="text-white text-sm">{item.value}</span>
+                        <span className="text-tf-ink text-sm">{item.value}</span>
 
-                        <span className="text-[#6f84a5] text-xs">
+                        <span className="text-tf-muted text-xs">
                           {Number(item.percentage || 0).toFixed(0)}%
                         </span>
                       </div>
@@ -784,7 +784,7 @@ function Dashboard() {
             {/* Top Batches */}
             {topBatchesByFee.length > 0 && (
               <div>
-                <p className="text-[#94a8c7] text-sm mb-4">
+                <p className="text-tf-copy text-sm mb-4">
                   Top Batches by Projected Revenue
                 </p>
 
@@ -803,16 +803,16 @@ function Dashboard() {
                     return (
                       <div key={batch.batchId}>
                         <div className="flex items-center justify-between gap-4 mb-2">
-                          <span className="text-[#c7d8f5] text-sm truncate">
+                          <span className="text-tf-copy text-sm truncate">
                             {batch.title}
                           </span>
 
-                          <span className="text-white text-xs shrink-0">
+                          <span className="text-tf-ink text-xs shrink-0">
                             {formatCurrency(batch.projectedRevenue)}
                           </span>
                         </div>
 
-                        <div className="h-2 bg-[#0a1628] rounded-full overflow-hidden">
+                        <div className="h-2 bg-tf-surface-soft rounded-full overflow-hidden">
                           <div
                             className="h-full bg-blue-500 rounded-full"
                             style={{
@@ -829,13 +829,13 @@ function Dashboard() {
           </section>
 
           {/* Achievement Performance */}
-          <section className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7">
+          <section className="bg-tf-surface border border-tf-line rounded-3xl p-5 sm:p-7">
             <div className="mb-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-white">
+              <h2 className="text-lg sm:text-xl font-semibold text-tf-ink">
                 {achievementChart.title || "Achievement Performance"}
               </h2>
 
-              <p className="text-[#6f84a5] text-sm mt-1">
+              <p className="text-tf-muted text-sm mt-1">
                 {achievementChart.description ||
                   "Student achievement and rating overview."}
               </p>
@@ -843,20 +843,20 @@ function Dashboard() {
 
             {/* Summary */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-[#0a1628] rounded-2xl p-4">
-                <p className="text-[#617391] text-xs">Total Achievements</p>
+              <div className="bg-tf-surface-soft rounded-2xl p-4">
+                <p className="text-tf-muted text-xs">Total Achievements</p>
 
-                <p className="text-white text-2xl font-semibold mt-2">
+                <p className="text-tf-ink text-2xl font-semibold mt-2">
                   {formatNumber(achievementData.totalAchievements)}
                 </p>
               </div>
 
-              <div className="bg-[#0a1628] rounded-2xl p-4">
-                <p className="text-[#617391] text-xs">Avg Student Rating</p>
+              <div className="bg-tf-surface-soft rounded-2xl p-4">
+                <p className="text-tf-muted text-xs">Avg Student Rating</p>
 
-                <p className="text-white text-2xl font-semibold mt-2">
+                <p className="text-tf-ink text-2xl font-semibold mt-2">
                   {Number(achievementData.averageStudentRating || 0).toFixed(1)}
-                  <span className="text-[#6f84a5] text-sm">/5</span>
+                  <span className="text-tf-muted text-sm">/5</span>
                 </p>
               </div>
             </div>
@@ -864,7 +864,7 @@ function Dashboard() {
             {/* Achievement Ratings */}
             {achievementRatingDistribution.length > 0 && (
               <div className="mb-6">
-                <p className="text-[#94a8c7] text-sm mb-4">
+                <p className="text-tf-copy text-sm mb-4">
                   Student Rating Distribution
                 </p>
 
@@ -872,16 +872,16 @@ function Dashboard() {
                   {achievementRatingDistribution.map((item) => (
                     <div key={item.star || item.label}>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[#c7d8f5] text-xs">
+                        <span className="text-tf-copy text-xs">
                           {item.label}
                         </span>
 
-                        <span className="text-[#6f84a5] text-xs">
+                        <span className="text-tf-muted text-xs">
                           {item.value}
                         </span>
                       </div>
 
-                      <div className="h-2 bg-[#0a1628] rounded-full overflow-hidden">
+                      <div className="h-2 bg-tf-surface-soft rounded-full overflow-hidden">
                         <div
                           className="h-full bg-purple-500 rounded-full"
                           style={{
@@ -900,12 +900,12 @@ function Dashboard() {
 
             {/* Tags */}
             <div>
-              <p className="text-[#94a8c7] text-sm mb-4">
+              <p className="text-tf-copy text-sm mb-4">
                 Top Achievement Tags
               </p>
 
               {topTags.length === 0 ? (
-                <p className="text-[#617391] text-sm">
+                <p className="text-tf-muted text-sm">
                   No achievement tags yet.
                 </p>
               ) : (
@@ -913,13 +913,13 @@ function Dashboard() {
                   {topTags.map((tag) => (
                     <div
                       key={tag.label}
-                      className="bg-purple-500/10 border border-purple-500/10 rounded-xl px-3 py-2"
+                      className="bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/10 rounded-xl px-3 py-2"
                     >
-                      <span className="text-purple-300 text-xs">
+                      <span className="text-purple-800 dark:text-purple-300 text-xs">
                         {tag.label}
                       </span>
 
-                      <span className="text-[#6f84a5] text-xs ml-2">
+                      <span className="text-tf-muted text-xs ml-2">
                         {tag.value}
                       </span>
                     </div>
@@ -931,21 +931,21 @@ function Dashboard() {
         </div>
 
         {/* Class Distribution */}
-        <section className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7 mb-6">
+        <section className="bg-tf-surface border border-tf-line rounded-3xl p-5 sm:p-7 mb-6">
           <div className="mb-6">
-            <h2 className="text-lg sm:text-xl font-semibold text-white">
+            <h2 className="text-lg sm:text-xl font-semibold text-tf-ink">
               {classChart.title || "Batch Offerings by Class"}
             </h2>
 
-            <p className="text-[#6f84a5] text-sm mt-1">
+            <p className="text-tf-muted text-sm mt-1">
               {classChart.description ||
                 "Distribution of your batches across classes."}
             </p>
           </div>
 
           {classBreakdown.length === 0 ? (
-            <div className="bg-[#0a1628] rounded-2xl p-8 text-center">
-              <p className="text-[#617391] text-sm">
+            <div className="bg-tf-surface-soft rounded-2xl p-8 text-center">
+              <p className="text-tf-muted text-sm">
                 Add eligible classes to your batches to see this distribution.
               </p>
             </div>
@@ -954,21 +954,21 @@ function Dashboard() {
               {classBreakdown.map((item) => (
                 <div key={item.label}>
                   <div className="flex items-center justify-between gap-4 mb-2">
-                    <span className="text-[#c7d8f5] text-sm">{item.label}</span>
+                    <span className="text-tf-copy text-sm">{item.label}</span>
 
                     <div className="flex items-center gap-3">
-                      <span className="text-white text-xs font-medium">
+                      <span className="text-tf-ink text-xs font-medium">
                         {item.value}{" "}
                         {Number(item.value) === 1 ? "batch" : "batches"}
                       </span>
 
-                      <span className="text-[#6f84a5] text-xs">
+                      <span className="text-tf-muted text-xs">
                         {Number(item.percentage || 0).toFixed(0)}%
                       </span>
                     </div>
                   </div>
 
-                  <div className="h-2.5 bg-[#0a1628] rounded-full overflow-hidden">
+                  <div className="h-2.5 bg-tf-surface-soft rounded-full overflow-hidden">
                     <div
                       className="h-full bg-cyan-500 rounded-full"
                       style={{
@@ -986,18 +986,18 @@ function Dashboard() {
         </section>
 
         {/* Quick Summary */}
-        <section className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7 mb-6">
+        <section className="bg-tf-surface border border-tf-line rounded-3xl p-5 sm:p-7 mb-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
-              <span className="text-white font-semibold">{getInitials()}</span>
+            <div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0">
+              <span className="text-tf-ink font-semibold">{getInitials()}</span>
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-tf-ink">
                 Keep your TutorFolio updated
               </h2>
 
-              <p className="text-[#6f84a5] text-sm mt-1">
+              <p className="text-tf-muted text-sm mt-1">
                 Add batches, achievements and profile details to give students a
                 better picture of your teaching.
               </p>

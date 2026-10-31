@@ -1,6 +1,100 @@
 import React, { useCallback, useEffect, useState } from "react";
 import api from "../../api/axios";
-import "./Batches.css";
+
+const pageStyles = {
+  page: "min-h-full bg-tf-bg px-4 py-6 text-sm leading-relaxed text-tf-ink sm:px-6 lg:px-8",
+  content: "mx-auto max-w-[1120px]",
+  heading: "mb-6 flex items-start justify-between gap-[18px] max-[520px]:flex-col",
+  headingTitle: "tf-page-title mb-2",
+  headingCopy: "m-0 text-[var(--tf-copy)]",
+  button: "tf-button-secondary cursor-pointer",
+  buttonPrimary: "tf-button-primary cursor-pointer",
+  buttonSmall: "inline-flex min-h-[31px] cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[9px] py-1.5 text-[11px] font-semibold text-[var(--tf-copy)] transition-colors duration-[160ms] hover:bg-[var(--tf-surface-soft)] hover:text-[var(--tf-blue)] disabled:cursor-not-allowed disabled:opacity-[.58] focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2 [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
+  buttonDanger: "inline-flex min-h-[31px] cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[9px] py-1.5 text-[11px] font-semibold text-[var(--tf-danger)] transition-colors duration-[160ms] hover:bg-[var(--tf-surface-soft)] hover:text-[var(--tf-blue)] disabled:cursor-not-allowed disabled:opacity-[.58] focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2 [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
+  summary: "mb-[30px] grid grid-cols-5 gap-[13px] max-[900px]:grid-cols-3 max-[520px]:grid-cols-2 max-[520px]:gap-2",
+  stat: "relative overflow-hidden rounded-[7px] border border-[var(--tf-line)] bg-[var(--tf-surface)] bg-[radial-gradient(ellipse_at_100%_0%,rgb(117_202_245_/_20%),transparent_53%),radial-gradient(ellipse_at_0%_100%,rgb(121_176_255_/_12%),transparent_45%)] p-[15px_17px] [[data-theme=dark]_&]:bg-[var(--tf-surface)] max-[520px]:p-3",
+  statGreen: "bg-[radial-gradient(ellipse_at_100%_0%,rgb(112_220_186_/_20%),transparent_53%),radial-gradient(ellipse_at_0%_100%,rgb(117_202_245_/_12%),transparent_45%)]",
+  statGold: "bg-[radial-gradient(ellipse_at_100%_0%,rgb(247_198_121_/_20%),transparent_53%),radial-gradient(ellipse_at_0%_100%,rgb(193_160_246_/_12%),transparent_45%)]",
+  statLabel: "block text-[11px] text-[var(--tf-muted)]",
+  statValue: "mt-[3px] block text-xl tracking-[-0.3px] text-[var(--tf-ink)]",
+  statNote: "mt-0.5 block text-[10px] text-[var(--tf-muted)]",
+  alert: "mb-[14px] rounded-[9px] border border-[var(--tf-line)] px-[14px] py-[11px] text-xs",
+  errorAlert: "border-red-200 bg-red-50 text-red-700 [[data-theme=dark]_&]:border-red-500/25 [[data-theme=dark]_&]:bg-red-500/10 [[data-theme=dark]_&]:text-red-300",
+  successAlert: "border-green-200 bg-green-50 text-green-700 [[data-theme=dark]_&]:border-green-500/25 [[data-theme=dark]_&]:bg-green-500/10 [[data-theme=dark]_&]:text-green-300",
+  toolbar: "mb-[17px] flex items-center justify-between gap-[14px] max-[760px]:items-stretch max-[760px]:flex-col",
+  tabs: "flex items-center gap-1 rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] p-1 [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)] max-[520px]:justify-between",
+  tab: "cursor-pointer rounded-md bg-transparent px-3 py-[7px] text-xs font-semibold text-[var(--tf-copy)] max-[520px]:px-[9px] max-[520px]:text-[11px]",
+  tabActive: "bg-white text-[var(--tf-blue-pressed)] shadow-[0_1px_4px_rgb(34_68_110_/_12%)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
+  toolbarRight: "ml-auto flex items-center gap-[10px] max-[760px]:w-full max-[760px]:ml-0 max-[520px]:flex-wrap",
+  search: "min-h-[38px] w-[260px] rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[11px] py-[9px] text-[var(--tf-ink)] focus:border-[var(--tf-blue)] focus:shadow-[0_0_0_3px_rgb(24_117_209_/_10%)] focus-visible:outline-none max-[760px]:w-auto max-[760px]:flex-1 max-[520px]:basis-full [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
+  viewToggle: "flex items-center gap-1 rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] p-1 [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)]",
+  viewButton: "grid h-8 w-8 cursor-pointer place-items-center rounded-md text-[var(--tf-muted)] transition-colors hover:text-[var(--tf-ink)]",
+  grid: "grid grid-cols-2 gap-[15px] max-[760px]:grid-cols-1",
+  card: "tf-card min-w-0 p-5 shadow-sm",
+  cardTop: "flex items-start justify-between gap-[10px] max-[520px]:flex-col",
+  cardHeading: "min-w-0",
+  cardTitle: "mb-[7px] break-words text-[15px] font-bold leading-[1.35] text-[var(--tf-ink)]",
+  session: "text-[11px] text-[var(--tf-muted)]",
+  cardActions: "flex flex-none items-center justify-end gap-[6px] max-[760px]:flex-wrap max-[520px]:w-full max-[520px]:justify-start",
+  status: "inline-flex items-center whitespace-nowrap rounded-[20px] bg-[var(--tf-sky)] px-2 py-1 text-[10px] font-semibold text-[var(--tf-blue)] [[data-theme=dark]_&]:bg-[var(--tf-sky)]",
+  statusCurrent: "bg-[var(--tf-success-soft)] text-[var(--tf-success)] [[data-theme=dark]_&]:bg-[var(--tf-success-soft)]",
+  statusOld: "bg-[var(--tf-surface-soft)] text-[var(--tf-muted)] [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)]",
+  description: "my-[13px] text-xs leading-[1.55] text-[var(--tf-copy)] whitespace-pre-line",
+  details: "mt-[13px] grid grid-cols-2 gap-[10px]",
+  detail: "flex min-w-0 items-start gap-[9px] text-[11px] text-[var(--tf-copy)]",
+  detailIcon: "grid h-[27px] w-[27px] flex-none place-items-center rounded-lg bg-[var(--tf-sky)] text-[var(--tf-blue)] [[data-theme=dark]_&]:bg-[var(--tf-sky)]",
+  detailCopy: "block min-w-0 break-words",
+  detailValue: "block text-[11px] font-semibold text-[var(--tf-ink)]",
+  detailLabel: "block text-[10px] text-[var(--tf-muted)]",
+  seats: "mt-[15px] rounded-lg bg-[var(--tf-surface-soft)] p-[10px_11px] [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)]",
+  seatline: "mb-[6px] flex justify-between gap-[10px] text-[10px] text-[var(--tf-copy)]",
+  seatValue: "font-semibold text-[var(--tf-ink)]",
+  progress: "mt-1 block h-[5px] overflow-hidden rounded-md bg-[var(--tf-line)]",
+  progressBar: "block h-full rounded-[inherit] bg-gradient-to-r from-[#59b4e9] to-[#267cdb]",
+  cardFooter: "mt-[14px] flex items-center justify-between gap-3 border-t border-[var(--tf-line)] pt-3",
+  visibilityControl: "flex cursor-pointer items-center gap-2 text-[11px] text-[var(--tf-copy)]",
+  publishStatus: "text-[10px] text-[var(--tf-muted)]",
+  tableWrap: "max-h-[66vh] overflow-auto overscroll-contain rounded-xl border border-[var(--tf-line)] bg-[var(--tf-surface)] shadow-[0_3px_12px_rgb(28_63_101_/_4%)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
+  table: "w-full min-w-[760px] border-separate border-spacing-0 text-[11px]",
+  tableBody: "[&_tr:hover]:bg-[var(--tf-surface-soft)] [&_tr:last-child_td]:border-b-0",
+  tableHead: "sticky top-0 z-[1] whitespace-nowrap border-b border-[var(--tf-line)] bg-[var(--tf-surface-soft)] px-[11px] py-3 text-left text-[10px] font-bold uppercase tracking-[.04em] text-[var(--tf-muted)] [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)]",
+  tableCell: "border-b border-[var(--tf-line)] px-[11px] py-3 align-middle text-[var(--tf-copy)] last:border-b-0",
+  tableTitle: "min-w-[180px]",
+  tableTitleStrong: "block text-xs font-semibold text-[var(--tf-ink)]",
+  tableTitleCopy: "mt-[3px] block text-[10px] leading-[1.6] text-[var(--tf-muted)]",
+  tableDates: "mt-[3px] text-[10px] leading-[1.6] text-[var(--tf-muted)]",
+  rowActions: "flex gap-[6px]",
+  switch: "relative h-[19px] w-[34px] cursor-pointer rounded-[20px] border-0 bg-slate-300 p-0 transition-colors duration-200 after:absolute after:top-[3px] after:left-[3px] after:h-[13px] after:w-[13px] after:rounded-full after:bg-[var(--tf-surface)] after:transition-[left] after:duration-200 after:content-[''] focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-60",
+  switchOn: "bg-sky-400 after:left-[18px] [[data-theme=dark]_&]:bg-sky-300",
+  empty: "rounded-[13px] border border-dashed border-[var(--tf-line)] bg-[var(--tf-surface)] px-5 py-[42px] text-center text-[var(--tf-copy)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
+  emptyTitle: "tf-section-title mt-2 mb-1",
+  emptyCopy: "mb-4 text-xs text-[var(--tf-muted)]",
+  loading: "grid min-h-[320px] place-content-center gap-3 rounded-[13px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-5 py-[42px] text-center text-[var(--tf-copy)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
+  spinner: "mx-auto h-8 w-8 animate-spin rounded-full border-[3px] border-[var(--tf-line)] border-t-[var(--tf-blue)]",
+  loadingCopy: "m-0",
+  backdrop: "fixed inset-0 z-[1000] flex items-center justify-center bg-[rgb(10_25_45_/_45%)] p-5 max-[520px]:p-[10px]",
+  modal: "max-h-[92vh] w-full max-w-[720px] overflow-auto rounded-[15px] border border-[var(--tf-line)] bg-[var(--tf-surface)] text-[var(--tf-ink)] shadow-[0_12px_32px_rgb(26_67_112_/_16%)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
+  modalHead: "flex items-start justify-between gap-4 border-b border-[var(--tf-line)] px-[22px] py-[18px] max-[520px]:px-4 max-[520px]:py-[15px]",
+  modalTitle: "mb-1 text-[17px] font-semibold text-[var(--tf-ink)]",
+  modalCopy: "text-xs text-[var(--tf-copy)]",
+  close: "cursor-pointer border-0 bg-transparent text-2xl leading-none text-[var(--tf-muted)] focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2",
+  form: "grid gap-[15px] px-[22px] py-5 max-[520px]:p-4",
+  formGrid: "grid grid-cols-2 gap-[13px] max-[520px]:grid-cols-1",
+  field: "grid min-w-0 content-start gap-[6px]",
+  fieldFull: "col-span-full max-[520px]:col-auto",
+  label: "tf-label mb-0",
+  input: "tf-field",
+  uploadField: "col-span-full max-[520px]:col-auto",
+  upload: "relative flex min-h-[120px] cursor-pointer flex-col items-center justify-center gap-[6px] overflow-hidden rounded-[10px] border border-dashed border-[var(--tf-blue)] bg-gradient-to-br from-[var(--tf-surface-soft)] to-[var(--tf-sky)] p-3 text-center text-[var(--tf-copy)] hover:border-[var(--tf-blue)] [[data-theme=dark]_&]:from-[var(--tf-surface-soft)] [[data-theme=dark]_&]:to-[var(--tf-sky)]",
+  uploadImage: "max-h-[90px] max-w-full rounded-[7px] object-contain",
+  uploadTitle: "text-xs text-[var(--tf-ink)]",
+  uploadCopy: "text-[10px] text-[var(--tf-muted)]",
+  uploadIcon: "grid h-[34px] w-[34px] place-items-center rounded-[10px] border border-[var(--tf-line)] bg-[var(--tf-surface)] text-[21px] text-[var(--tf-blue)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
+  fileInput: "sr-only",
+  checkbox: "flex items-center gap-[9px] text-xs text-[var(--tf-copy)]",
+  checkboxInput: "h-4 w-4 accent-[var(--tf-blue)]",
+  formActions: "flex justify-end gap-[9px] pt-[3px]",
+};
 
 function BatchDetail({ icon, value, label }) {
   const iconPaths = {
@@ -19,9 +113,10 @@ function BatchDetail({ icon, value, label }) {
   };
 
   return (
-    <div className="batch-detail">
-      <span className="batch-detail-icon" aria-hidden="true">
+    <div className={pageStyles.detail}>
+      <span className={pageStyles.detailIcon} aria-hidden="true">
         <svg
+          className="h-[14px] w-[14px]"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -32,9 +127,9 @@ function BatchDetail({ icon, value, label }) {
           {iconPaths[icon]}
         </svg>
       </span>
-      <span className="batch-detail-copy">
-        <strong>{value}</strong>
-        <span>{label}</span>
+      <span className={pageStyles.detailCopy}>
+        <strong className={pageStyles.detailValue}>{value}</strong>
+        <span className={pageStyles.detailLabel}>{label}</span>
       </span>
     </div>
   );
@@ -767,10 +862,11 @@ function Batches() {
   };
 
   const getTypeClass = (type) =>
-    `batch-status--${type === "current" ? "current" : type === "old" ? "old" : "upcoming"}`;
-
-  const inputClass = "batch-input";
-  const labelClass = "batch-label";
+    type === "current"
+      ? pageStyles.statusCurrent
+      : type === "old"
+      ? pageStyles.statusOld
+      : "";
 
   const filterItems = [
     { key: "all", label: "All batches" },
@@ -819,64 +915,64 @@ function Batches() {
 
   if (loading) {
     return (
-      <div className="batch-page">
-        <div className="batch-loading">
-          <span className="batch-spinner" />
-          <p>Loading batches...</p>
+      <div className={pageStyles.page}>
+        <div className={pageStyles.loading}>
+          <span className={pageStyles.spinner} />
+          <p className={pageStyles.loadingCopy}>Loading batches...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="batch-page">
-      <div className="batch-content">
-        <header className="batch-heading">
+    <div className={pageStyles.page}>
+      <div className={pageStyles.content}>
+        <header className={pageStyles.heading}>
           <div>
-            <h1>Batches</h1>
-            <p>Organize your classes, track seats, and manage what students can see.</p>
+            <h1 className={pageStyles.headingTitle}>Batches</h1>
+            <p className={pageStyles.headingCopy}>Organize your classes, track seats, and manage what students can see.</p>
           </div>
-          <button type="button" onClick={handleAdd} className="batch-button batch-button--primary">
+          <button type="button" onClick={handleAdd} className={pageStyles.buttonPrimary}>
             <span aria-hidden="true">＋</span> New batch
           </button>
         </header>
 
-        <div className="batch-summary">
-          <div className="batch-stat"><span>Total batches</span><strong>{batches.length}</strong></div>
-          <div className="batch-stat"><span>Upcoming batches</span><strong>{upcomingCount}</strong></div>
-          <div className="batch-stat"><span>Running batches</span><strong>{currentCount}</strong></div>
-          <div className="batch-stat"><span>Seats available</span><strong>{availableSeats}</strong></div>
-          <div className="batch-stat"><span>Estimated revenue</span><strong>{formatCurrency(estimatedRevenue)}</strong><small>Based on enrolled seats</small></div>
+        <div className={pageStyles.summary}>
+          <div className={pageStyles.stat}><span className={pageStyles.statLabel}>Total batches</span><strong className={pageStyles.statValue}>{batches.length}</strong></div>
+          <div className={`${pageStyles.stat} ${pageStyles.statGreen}`}><span className={pageStyles.statLabel}>Upcoming batches</span><strong className={pageStyles.statValue}>{upcomingCount}</strong></div>
+          <div className={`${pageStyles.stat} ${pageStyles.statGold}`}><span className={pageStyles.statLabel}>Running batches</span><strong className={pageStyles.statValue}>{currentCount}</strong></div>
+          <div className={pageStyles.stat}><span className={pageStyles.statLabel}>Seats available</span><strong className={pageStyles.statValue}>{availableSeats}</strong></div>
+          <div className={`${pageStyles.stat} ${pageStyles.statGold}`}><span className={pageStyles.statLabel}>Estimated revenue</span><strong className={pageStyles.statValue}>{formatCurrency(estimatedRevenue)}</strong><small className={pageStyles.statNote}>Based on enrolled seats</small></div>
         </div>
 
         {/* Error */}
         {error && (
-          <div className="batch-alert batch-alert--error" role="alert">
+          <div className={`${pageStyles.alert} ${pageStyles.errorAlert}`} role="alert">
             {error}
           </div>
         )}
 
         {/* Success */}
         {success && (
-          <div className="batch-alert batch-alert--success" role="status">
+          <div className={`${pageStyles.alert} ${pageStyles.successAlert}`} role="status">
             {success}
           </div>
         )}
 
         {/* Add / Edit Form */}
         {isFormOpen && (
-          <div className="batch-modal-backdrop" onMouseDown={(event) => {
+          <div className={pageStyles.backdrop} onMouseDown={(event) => {
             if (event.target === event.currentTarget && !saving) resetForm();
           }}>
-          <section className="batch-modal" role="dialog" aria-modal="true" aria-labelledby="batchFormTitle">
+          <section className={pageStyles.modal} role="dialog" aria-modal="true" aria-labelledby="batchFormTitle">
 
-            <div className="batch-modal-head">
+            <div className={pageStyles.modalHead}>
               <div>
-                <h2 id="batchFormTitle">
+                <h2 id="batchFormTitle" className={pageStyles.modalTitle}>
                   {editingId ? "Edit Batch" : "Add Batch"}
                 </h2>
 
-                <p>
+                <p className={pageStyles.modalCopy}>
                   Add the details of your tuition batch.
                 </p>
               </div>
@@ -884,7 +980,7 @@ function Batches() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="batch-close"
+                className={pageStyles.close}
                 aria-label="Close form"
                 disabled={saving}
               >
@@ -894,15 +990,15 @@ function Batches() {
 
             <form
               onSubmit={handleSubmit}
-              className="batch-form"
+              className={pageStyles.form}
             >
-              <div className="batch-form-grid">
+              <div className={pageStyles.formGrid}>
 
                 {/* Title */}
-                <div className="md:col-span-2">
-                  <label className={labelClass}>
+                <div className={`${pageStyles.field} ${pageStyles.fieldFull}`}>
+                  <label className={pageStyles.label}>
                     Batch Title{" "}
-                    <span className="text-red-400">
+                    <span className="text-[var(--tf-danger)]">
                       *
                     </span>
                   </label>
@@ -914,15 +1010,15 @@ function Batches() {
                     onChange={handleChange}
                     placeholder="e.g. Class 10 Mathematics Batch"
                     maxLength={200}
-                    className={inputClass}
+                    className={pageStyles.input}
                   />
                 </div>
 
                 {/* Batch Type */}
-                <div>
-                  <label className={labelClass}>
+                <div className={pageStyles.field}>
+                  <label className={pageStyles.label}>
                     Batch Type{" "}
-                    <span className="text-red-400">
+                    <span className="text-[var(--tf-danger)]">
                       *
                     </span>
                   </label>
@@ -931,7 +1027,7 @@ function Batches() {
                     name="batchType"
                     value={formData.batchType}
                     onChange={handleChange}
-                    className={`${inputClass} appearance-none`}
+                    className={`${pageStyles.input} appearance-none`}
                   >
                     <option value="upcoming">
                       Upcoming
@@ -948,8 +1044,8 @@ function Batches() {
                 </div>
 
                 {/* Session */}
-                <div>
-                  <label className={labelClass}>
+                <div className={pageStyles.field}>
+                  <label className={pageStyles.label}>
                     Session
                   </label>
 
@@ -959,13 +1055,13 @@ function Batches() {
                     value={formData.session}
                     onChange={handleChange}
                     placeholder="e.g. 2026-27"
-                    className={inputClass}
+                    className={pageStyles.input}
                   />
                 </div>
 
                 {/* Fee */}
-                <div>
-                  <label className={labelClass}>
+                <div className={pageStyles.field}>
+                  <label className={pageStyles.label}>
                     Fee
                   </label>
 
@@ -976,17 +1072,17 @@ function Batches() {
                     onChange={handleChange}
                     placeholder="e.g. 500"
                     inputMode="numeric"
-                    className={inputClass}
+                    className={pageStyles.input}
                   />
 
-                  <p className="text-[#617391] text-xs mt-2">
+                  <p className="mt-2 text-xs text-[var(--tf-copy)]">
                     Enter amount only, e.g. 500.
                   </p>
                 </div>
 
                 {/* Payment Type */}
-                <div>
-                  <label className={labelClass}>
+                <div className={pageStyles.field}>
+                  <label className={pageStyles.label}>
                     Payment Type
                   </label>
 
@@ -994,7 +1090,7 @@ function Batches() {
                     name="paymentType"
                     value={formData.paymentType}
                     onChange={handleChange}
-                    className={`${inputClass} appearance-none`}
+                    className={`${pageStyles.input} appearance-none`}
                   >
                     <option value="">
                       Select payment type
@@ -1011,8 +1107,8 @@ function Batches() {
                 </div>
 
                 {/* Start */}
-                <div>
-                  <label className={labelClass}>
+                <div className={pageStyles.field}>
+                  <label className={pageStyles.label}>
                     Start Date
                   </label>
 
@@ -1021,13 +1117,13 @@ function Batches() {
                     name="startOn"
                     value={formData.startOn}
                     onChange={handleChange}
-                    className={`${inputClass} [color-scheme:dark]`}
+                    className={`${pageStyles.input} [color-scheme:light] [[data-theme=dark]_&]:[color-scheme:dark]`}
                   />
                 </div>
 
                 {/* End */}
-                <div>
-                  <label className={labelClass}>
+                <div className={pageStyles.field}>
+                  <label className={pageStyles.label}>
                     End Date
                   </label>
 
@@ -1036,13 +1132,13 @@ function Batches() {
                     name="endOn"
                     value={formData.endOn}
                     onChange={handleChange}
-                    className={`${inputClass} [color-scheme:dark]`}
+                    className={`${pageStyles.input} [color-scheme:light] [[data-theme=dark]_&]:[color-scheme:dark]`}
                   />
                 </div>
 
                 {/* Eligible Classes */}
-                <div>
-                  <label className={labelClass}>
+                <div className={pageStyles.field}>
+                  <label className={pageStyles.label}>
                     Eligible Classes
                   </label>
 
@@ -1052,13 +1148,13 @@ function Batches() {
                     value={formData.eligibleClasses}
                     onChange={handleChange}
                     placeholder="e.g. Class 8-10"
-                    className={inputClass}
+                    className={pageStyles.input}
                   />
                 </div>
 
                 {/* Maximum Seats */}
-                <div>
-                  <label className={labelClass}>
+                <div className={pageStyles.field}>
+                  <label className={pageStyles.label}>
                     Maximum Seats
                   </label>
 
@@ -1069,13 +1165,13 @@ function Batches() {
                     onChange={handleChange}
                     placeholder="e.g. 30"
                     min="0"
-                    className={inputClass}
+                    className={pageStyles.input}
                   />
                 </div>
 
                 {/* Allotted Seats */}
-                <div>
-                  <label className={labelClass}>
+                <div className={pageStyles.field}>
+                  <label className={pageStyles.label}>
                     Allotted Seats
                   </label>
 
@@ -1086,15 +1182,15 @@ function Batches() {
                     onChange={handleChange}
                     placeholder="e.g. 20"
                     min="0"
-                    className={inputClass}
+                    className={pageStyles.input}
                   />
                 </div>
 
                 {/* Description */}
-                <div className="md:col-span-2">
-                  <label className={labelClass}>
+                <div className={`${pageStyles.field} ${pageStyles.fieldFull}`}>
+                  <label className={pageStyles.label}>
                     Description{" "}
-                    <span className="text-red-400">
+                    <span className="text-[var(--tf-danger)]">
                       *
                     </span>
                   </label>
@@ -1106,46 +1202,48 @@ function Batches() {
                     placeholder="Describe this batch..."
                     rows={5}
                     maxLength={2000}
-                    className={`${inputClass} resize-none`}
+                    className={`${pageStyles.input} resize-y`}
                   />
                 </div>
 
-                <div className="batch-image-field">
-                  <label className={labelClass}>Batch image</label>
-                  <label className="batch-upload">
+                <div className={pageStyles.uploadField}>
+                  <label className={pageStyles.label}>Batch image</label>
+                  <label className={pageStyles.upload}>
                     {batchImagePreview ? (
-                      <img src={batchImagePreview} alt="Batch preview" />
+                      <img className={pageStyles.uploadImage} src={batchImagePreview} alt="Batch preview" />
                     ) : (
-                      <span className="batch-upload-icon" aria-hidden="true">↑</span>
+                      <span className={pageStyles.uploadIcon} aria-hidden="true">↑</span>
                     )}
-                    <strong>{uploadingImage ? "Uploading image…" : batchImagePreview ? "Change batch image" : "Choose an image for this batch"}</strong>
-                    <span>JPG, PNG or WebP</span>
+                    <strong className={pageStyles.uploadTitle}>{uploadingImage ? "Uploading image…" : batchImagePreview ? "Change batch image" : "Choose an image for this batch"}</strong>
+                    <span className={pageStyles.uploadCopy}>JPG, PNG or WebP</span>
                     <input
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
                       onChange={handleImageChange}
                       disabled={saving}
+                      className={pageStyles.fileInput}
                     />
                   </label>
                 </div>
               </div>
 
-              <label className="batch-checkbox">
+              <label className={pageStyles.checkbox}>
                 <input
                   type="checkbox"
                   name="visibleOnWebsite"
                   checked={formData.visibleOnWebsite}
                   onChange={handleChange}
+                  className={pageStyles.checkboxInput}
                 />
                 <span>Visible on website</span>
               </label>
-              <div className="batch-form-actions">
+              <div className={pageStyles.formActions}>
 
                 <button
                   type="button"
                   onClick={resetForm}
                   disabled={saving}
-                  className="batch-button"
+                  className={pageStyles.button}
                 >
                   Cancel
                 </button>
@@ -1153,11 +1251,11 @@ function Batches() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="batch-button batch-button--primary"
+                  className={pageStyles.buttonPrimary}
                 >
                   {saving ? (
                     <>
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--tf-on-primary)]/30 border-t-[var(--tf-on-primary)]" />
                       Saving...
                     </>
                   ) : editingId ? (
@@ -1173,8 +1271,8 @@ function Batches() {
         )}
 
         {/* Filters */}
-        <div className="batch-toolbar">
-          <div className="batch-tabs" role="tablist" aria-label="Filter batches">
+        <div className={pageStyles.toolbar}>
+          <div className={pageStyles.tabs} role="tablist" aria-label="Filter batches">
           {filterItems.map((filter) => (
             <button
               key={filter.key}
@@ -1182,35 +1280,35 @@ function Batches() {
               onClick={() => setActiveFilter(filter.key)}
               role="tab"
               aria-selected={activeFilter === filter.key}
-              className={`batch-tab ${activeFilter === filter.key ? "is-active" : ""}`}
+              className={`${pageStyles.tab} ${activeFilter === filter.key ? pageStyles.tabActive : ""}`}
             >
               {filter.label}
             </button>
           ))}
           </div>
-          <div className="batch-toolbar-right">
+          <div className={pageStyles.toolbarRight}>
             <input
               type="search"
-              className="batch-search"
+              className={pageStyles.search}
               placeholder="Search batches"
               aria-label="Search batches"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
-            <div className="batch-view-toggle" aria-label="Batch layout">
-              <button type="button" className={viewMode === "list" ? "is-active" : ""} onClick={() => setViewMode("list")}>☷ <span>List</span></button>
-              <button type="button" className={viewMode === "grid" ? "is-active" : ""} onClick={() => setViewMode("grid")}>▦ <span>Grid</span></button>
+            <div className={pageStyles.viewToggle} aria-label="Batch layout">
+              <button type="button" aria-label="List view" title="List view" aria-pressed={viewMode === "list"} className={`${pageStyles.viewButton} ${viewMode === "list" ? pageStyles.tabActive : ""}`} onClick={() => setViewMode("list")}><svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M2 3h2v2H2zM6 3h12v2H6zM2 9h2v2H2zM6 9h12v2H6zM2 15h2v2H2zM6 15h12v2H6z"/></svg></button>
+              <button type="button" aria-label="Grid view" title="Grid view" aria-pressed={viewMode === "grid"} className={`${pageStyles.viewButton} ${viewMode === "grid" ? pageStyles.tabActive : ""}`} onClick={() => setViewMode("grid")}><svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M2 2h7v7H2zM11 2h7v7h-7zM2 11h7v7H2zM11 11h7v7h-7z"/></svg></button>
             </div>
           </div>
         </div>
 
         {/* Empty State */}
         {filteredBatches.length === 0 ? (
-          <div className="batch-empty">
+          <div className={pageStyles.empty}>
 
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-blue-500/10 flex items-center justify-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--tf-sky)]">
               <svg
-                className="w-8 h-8 text-blue-400"
+                className="h-8 w-8 text-[var(--tf-blue)]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1224,35 +1322,35 @@ function Batches() {
               </svg>
             </div>
 
-            <h2>{batches.length === 0 ? "No batches yet" : "No matching batches"}</h2>
+            <h2 className={pageStyles.emptyTitle}>{batches.length === 0 ? "No batches yet" : "No matching batches"}</h2>
 
-            <p>{batches.length === 0 ? "Create your first batch to start managing your tuition classes." : "Try another search or choose a different batch type."}</p>
+            <p className={pageStyles.emptyCopy}>{batches.length === 0 ? "Create your first batch to start managing your tuition classes." : "Try another search or choose a different batch type."}</p>
 
             {!isFormOpen && (
               <button
                 type="button"
                 onClick={handleAdd}
-                className="mt-6 bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl transition-colors text-sm font-medium"
+                className="mt-6 rounded-xl bg-[var(--tf-blue)] px-5 py-3 text-sm font-medium text-[var(--tf-on-primary)] transition-colors hover:bg-[var(--tf-blue-pressed)]"
               >
                 Add Your First Batch
               </button>
             )}
           </div>
         ) : viewMode === "list" ? (
-          <div className="batch-table-wrap" role="region" aria-label="Batch list" tabIndex="0">
-            <table className="batch-table">
+          <div className={pageStyles.tableWrap} role="region" aria-label="Batch list" tabIndex="0">
+            <table className={pageStyles.table}>
               <thead>
                 <tr>
-                  <th scope="col">Batch</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Dates</th>
-                  <th scope="col">Fee</th>
-                  <th scope="col">Seats</th>
-                  <th scope="col">Website</th>
-                  <th scope="col">Actions</th>
+                  <th className={pageStyles.tableHead} scope="col">Batch</th>
+                  <th className={pageStyles.tableHead} scope="col">Type</th>
+                  <th className={pageStyles.tableHead} scope="col">Dates</th>
+                  <th className={pageStyles.tableHead} scope="col">Fee</th>
+                  <th className={pageStyles.tableHead} scope="col">Seats</th>
+                  <th className={pageStyles.tableHead} scope="col">Website</th>
+                  <th className={pageStyles.tableHead} scope="col">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className={pageStyles.tableBody}>
                 {filteredBatches.map((batch) => {
                   const visible = batch.visibleOnWebsite !== undefined
                     ? Boolean(batch.visibleOnWebsite)
@@ -1260,34 +1358,34 @@ function Batches() {
 
                   return (
                     <tr key={batch.batchId}>
-                      <td className="batch-table-title">
-                        <strong>{batch.title}</strong>
-                        <span>{batch.session ? `Session ${batch.session}` : batch.eligibleClasses || "No session specified"}</span>
+                      <td className={`${pageStyles.tableCell} ${pageStyles.tableTitle}`}>
+                        <strong className={pageStyles.tableTitleStrong}>{batch.title}</strong>
+                        <span className={pageStyles.tableTitleCopy}>{batch.session ? `Session ${batch.session}` : batch.eligibleClasses || "No session specified"}</span>
                       </td>
-                      <td><span className={`batch-status ${getTypeClass(batch.batchType)}`}>{getTypeLabel(batch.batchType)}</span></td>
-                      <td className="batch-table-dates">{formatDate(batch.startOn)}<br />{formatDate(batch.endOn)}</td>
-                      <td>{batch.fee ? `₹${batch.fee}` : "—"}</td>
-                      <td>{batch.allottedSeats ?? 0} / {batch.maximumSeats || "—"}</td>
-                      <td>
+                      <td className={pageStyles.tableCell}><span className={`${pageStyles.status} ${getTypeClass(batch.batchType)}`}>{getTypeLabel(batch.batchType)}</span></td>
+                      <td className={`${pageStyles.tableCell} ${pageStyles.tableDates}`}>{formatDate(batch.startOn)}<br />{formatDate(batch.endOn)}</td>
+                      <td className={pageStyles.tableCell}>{batch.fee ? `₹${batch.fee}` : "—"}</td>
+                      <td className={pageStyles.tableCell}>{batch.allottedSeats ?? 0} / {batch.maximumSeats || "—"}</td>
+                      <td className={pageStyles.tableCell}>
                         <button
                           type="button"
-                          className={`batch-switch ${visible ? "is-on" : ""}`}
+                          className={`${pageStyles.switch} ${visible ? pageStyles.switchOn : ""}`}
                           aria-label={`${visible ? "Hide" : "Show"} ${batch.title} on website`}
                           aria-pressed={visible}
                           onClick={() => handleVisibility(batch.batchId, visible)}
                           disabled={visibilityId === batch.batchId}
                         />
                       </td>
-                      <td>
-                        <div className="batch-row-actions">
-                          <button type="button" className="batch-button batch-button--small" onClick={() => handleEdit(batch)}>Edit</button>
+                      <td className={pageStyles.tableCell}>
+                        <div className={pageStyles.rowActions}>
+                          <button type="button" className={pageStyles.buttonSmall} onClick={() => handleEdit(batch)}><svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m13.5 3.5 3 3M3 17l3.8-.8L16 7a2.1 2.1 0 0 0-3-3L3.8 13.2 3 17Z"/></svg>Edit</button>
                           <button
                             type="button"
-                            className="batch-button batch-button--small batch-button--danger"
+                            className={pageStyles.buttonDanger}
                             onClick={() => handleDelete(batch.batchId)}
                             disabled={deletingId === batch.batchId}
                           >
-                            {deletingId === batch.batchId ? "Deleting…" : "Delete"}
+                            {deletingId === batch.batchId ? <><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current" aria-hidden="true"/>Deleting…</> : <><svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 5h14M7 5V3h6v2m-8 0 1 12h8l1-12M8 8v6m4-6v6"/></svg>Delete</>}
                           </button>
                         </div>
                       </td>
@@ -1298,7 +1396,7 @@ function Batches() {
             </table>
           </div>
         ) : (
-          <div className="batch-grid">
+          <div className={pageStyles.grid}>
 
             {filteredBatches.map((batch) => {
               const visible =
@@ -1309,44 +1407,45 @@ function Batches() {
               return (
                 <article
                   key={batch.batchId}
-                  className="batch-card"
+                  className={pageStyles.card}
                 >
-                  <div className="batch-card-top">
-                    <div className="batch-card-heading">
-                      <h2 className="batch-card-title">{batch.title}</h2>
+                  <div className={pageStyles.cardTop}>
+                    <div className={pageStyles.cardHeading}>
+                      <h2 className={pageStyles.cardTitle}>{batch.title}</h2>
                       {batch.session && (
-                        <span className="batch-session">Session {batch.session}</span>
+                        <span className={pageStyles.session}>Session {batch.session}</span>
                       )}
                     </div>
-                    <div className="batch-card-actions">
-                      <span className={`batch-status ${getTypeClass(batch.batchType)}`}>
+                    <div className={pageStyles.cardActions}>
+                      <span className={`${pageStyles.status} ${getTypeClass(batch.batchType)}`}>
                         {getTypeLabel(batch.batchType)}
                       </span>
                       <button
                         type="button"
-                        className="batch-button batch-button--small"
+                        className={pageStyles.buttonSmall}
                         onClick={() => handleEdit(batch)}
                       >
+                        <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m13.5 3.5 3 3M3 17l3.8-.8L16 7a2.1 2.1 0 0 0-3-3L3.8 13.2 3 17Z"/></svg>
                         Edit
                       </button>
                       <button
                         type="button"
-                        className="batch-button batch-button--small batch-button--danger"
+                        className={pageStyles.buttonDanger}
                         onClick={() => handleDelete(batch.batchId)}
                         disabled={deletingId === batch.batchId}
                       >
-                        {deletingId === batch.batchId ? "Deleting…" : "Delete"}
+                        {deletingId === batch.batchId ? <><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current" aria-hidden="true"/>Deleting…</> : <><svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 5h14M7 5V3h6v2m-8 0 1 12h8l1-12M8 8v6m4-6v6"/></svg>Delete</>}
                       </button>
                     </div>
                   </div>
 
                   {batch.description && (
-                    <p className="batch-description">
+                    <p className={pageStyles.description}>
                       {batch.description}
                     </p>
                   )}
 
-                  <div className="batch-details">
+                  <div className={pageStyles.details}>
                     <BatchDetail
                       icon="calendar"
                       value={formatDate(batch.startOn)}
@@ -1369,28 +1468,28 @@ function Batches() {
                     />
                   </div>
 
-                  <div className="batch-seats">
-                    <div className="batch-seatline">
+                  <div className={pageStyles.seats}>
+                    <div className={pageStyles.seatline}>
                       <span>Seats filled</span>
-                      <strong>{batch.allottedSeats ?? 0} of {batch.maximumSeats || "—"}</strong>
+                      <strong className={pageStyles.seatValue}>{batch.allottedSeats ?? 0} of {batch.maximumSeats || "—"}</strong>
                     </div>
                     <div
-                      className="batch-progress"
+                      className={pageStyles.progress}
                       role="progressbar"
                       aria-label={`${batch.title} seats filled`}
                       aria-valuemin={0}
                       aria-valuemax={Number(batch.maximumSeats) || 0}
                       aria-valuenow={Math.min(Number(batch.allottedSeats) || 0, Number(batch.maximumSeats) || 0)}
                     >
-                      <i style={{ width: `${batch.maximumSeats ? Math.min(100, (Number(batch.allottedSeats || 0) / Number(batch.maximumSeats)) * 100) : 0}%` }} />
+                      <i className={pageStyles.progressBar} style={{ width: `${batch.maximumSeats ? Math.min(100, (Number(batch.allottedSeats || 0) / Number(batch.maximumSeats)) * 100) : 0}%` }} />
                     </div>
                   </div>
 
-                  <div className="batch-card-footer">
-                    <label className="batch-visibility-control">
+                  <div className={pageStyles.cardFooter}>
+                    <label className={pageStyles.visibilityControl}>
                       <button
                         type="button"
-                        className={`batch-switch ${visible ? "is-on" : ""}`}
+                        className={`${pageStyles.switch} ${visible ? pageStyles.switchOn : ""}`}
                         aria-label={`${visible ? "Hide" : "Show"} ${batch.title} on website`}
                         aria-pressed={visible}
                         onClick={() => handleVisibility(batch.batchId, visible)}
@@ -1398,7 +1497,7 @@ function Batches() {
                       />
                       <span>Visible on website</span>
                     </label>
-                    <span className="batch-publish-status">
+                    <span className={pageStyles.publishStatus}>
                       {visibilityId === batch.batchId
                         ? "Updating…"
                         : visible ? "Published" : "Hidden"}
