@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import api from "../../api/axios";
+import "./Achievements.css";
 
 const initialForm = {
   title: "",
@@ -9,7 +10,56 @@ const initialForm = {
   studentRating: "",
   batchId: "",
   tags: "",
+  youtubeVideoLink: "",
+  achievementImageUrl: "",
+  studentImageUrl: "",
 };
+
+function UploadIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+      <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v5h14v-5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function StudentIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M4.5 20a7.5 7.5 0 0 1 15 0" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+const getUserId = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem("user"));
+    return user?.user_id;
+  } catch {
+    return null;
+  }
+};
+
+const normalizeBatch = (batch) => ({
+  batchId: batch?.batchId ?? batch?.batchid ?? batch?.id ?? null,
+  userId: batch?.userId ?? batch?.userid ?? null,
+  title: batch?.title ?? "",
+  batchType:
+    batch?.batchType ?? batch?.batchtype ?? batch?.type ?? "upcoming",
+  description: batch?.description ?? "",
+  fee:
+    batch?.fee !== null && batch?.fee !== undefined
+      ? String(batch.fee)
+      : "",
+  paymentType: batch?.paymentType ?? batch?.paymenttype ?? "",
+  startOn: batch?.startOn ?? batch?.starton ?? "",
+  endOn: batch?.endOn ?? batch?.endon ?? "",
+  eligibleClasses: batch?.eligibleClasses ?? batch?.eligibleclasses ?? "",
+  maximumSeats: batch?.maximumSeats ?? batch?.maximumseats ?? "",
+  allottedSeats: batch?.allottedSeats ?? batch?.allottedseats ?? "",
+  session: batch?.session ?? "",
+});
 
 function Achievements() {
   const [achievements, setAchievements] = useState([]);
@@ -25,83 +75,16 @@ function Achievements() {
   const [editingId, setEditingId] = useState(null);
 
   const [formData, setFormData] = useState(initialForm);
+  const [search, setSearch] = useState("");
+  const [achievementImagePreview, setAchievementImagePreview] = useState("");
+  const [studentImageFile, setStudentImageFile] = useState(null);
+  const [studentImagePreview, setStudentImagePreview] = useState("");
+  const [uploadingAchievementImage, setUploadingAchievementImage] = useState(false);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const getUserId = () => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      return user?.user_id;
-    } catch {
-      return null;
-    }
-  };
-
-  const normalizeBatch = (batch) => ({
-    batchId:
-      batch?.batchId ??
-      batch?.batchid ??
-      batch?.id ??
-      null,
-
-    userId:
-      batch?.userId ??
-      batch?.userid ??
-      null,
-
-    title: batch?.title ?? "",
-
-    batchType:
-      batch?.batchType ??
-      batch?.batchtype ??
-      batch?.type ??
-      "upcoming",
-
-    description:
-      batch?.description ?? "",
-
-    fee:
-      batch?.fee !== null &&
-      batch?.fee !== undefined
-        ? String(batch.fee)
-        : "",
-
-    paymentType:
-      batch?.paymentType ??
-      batch?.paymenttype ??
-      "",
-
-    startOn:
-      batch?.startOn ??
-      batch?.starton ??
-      "",
-
-    endOn:
-      batch?.endOn ??
-      batch?.endon ??
-      "",
-
-    eligibleClasses:
-      batch?.eligibleClasses ??
-      batch?.eligibleclasses ??
-      "",
-
-    maximumSeats:
-      batch?.maximumSeats ??
-      batch?.maximumseats ??
-      "",
-
-    allottedSeats:
-      batch?.allottedSeats ??
-      batch?.allottedseats ??
-      "",
-
-    session:
-      batch?.session ?? "",
-  });
-
-  const fetchAchievements = async () => {
+  const fetchAchievements = useCallback(async () => {
     const userId = getUserId();
 
     if (!userId) {
@@ -141,8 +124,10 @@ function Achievements() {
         );
 
         setAchievements(sortedList);
+        return sortedList;
       } else if (data?.status === 404) {
         setAchievements([]);
+        return [];
       } else {
         setError(
           data?.message ||
@@ -179,9 +164,9 @@ function Achievements() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchBatches = async () => {
+  const fetchBatches = useCallback(async () => {
     const userId = getUserId();
 
     if (!userId) {
@@ -232,16 +217,35 @@ function Achievements() {
     } finally {
       setBatchesLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchAchievements();
-    fetchBatches();
-  }, []);
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) {
+        fetchAchievements();
+        fetchBatches();
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [fetchAchievements, fetchBatches]);
+
+  useEffect(() => {
+    return () => {
+      if (studentImagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(studentImagePreview);
+      }
+    };
+  }, [studentImagePreview]);
 
   const resetForm = () => {
     setFormData(initialForm);
     setEditingId(null);
+    setAchievementImagePreview("");
+    setStudentImageFile(null);
+    setStudentImagePreview("");
     setIsFormOpen(false);
   };
 
@@ -260,6 +264,9 @@ function Achievements() {
   const handleAdd = () => {
     setFormData(initialForm);
     setEditingId(null);
+    setAchievementImagePreview("");
+    setStudentImageFile(null);
+    setStudentImagePreview("");
     setIsFormOpen(true);
     setError("");
     setSuccess("");
@@ -284,7 +291,31 @@ function Achievements() {
           ? String(achievement.batchId)
           : "",
       tags: achievement.tags ?? "",
+      youtubeVideoLink: achievement.youtubeVideoLink ?? "",
+      achievementImageUrl:
+        achievement.achievementImageUrl ??
+        achievement.imageUrl ??
+        achievement.achievementImage ??
+        "",
+      studentImageUrl:
+        achievement.studentImageUrl ??
+        achievement.studentImage ??
+        achievement.studentimage ??
+        "",
     });
+    setAchievementImagePreview(
+      achievement.achievementImageUrl ??
+      achievement.imageUrl ??
+      achievement.achievementImage ??
+      ""
+    );
+    setStudentImageFile(null);
+    setStudentImagePreview(
+      achievement.studentImageUrl ??
+      achievement.studentImage ??
+      achievement.studentimage ??
+      ""
+    );
 
     setEditingId(achievement.achievementId);
     setIsFormOpen(true);
@@ -295,6 +326,66 @@ function Achievements() {
       top: 0,
       behavior: "smooth",
     });
+  };
+
+  const handleImageChange = async (event, type) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setError("Choose a JPEG, PNG, or WebP image.");
+      return;
+    }
+
+    if (type === "student") {
+      setStudentImageFile(file);
+      setStudentImagePreview(URL.createObjectURL(file));
+      setError("");
+      return;
+    }
+
+    const uploadData = new FormData();
+    uploadData.append("file", file);
+
+    try {
+      setUploadingAchievementImage(true);
+      setError("");
+      const response = await api.post("/achievements/image", uploadData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30000,
+      });
+      const data = response.data;
+      const uploadResult = data?.data;
+      const imageUrl =
+        (typeof uploadResult === "string" ? uploadResult : null) ??
+        uploadResult?.fileUrl ??
+        data?.fileUrl;
+
+      if ((data?.status === 200 || data?.status === 201) && imageUrl) {
+        setFormData((previous) => ({
+          ...previous,
+          achievementImageUrl: imageUrl,
+        }));
+        setAchievementImagePreview(imageUrl);
+      } else {
+        setError(data?.message || "The image upload did not return an image URL.");
+      }
+    } catch (err) {
+      if (err.response?.status === 413) {
+        setError("This image is too large to upload. Choose a smaller image.");
+      } else if (err.response?.status === 422 || err.response?.status === 415) {
+        setError("Choose a valid JPEG, PNG, or WebP image.");
+      } else if (err.response?.status >= 500) {
+        setError("The server is currently unavailable. Please try again in a moment.");
+      } else if (err.request) {
+        setError("Could not connect to the server. Please check your internet connection.");
+      } else {
+        setError("Something went wrong while uploading the achievement image.");
+      }
+    } finally {
+      setUploadingAchievementImage(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -315,6 +406,21 @@ function Achievements() {
 
     if (!formData.title.trim()) {
       setError("Achievement title is required.");
+      return;
+    }
+
+    if (uploadingAchievementImage) {
+      setError("Wait for the achievement image to finish uploading.");
+      return;
+    }
+
+    if (
+      formData.youtubeVideoLink.trim() &&
+      !/^https?:\/\/(www\.)?(youtube\.com|youtu\.be)\//i.test(
+        formData.youtubeVideoLink.trim()
+      )
+    ) {
+      setError("Enter a valid YouTube video URL.");
       return;
     }
 
@@ -361,6 +467,8 @@ function Achievements() {
       batchId,
       createdBy: userId,
       tags: formData.tags.trim() || null,
+      youtubeVideoLink: formData.youtubeVideoLink.trim() || null,
+      imageUrl: formData.achievementImageUrl || null,
     };
 
     try {
@@ -396,15 +504,58 @@ function Achievements() {
         data?.status === 200 ||
         data?.status === 201
       ) {
+        let photoError = "";
+        if (studentImageFile) {
+          let achievementId = editingId;
+          if (!achievementId) {
+            const result = data?.data ?? data?.details ?? {};
+            achievementId =
+              result?.achievementId ??
+              result?.achievement_id ??
+              result?.id ??
+              null;
+          }
+          if (!achievementId) {
+            const latestAchievements = await fetchAchievements();
+            const matchingAchievement = latestAchievements?.find(
+              (item) =>
+                item.title === payload.title &&
+                (item.studentName ?? "") === (payload.studentName ?? "") &&
+                Number(item.batchId ?? 0) === Number(payload.batchId ?? 0)
+            );
+            achievementId = matchingAchievement?.achievementId ?? null;
+          }
+
+          if (achievementId) {
+            const photoData = new FormData();
+            photoData.append("achievementId", String(achievementId));
+            photoData.append("file", studentImageFile);
+            try {
+              const photoResponse = await api.post(
+                "/achievements/studentImage",
+                photoData,
+                {
+                  headers: { "Content-Type": "multipart/form-data" },
+                  timeout: 30000,
+                }
+              );
+              if (photoResponse.data?.status !== 200) {
+                photoError = photoResponse.data?.message || "Student photo could not be uploaded.";
+              }
+            } catch (photoUploadError) {
+              photoError =
+                photoUploadError.response?.data?.message ||
+                "Achievement saved, but the student photo could not be uploaded.";
+            }
+          } else {
+            photoError = "Achievement saved, but its ID was unavailable for uploading the student photo.";
+          }
+        }
+
         setSuccess(
-          editingId
-            ? "Achievement updated successfully."
-            : "Achievement added successfully."
+          `${editingId ? "Achievement updated" : "Achievement added"} successfully.${photoError ? ` ${photoError}` : ""}`
         );
-
         resetForm();
-
-        // Fetch latest data from backend.
         await fetchAchievements();
       } else if (data?.status === 404) {
         setError(
@@ -618,104 +769,119 @@ function Achievements() {
     }${session}`;
   };
 
+  const filteredAchievements = achievements.filter((achievement) =>
+    [
+      achievement.title,
+      achievement.studentName,
+      achievement.description,
+      achievement.tags,
+      achievement.studentReview,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(search.trim().toLowerCase())
+  );
+
+  const visibleCount = achievements.filter(
+    (achievement) => Boolean(achievement.visibleOnWeb)
+  ).length;
+  const hiddenCount = achievements.length - visibleCount;
+
   const inputClass =
-    "w-full bg-[#0a1628] border border-blue-500/10 rounded-xl px-4 py-3 text-white placeholder-[#617391] outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all";
+    "achievement-input";
 
   const labelClass =
-    "block text-sm text-[#c7d8f5] mb-2";
+    "achievement-label";
 
   if (loading) {
     return (
-      <div className="p-5 sm:p-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-8 min-h-[400px] flex flex-col items-center justify-center">
-            <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-
-            <p className="text-[#94a8c7] mt-4 text-sm">
-              Loading achievements...
-            </p>
-          </div>
+      <div className="achievements-page">
+        <div className="achievements-loading">
+          <span className="achievements-spinner" />
+          <p>Loading achievements...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-5 sm:p-8">
-      <div className="max-w-6xl mx-auto">
-
-        {/* Header */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+    <div className="achievements-page">
+      <div className="achievements-content">
+        <header className="achievements-heading">
           <div>
-            <p className="text-[#94a8c7] text-sm mb-2">
-              Tutor Profile
-            </p>
-
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">
-              Students Achievements
-            </h1>
-
-            <p className="text-[#94a8c7] mt-2 text-sm sm:text-base">
-              Showcase student achievements, reviews and success stories.
-            </p>
+            <h1>Student achievements</h1>
+            <p>Celebrate student progress and manage what appears on your website.</p>
           </div>
-
           {!isFormOpen && (
-            <button
-              type="button"
-              onClick={handleAdd}
-              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl transition-colors text-sm font-medium flex items-center justify-center gap-2"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 5v14M5 12h14"
-                />
-              </svg>
-
-              Add Achievement
+            <button type="button" onClick={handleAdd} className="achievement-button achievement-button--primary">
+              <span aria-hidden="true">＋</span> Add achievement
             </button>
           )}
+        </header>
+
+        <div className="achievement-summary">
+          <div className="achievement-stat"><span>Total achievements</span><strong>{achievements.length}</strong></div>
+          <div className="achievement-stat"><span>Visible on website</span><strong>{visibleCount}</strong></div>
+          <div className="achievement-stat"><span>Hidden</span><strong>{hiddenCount}</strong></div>
         </div>
 
         {/* Error */}
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-            <p className="text-red-300 text-sm">
-              {error}
-            </p>
+          <div className="achievement-alert achievement-alert--error" role="alert">
+            {error}
           </div>
         )}
 
         {/* Success */}
         {success && (
-          <div className="mb-6 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3">
-            <p className="text-green-300 text-sm">
-              {success}
-            </p>
+          <div className="achievement-alert achievement-alert--success" role="status">
+            {success}
           </div>
         )}
 
+        <div className="achievement-list-heading">
+          <div>
+            <h2>Your achievements</h2>
+            <p>Turn website visibility on or off for each item.</p>
+          </div>
+          <div className="achievement-search">
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search achievements"
+              aria-label="Search achievements"
+            />
+            <button type="button" className="achievement-button" onClick={() => setSearch(search.trim())}>Search</button>
+          </div>
+        </div>
+
         {/* Form */}
         {isFormOpen && (
-          <section className="mb-8 bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7">
+          <div
+            className="achievement-modal-backdrop"
+            onMouseDown={(event) => {
+              if (
+                event.target === event.currentTarget &&
+                !saving &&
+                !uploadingAchievementImage
+              ) {
+                resetForm();
+              }
+            }}
+          >
+          <section className="achievement-modal" role="dialog" aria-modal="true" aria-labelledby="achievementFormTitle">
 
-            <div className="flex items-start justify-between gap-4 mb-6">
+            <div className="achievement-modal-heading">
               <div>
-                <h2 className="text-lg sm:text-xl font-semibold text-white">
+                <h2 id="achievementFormTitle">
                   {editingId
-                    ? "Edit Achievement"
-                    : "Add Achievement"}
+                    ? "Edit achievement"
+                    : "Add achievement"}
                 </h2>
 
-                <p className="text-[#6f84a5] text-sm mt-1">
+                <p>
                   Add a student success story to your tutor profile.
                 </p>
               </div>
@@ -723,38 +889,30 @@ function Achievements() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="p-2 rounded-lg text-[#94a8c7] hover:text-white hover:bg-[#142744] transition-colors"
+                className="achievement-close"
                 aria-label="Close form"
+                disabled={saving || uploadingAchievementImage}
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 6l12 12M18 6L6 18"
-                  />
-                </svg>
+                ×
               </button>
             </div>
 
+            {error && (
+              <div className="achievement-modal-error" role="alert">
+                {error}
+              </div>
+            )}
+
             <form
               onSubmit={handleSubmit}
-              className="space-y-5"
+              className="achievement-form"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="achievement-form-grid">
 
                 {/* Title */}
-                <div className="md:col-span-2">
+                <div className="achievement-field achievement-field--full">
                   <label className={labelClass}>
-                    Achievement Title{" "}
-                    <span className="text-red-400">
-                      *
-                    </span>
+                    Achievement title <span className="achievement-required">*</span>
                   </label>
 
                   <input
@@ -763,14 +921,16 @@ function Achievements() {
                     value={formData.title}
                     onChange={handleChange}
                     placeholder="e.g. Scored 95% in Class 10"
+                    maxLength={255}
+                    required
                     className={inputClass}
                   />
                 </div>
 
                 {/* Student Name */}
-                <div>
+                <div className="achievement-field">
                   <label className={labelClass}>
-                    Student Name
+                    Student name
                   </label>
 
                   <input
@@ -779,30 +939,32 @@ function Achievements() {
                     value={formData.studentName}
                     onChange={handleChange}
                     placeholder="e.g. Rahul Sharma"
+                    maxLength={200}
                     className={inputClass}
                   />
                 </div>
 
                 {/* Rating */}
-                <div>
+                <div className="achievement-field">
                   <label className={labelClass}>
-                    Student Rating
+                    Student rating
                   </label>
 
-                  <input
-                    type="number"
+                  <select
                     name="studentRating"
                     value={formData.studentRating}
                     onChange={handleChange}
-                    placeholder="1 to 5"
-                    min="1"
-                    max="5"
                     className={inputClass}
-                  />
+                  >
+                    <option value="">No rating</option>
+                    {[5, 4, 3, 2, 1].map((rating) => (
+                      <option key={rating} value={rating}>{rating} {rating === 1 ? "star" : "stars"}</option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Batch */}
-                <div>
+                <div className="achievement-field">
                   <label className={labelClass}>
                     Batch
                   </label>
@@ -832,13 +994,14 @@ function Achievements() {
                     ))}
                   </select>
 
-                  <p className="text-[#617391] text-xs mt-2">
+                  <p className="achievement-helper">
                     Leave empty if this achievement is not linked to a batch.
                   </p>
+                  <a className="achievement-add-batch" href="/batches">Add new batch <span aria-hidden="true">↗</span></a>
                 </div>
 
                 {/* Tags */}
-                <div>
+                <div className="achievement-field">
                   <label className={labelClass}>
                     Tags
                   </label>
@@ -849,12 +1012,21 @@ function Achievements() {
                     value={formData.tags}
                     onChange={handleChange}
                     placeholder="e.g. board exam, maths, cbse"
+                    maxLength={1000}
                     className={inputClass}
                   />
+                  {!!formData.tags.split(",").map((tag) => tag.trim()).filter(Boolean).length && (
+                    <div className="achievement-tag-preview" aria-live="polite">
+                      {formData.tags.split(",").map((tag) => tag.trim()).filter(Boolean).map((tag, index) => (
+                        <span className="achievement-tag" key={`${tag}-${index}`}>{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                  <span className="achievement-helper">Type a comma after each tag to add it.</span>
                 </div>
 
                 {/* Description */}
-                <div className="md:col-span-2">
+                <div className="achievement-field achievement-field--full">
                   <label className={labelClass}>
                     Achievement Description
                   </label>
@@ -865,12 +1037,13 @@ function Achievements() {
                     onChange={handleChange}
                     placeholder="Describe the student's achievement..."
                     rows={4}
+                    maxLength={5000}
                     className={`${inputClass} resize-none`}
                   />
                 </div>
 
                 {/* Review */}
-                <div className="md:col-span-2">
+                <div className="achievement-field achievement-field--full">
                   <label className={labelClass}>
                     Student Review
                   </label>
@@ -881,31 +1054,91 @@ function Achievements() {
                     onChange={handleChange}
                     placeholder="What did the student say about your teaching?"
                     rows={4}
+                    maxLength={5000}
                     className={`${inputClass} resize-none`}
                   />
                 </div>
 
+                <div className="achievement-field achievement-field--full">
+                  <label className={labelClass}>YouTube video link</label>
+                  <input
+                    type="url"
+                    name="youtubeVideoLink"
+                    value={formData.youtubeVideoLink}
+                    onChange={handleChange}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    maxLength={2048}
+                    className={inputClass}
+                  />
+                  <span className="achievement-helper">Optional. Add a video related to this achievement.</span>
+                </div>
+
+                <div className="achievement-upload-grid achievement-field--full">
+                  <div className={`achievement-upload${achievementImagePreview ? " has-image" : ""}`}>
+                    <label className="achievement-upload-label" htmlFor="achievementImageFile">
+                      {achievementImagePreview ? (
+                        <img src={achievementImagePreview} alt="Achievement preview" />
+                      ) : (
+                        <span className="achievement-upload-icon" aria-hidden="true">
+                          <UploadIcon />
+                        </span>
+                      )}
+                      <strong>{uploadingAchievementImage ? "Uploading image..." : "Achievement image"}</strong>
+                      <span className="achievement-helper">Choose an image for this achievement</span>
+                    </label>
+                    <input
+                      id="achievementImageFile"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(event) => handleImageChange(event, "achievement")}
+                      disabled={uploadingAchievementImage || saving}
+                    />
+                    <span className="achievement-upload-formats">JPG, PNG or WebP</span>
+                  </div>
+                  <div className={`achievement-upload${studentImagePreview ? " has-image" : ""}`}>
+                    <label className="achievement-upload-label" htmlFor="studentImageFile">
+                      {studentImagePreview ? (
+                        <img src={studentImagePreview} alt="Student preview" />
+                      ) : (
+                        <span className="achievement-upload-icon" aria-hidden="true">
+                          <StudentIcon />
+                        </span>
+                      )}
+                      <strong>Student photo</strong>
+                      <span className="achievement-helper">Add a photo of the student</span>
+                    </label>
+                    <input
+                      id="studentImageFile"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(event) => handleImageChange(event, "student")}
+                      disabled={saving}
+                    />
+                    <span className="achievement-upload-formats">JPG, PNG or WebP</span>
+                  </div>
+                </div>
+
               </div>
 
-              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+              <div className="achievement-form-actions">
 
                 <button
                   type="button"
                   onClick={resetForm}
-                  disabled={saving}
-                  className="w-full sm:w-auto px-5 py-3 rounded-xl border border-blue-500/10 text-[#c7d8f5] hover:bg-[#142744] hover:text-white transition-colors text-sm font-medium"
+                  disabled={saving || uploadingAchievementImage}
+                  className="achievement-button"
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  disabled={saving}
-                  className="w-full sm:w-auto min-w-[150px] bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                  disabled={saving || uploadingAchievementImage}
+                  className="achievement-button achievement-button--primary"
                 >
                   {saving ? (
                     <>
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span className="achievements-spinner achievements-spinner--small" />
                       Saving...
                     </>
                   ) : editingId ? (
@@ -918,15 +1151,16 @@ function Achievements() {
               </div>
             </form>
           </section>
+          </div>
         )}
 
         {/* Achievement List */}
-        {achievements.length === 0 ? (
-          <div className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-8 sm:p-12 text-center">
+        {filteredAchievements.length === 0 ? (
+          <div className="achievement-empty">
 
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-blue-500/10 flex items-center justify-center">
+            <div className="achievement-empty-icon">
               <svg
-                className="w-8 h-8 text-blue-400"
+                className="achievement-empty-star"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -940,19 +1174,21 @@ function Achievements() {
               </svg>
             </div>
 
-            <h2 className="text-xl font-semibold text-white mt-5">
-              No achievements yet
+            <h2>
+              {search ? "No matching achievements" : "No achievements yet"}
             </h2>
 
-            <p className="text-[#94a8c7] text-sm mt-2">
-              Add your first student achievement to start building your profile.
+            <p>
+              {search
+                ? "Try another search or add a new achievement."
+                : "Add your first student achievement to start building your profile."}
             </p>
 
             {!isFormOpen && (
               <button
                 type="button"
                 onClick={handleAdd}
-                className="mt-6 bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl transition-colors text-sm font-medium"
+                className="achievement-button achievement-button--primary"
               >
                 Add Your First Achievement
               </button>
@@ -960,128 +1196,102 @@ function Achievements() {
 
           </div>
         ) : (
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <div className="achievement-cards">
 
-            {achievements.map((achievement) => {
+            {filteredAchievements.map((achievement) => {
               const visible = Boolean(
                 achievement.visibleOnWeb
+              );
+              const studentPhoto =
+                achievement.studentImageUrl ??
+                achievement.studentImage ??
+                achievement.studentimage;
+              const achievementPhoto =
+                achievement.achievementImageUrl ??
+                achievement.imageUrl ??
+                achievement.achievementImage;
+              const rating = Number(achievement.studentRating);
+              const batch = batches.find(
+                (item) => Number(item.batchId) === Number(achievement.batchId)
               );
 
               return (
                 <article
                   key={achievement.achievementId}
-                  className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-6"
+                  className="achievement-card"
                 >
 
                   {/* Header */}
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="achievement-card-top">
 
-                    <div className="min-w-0">
-                      <h2 className="text-lg font-semibold text-white break-words">
+                    <div className="achievement-card-person">
+                      <span className="achievement-avatar">
+                        {studentPhoto ? (
+                          <img src={studentPhoto} alt={achievement.studentName || "Student"} />
+                        ) : (
+                          <StudentIcon />
+                        )}
+                      </span>
+                      <div className="achievement-card-person-copy">
+                      <h2>
                         {achievement.title}
                       </h2>
 
                       {achievement.studentName && (
-                        <p className="text-[#94a8c7] text-sm mt-1">
+                        <p className="achievement-student-name">
                           {achievement.studentName}
                         </p>
                       )}
+                      {rating > 0 && (
+                        <span className="achievement-stars" aria-label={`${rating} out of 5 stars`}>
+                          {"★".repeat(Math.min(rating, 5))}{"☆".repeat(Math.max(0, 5 - rating))}
+                        </span>
+                      )}
+                      </div>
                     </div>
 
                     <span
-                      className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
-                        visible
-                          ? "bg-green-500/10 text-green-300 border border-green-500/20"
-                          : "bg-[#0a1628] text-[#6f84a5] border border-blue-500/10"
-                      }`}
+                      className={`achievement-visibility${visible ? " is-visible" : ""}`}
                     >
                       {visible
-                        ? "Website Visible"
+                        ? "Published"
                         : "Hidden"}
                     </span>
 
                   </div>
 
                   {/* Description */}
-                  {achievement.description && (
-                    <p className="text-[#c7d8f5] text-sm leading-6 mt-4 whitespace-pre-line">
-                      {achievement.description}
-                    </p>
+                  {achievementPhoto && (
+                    <img className="achievement-card-image" src={achievementPhoto} alt={`Achievement: ${achievement.title}`} />
                   )}
+                  <p className="achievement-card-description">
+                    {achievement.description || "No description added."}
+                  </p>
 
                   {/* Batch */}
                   {achievement.batchId !== null &&
                     achievement.batchId !== undefined && (
-                      <div className="mt-4">
-                        <span className="text-[#617391] text-xs">
-                          Batch ID:{" "}
-                        </span>
-
-                        <span className="text-[#c7d8f5] text-xs">
-                          {achievement.batchId}
-                        </span>
-                      </div>
-                    )}
-
-                  {/* Rating */}
-                  {achievement.studentRating !== null &&
-                    achievement.studentRating !== undefined &&
-                    achievement.studentRating !== "" && (
-                      <div className="mt-4 flex items-center gap-2">
-
-                        <div className="flex items-center gap-1">
-                          {Array.from({
-                            length: 5,
-                          }).map((_, index) => {
-                            const filled =
-                              index <
-                              Number(
-                                achievement.studentRating
-                              );
-
-                            return (
-                              <svg
-                                key={index}
-                                className={`w-4 h-4 ${
-                                  filled
-                                    ? "text-yellow-400"
-                                    : "text-[#334765]"
-                                }`}
-                                viewBox="0 0 24 24"
-                                fill="currentColor"
-                                aria-hidden="true"
-                              >
-                                <path d="M12 2.5l2.94 5.95 6.56.95-4.75 4.63 1.12 6.54L12 17.48l-5.87 3.09 1.12-6.54L2.5 9.4l6.56-.95L12 2.5z" />
-                              </svg>
-                            );
-                          })}
-                        </div>
-
-                        <span className="text-[#94a8c7] text-xs">
-                          {achievement.studentRating}/5
-                        </span>
-
+                      <div className="achievement-batch">
+                        {batch?.title || `Batch ${achievement.batchId}`}
                       </div>
                     )}
 
                   {/* Review */}
                   {achievement.studentReview && (
-                    <div className="mt-5 bg-[#0a1628] rounded-2xl p-4">
+                    <blockquote className="achievement-review">
+                      “{achievement.studentReview}”
+                    </blockquote>
+                  )}
 
-                      <p className="text-[#617391] text-xs mb-2">
-                        Student Review
-                      </p>
-
-                      <p className="text-[#c7d8f5] text-sm leading-6 whitespace-pre-line">
-                        "{achievement.studentReview}"
-                      </p>
-
-                    </div>
+                  {achievement.youtubeVideoLink && (
+                    <a className="achievement-video-link" href={achievement.youtubeVideoLink} target="_blank" rel="noreferrer">
+                      Watch achievement video ↗
+                    </a>
                   )}
 
                   {/* Tags */}
                   {achievement.tags && (
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <div className="achievement-tags">
                       {achievement.tags
                         .split(",")
                         .map((tag) => tag.trim())
@@ -1089,7 +1299,7 @@ function Achievements() {
                         .map((tag) => (
                           <span
                             key={tag}
-                            className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-300 text-xs"
+                            className="achievement-tag"
                           >
                             {tag}
                           </span>
@@ -1098,7 +1308,7 @@ function Achievements() {
                   )}
 
                   {/* Actions */}
-                  <div className="mt-5 pt-4 border-t border-blue-500/10 flex flex-wrap gap-2">
+                  <div className="achievement-card-footer">
 
                     <button
                       type="button"
@@ -1111,14 +1321,14 @@ function Achievements() {
                         visibilityId ===
                         achievement.achievementId
                       }
-                      className="px-3 py-2 rounded-lg text-xs font-medium bg-[#0a1628] text-[#c7d8f5] hover:bg-[#142744] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className={`achievement-visibility-toggle${visible ? " is-on" : ""}`}
                     >
                       {visibilityId ===
                       achievement.achievementId
                         ? "Updating..."
                         : visible
-                        ? "Hide from Website"
-                        : "Show on Website"}
+                        ? "Visible on website"
+                        : "Hidden from website"}
                     </button>
 
                     <button
@@ -1126,7 +1336,7 @@ function Achievements() {
                       onClick={() =>
                         handleEdit(achievement)
                       }
-                      className="px-3 py-2 rounded-lg text-xs font-medium bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 transition-colors"
+                      className="achievement-button achievement-button--small"
                     >
                       Edit
                     </button>
@@ -1142,7 +1352,7 @@ function Achievements() {
                         deletingId ===
                         achievement.achievementId
                       }
-                      className="px-3 py-2 rounded-lg text-xs font-medium bg-red-500/10 text-red-300 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="achievement-button achievement-button--danger achievement-button--small"
                     >
                       {deletingId ===
                       achievement.achievementId

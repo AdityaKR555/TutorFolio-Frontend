@@ -1,5 +1,44 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import api from "../../api/axios";
+import "./Batches.css";
+
+function BatchDetail({ icon, value, label }) {
+  const iconPaths = {
+    calendar: (
+      <>
+        <rect x="3" y="5" width="18" height="16" rx="2" />
+        <path d="M16 3v4M8 3v4M3 10h18" />
+      </>
+    ),
+    money: (
+      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    ),
+    class: (
+      <path d="M3 5h18M5 5v14h14V5M8 9h8M8 13h5" />
+    ),
+  };
+
+  return (
+    <div className="batch-detail">
+      <span className="batch-detail-icon" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          {iconPaths[icon]}
+        </svg>
+      </span>
+      <span className="batch-detail-copy">
+        <strong>{value}</strong>
+        <span>{label}</span>
+      </span>
+    </div>
+  );
+}
 
 const initialForm = {
   title: "",
@@ -13,6 +52,7 @@ const initialForm = {
   maximumSeats: "",
   allottedSeats: "",
   session: "",
+  visibleOnWebsite: true,
 };
 
 function Batches() {
@@ -28,18 +68,24 @@ function Batches() {
 
   const [formData, setFormData] = useState(initialForm);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [viewMode, setViewMode] = useState("grid");
+  const [batchImageUrl, setBatchImageUrl] = useState("");
+  const [batchImageFile, setBatchImageFile] = useState(null);
+  const [batchImagePreview, setBatchImagePreview] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const getUserId = () => {
+  const getUserId = useCallback(() => {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
       return user?.user_id;
     } catch {
       return null;
     }
-  };
+  }, []);
 
   /*
     Backend currently returns some DB fields in lowercase
@@ -56,7 +102,7 @@ function Batches() {
     This function supports both the current backend response
     and the cleaner camelCase response if backend is changed later.
   */
-  const normalizeBatch = (batch) => ({
+  const normalizeBatch = useCallback((batch) => ({
     batchId: batch?.batchId ?? batch?.batchid ?? batch?.id ?? null,
 
     userId:
@@ -113,25 +159,30 @@ function Batches() {
     session:
       batch?.session ?? "",
 
+    imageUrl:
+      batch?.imageUrl ??
+      batch?.imageurl ??
+      batch?.batchImage ??
+      batch?.batchimage ??
+      batch?.image ??
+      "",
+
     visibleOnWebsite:
       batch?.visibleOnWebsite ??
       batch?.visibleonwebsite,
-  });
+  }), []);
 
-  const fetchBatches = async (filter = activeFilter) => {
+  const fetchBatches = useCallback(async (filter = "all") => {
     const userId = getUserId();
 
     if (!userId) {
-      setError(
-        "Your login session could not be found. Please login again."
-      );
-      setLoading(false);
-      return;
+      return Promise.resolve().then(() => {
+        setError("Your login session could not be found. Please login again.");
+        setLoading(false);
+      });
     }
 
     try {
-      setError("");
-
       const response = await api.get(
         `/batches/getAll/${filter}`,
         {
@@ -143,6 +194,7 @@ function Batches() {
       );
 
       const data = response.data;
+      setError("");
 
       if (data?.status === 200) {
         /*
@@ -204,16 +256,16 @@ function Batches() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getUserId, normalizeBatch]);
 
   useEffect(() => {
-    fetchBatches(activeFilter);
-  }, [activeFilter]);
+    void Promise.resolve().then(() => fetchBatches("all"));
+  }, [fetchBatches]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    let nextValue = value;
+    let nextValue = e.target.type === "checkbox" ? e.target.checked : value;
 
     // Fee should contain amount only.
     if (name === "fee") {
@@ -232,12 +284,18 @@ function Batches() {
   const resetForm = () => {
     setFormData(initialForm);
     setEditingId(null);
+    setBatchImageUrl("");
+    setBatchImageFile(null);
+    setBatchImagePreview("");
     setIsFormOpen(false);
   };
 
   const handleAdd = () => {
     setFormData(initialForm);
     setEditingId(null);
+    setBatchImageUrl("");
+    setBatchImageFile(null);
+    setBatchImagePreview("");
     setIsFormOpen(true);
     setError("");
     setSuccess("");
@@ -269,8 +327,12 @@ function Batches() {
           ? String(batch.allottedSeats)
           : "",
       session: batch.session ?? "",
+      visibleOnWebsite: batch.visibleOnWebsite ?? true,
     });
 
+    setBatchImageUrl(batch.imageUrl ?? "");
+    setBatchImageFile(null);
+    setBatchImagePreview(batch.imageUrl ?? "");
     setEditingId(batch.batchId);
     setIsFormOpen(true);
     setError("");
@@ -280,6 +342,22 @@ function Batches() {
       top: 0,
       behavior: "smooth",
     });
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setError("Choose a JPEG, PNG, or WebP image for the batch.");
+      return;
+    }
+
+    setBatchImageFile(file);
+    setBatchImagePreview(URL.createObjectURL(file));
+    setError("");
+    setSuccess("");
   };
 
   const handleSubmit = async (e) => {
@@ -318,6 +396,15 @@ function Batches() {
     }
 
     if (
+      formData.startOn &&
+      formData.endOn &&
+      formData.startOn > formData.endOn
+    ) {
+      setError("End date must be on or after the start date.");
+      return;
+    }
+
+    if (
       formData.paymentType &&
       !["monthly", "installment"].includes(
         formData.paymentType
@@ -340,7 +427,8 @@ function Batches() {
     if (
       maximumSeats !== null &&
       (!Number.isInteger(maximumSeats) ||
-        maximumSeats < 0)
+        maximumSeats < 0 ||
+        maximumSeats > 100000)
     ) {
       setError("Maximum seats must be a valid number.");
       return;
@@ -349,7 +437,8 @@ function Batches() {
     if (
       allottedSeats !== null &&
       (!Number.isInteger(allottedSeats) ||
-        allottedSeats < 0)
+        allottedSeats < 0 ||
+        allottedSeats > 100000)
     ) {
       setError("Allotted seats must be a valid number.");
       return;
@@ -369,7 +458,7 @@ function Batches() {
     const payload = {
       userId,
       title: formData.title.trim(),
-      visibleOnWebsite: true,
+      visibleOnWebsite: formData.visibleOnWebsite,
       batchType: formData.batchType,
       description: formData.description.trim(),
 
@@ -391,12 +480,43 @@ function Batches() {
       setError("");
       setSuccess("");
 
+      let imageUrl = batchImageUrl;
+      if (batchImageFile) {
+        setUploadingImage(true);
+        const uploadData = new FormData();
+        uploadData.append("file", batchImageFile);
+        const uploadResponse = await api.post("/batches/image", uploadData, {
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 30000,
+        });
+        const uploadResult = uploadResponse.data?.data;
+        imageUrl =
+          (typeof uploadResult === "string" ? uploadResult : null) ??
+          uploadResult?.fileUrl ??
+          uploadResponse.data?.fileUrl ??
+          "";
+        if (
+          ![200, 201].includes(uploadResponse.data?.status) ||
+          !imageUrl
+        ) {
+          throw new Error(
+            uploadResponse.data?.message ||
+              "The batch image upload did not return an image URL."
+          );
+        }
+      }
+
+      const batchPayload = {
+        ...payload,
+        ...(imageUrl ? { imageUrl } : {}),
+      };
+
       let response;
 
       if (editingId) {
         response = await api.put(
           `/batches/${editingId}`,
-          payload,
+          batchPayload,
           {
             timeout: 15000,
           }
@@ -404,7 +524,7 @@ function Batches() {
       } else {
         response = await api.post(
           "/batches/new",
-          payload,
+          batchPayload,
           {
             timeout: 15000,
           }
@@ -412,8 +532,6 @@ function Batches() {
       }
 
       const data = response.data;
-
-      console.log("Batch API response:", data);
 
       if (
         data?.status === 200 ||
@@ -428,7 +546,7 @@ function Batches() {
         resetForm();
 
         // Always reload latest data from backend.
-        await fetchBatches(activeFilter);
+        await fetchBatches("all");
       } else if (data?.status === 404) {
         setError(
           data?.message ||
@@ -445,16 +563,14 @@ function Batches() {
         );
       }
     } catch (err) {
-      console.error("Batch API error:", err);
-      console.error(
-        "Backend response:",
-        err.response?.data
-      );
-
       if (err.code === "ECONNABORTED") {
         setError(
           "The server is taking too long to respond. Please try again."
         );
+      } else if (err.response?.status === 413) {
+        setError("The batch image is too large to upload. Choose a smaller image.");
+      } else if (err.response?.status === 415) {
+        setError("Choose a valid JPEG, PNG, or WebP image.");
       } else if (err.response?.status === 422) {
         setError(
           "Some batch information is invalid. Please check the form."
@@ -475,6 +591,7 @@ function Batches() {
       }
     } finally {
       setSaving(false);
+      setUploadingImage(false);
     }
   };
 
@@ -504,7 +621,7 @@ function Batches() {
       if (data?.status === 200) {
         setSuccess("Batch deleted successfully.");
 
-        await fetchBatches(activeFilter);
+        await fetchBatches("all");
       } else if (data?.status === 404) {
         setError(
           data?.message ||
@@ -649,133 +766,117 @@ function Batches() {
     return type;
   };
 
-  const getTypeClass = (type) => {
-    if (type === "current") {
-      return "bg-green-500/10 text-green-300 border-green-500/20";
-    }
+  const getTypeClass = (type) =>
+    `batch-status--${type === "current" ? "current" : type === "old" ? "old" : "upcoming"}`;
 
-    if (type === "upcoming") {
-      return "bg-blue-500/10 text-blue-300 border-blue-500/20";
-    }
-
-    return "bg-[#0a1628] text-[#94a8c7] border-blue-500/10";
-  };
-
-  const inputClass =
-    "w-full bg-[#0a1628] border border-blue-500/10 rounded-xl px-4 py-3 text-white placeholder-[#617391] outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20 transition-all";
-
-  const labelClass =
-    "block text-sm text-[#c7d8f5] mb-2";
+  const inputClass = "batch-input";
+  const labelClass = "batch-label";
 
   const filterItems = [
-    {
-      key: "all",
-      label: "All",
-    },
-    {
-      key: "current",
-      label: "Current",
-    },
-    {
-      key: "upcoming",
-      label: "Upcoming",
-    },
-    {
-      key: "old",
-      label: "Completed",
-    },
+    { key: "all", label: "All batches" },
+    { key: "upcoming", label: "Upcoming" },
+    { key: "current", label: "Running" },
+    { key: "old", label: "Past" },
   ];
+
+  const visibleBatches = batches.filter((batch) =>
+    activeFilter === "all" || batch.batchType === activeFilter
+  );
+  const filteredBatches = visibleBatches.filter((batch) =>
+    [
+      batch.title,
+      batch.session,
+      batch.eligibleClasses,
+      batch.description,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(search.trim().toLowerCase())
+  );
+  const upcomingCount = batches.filter((batch) => batch.batchType === "upcoming").length;
+  const currentCount = batches.filter((batch) => batch.batchType === "current").length;
+  const availableSeats = batches
+    .filter((batch) => batch.batchType !== "old")
+    .reduce((total, batch) => {
+      const maximum = Number(batch.maximumSeats);
+      const filled = Number(batch.allottedSeats) || 0;
+      return total + (Number.isFinite(maximum) ? Math.max(0, maximum - filled) : 0);
+    }, 0);
+  const estimatedRevenue = batches
+    .filter((batch) => batch.batchType !== "old")
+    .reduce((total, batch) => {
+      const fee = Number(String(batch.fee ?? "").replace(/[^\d.]/g, ""));
+      const filled = Number(batch.allottedSeats) || 0;
+      return total + (Number.isFinite(fee) ? fee * filled : 0);
+    }, 0);
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(amount);
 
   if (loading) {
     return (
-      <div className="p-5 sm:p-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-8 min-h-[400px] flex flex-col items-center justify-center">
-            <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-
-            <p className="text-[#94a8c7] mt-4 text-sm">
-              Loading batches...
-            </p>
-          </div>
+      <div className="batch-page">
+        <div className="batch-loading">
+          <span className="batch-spinner" />
+          <p>Loading batches...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-5 sm:p-8">
-      <div className="max-w-6xl mx-auto">
-
-        {/* Header */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+    <div className="batch-page">
+      <div className="batch-content">
+        <header className="batch-heading">
           <div>
-            <p className="text-[#94a8c7] text-sm mb-2">
-              Tutor Profile
-            </p>
-
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">
-              Batches
-            </h1>
-
-            <p className="text-[#94a8c7] mt-2 text-sm sm:text-base">
-              Create and manage your tuition batches.
-            </p>
+            <h1>Batches</h1>
+            <p>Organize your classes, track seats, and manage what students can see.</p>
           </div>
+          <button type="button" onClick={handleAdd} className="batch-button batch-button--primary">
+            <span aria-hidden="true">＋</span> New batch
+          </button>
+        </header>
 
-          {!isFormOpen && (
-            <button
-              type="button"
-              onClick={handleAdd}
-              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl transition-colors text-sm font-medium flex items-center justify-center gap-2"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 5v14M5 12h14"
-                />
-              </svg>
-
-              Add Batch
-            </button>
-          )}
+        <div className="batch-summary">
+          <div className="batch-stat"><span>Total batches</span><strong>{batches.length}</strong></div>
+          <div className="batch-stat"><span>Upcoming batches</span><strong>{upcomingCount}</strong></div>
+          <div className="batch-stat"><span>Running batches</span><strong>{currentCount}</strong></div>
+          <div className="batch-stat"><span>Seats available</span><strong>{availableSeats}</strong></div>
+          <div className="batch-stat"><span>Estimated revenue</span><strong>{formatCurrency(estimatedRevenue)}</strong><small>Based on enrolled seats</small></div>
         </div>
 
         {/* Error */}
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-            <p className="text-red-300 text-sm">
-              {error}
-            </p>
+          <div className="batch-alert batch-alert--error" role="alert">
+            {error}
           </div>
         )}
 
         {/* Success */}
         {success && (
-          <div className="mb-6 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3">
-            <p className="text-green-300 text-sm">
-              {success}
-            </p>
+          <div className="batch-alert batch-alert--success" role="status">
+            {success}
           </div>
         )}
 
         {/* Add / Edit Form */}
         {isFormOpen && (
-          <section className="mb-8 bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-7">
+          <div className="batch-modal-backdrop" onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !saving) resetForm();
+          }}>
+          <section className="batch-modal" role="dialog" aria-modal="true" aria-labelledby="batchFormTitle">
 
-            <div className="flex items-start justify-between gap-4 mb-6">
+            <div className="batch-modal-head">
               <div>
-                <h2 className="text-lg sm:text-xl font-semibold text-white">
+                <h2 id="batchFormTitle">
                   {editingId ? "Edit Batch" : "Add Batch"}
                 </h2>
 
-                <p className="text-[#6f84a5] text-sm mt-1">
+                <p>
                   Add the details of your tuition batch.
                 </p>
               </div>
@@ -783,30 +884,19 @@ function Batches() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="p-2 rounded-lg text-[#94a8c7] hover:text-white hover:bg-[#142744] transition-colors"
+                className="batch-close"
                 aria-label="Close form"
+                disabled={saving}
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 6l12 12M18 6L6 18"
-                  />
-                </svg>
+                ×
               </button>
             </div>
 
             <form
               onSubmit={handleSubmit}
-              className="space-y-5"
+              className="batch-form"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="batch-form-grid">
 
                 {/* Title */}
                 <div className="md:col-span-2">
@@ -1019,16 +1109,43 @@ function Batches() {
                     className={`${inputClass} resize-none`}
                   />
                 </div>
+
+                <div className="batch-image-field">
+                  <label className={labelClass}>Batch image</label>
+                  <label className="batch-upload">
+                    {batchImagePreview ? (
+                      <img src={batchImagePreview} alt="Batch preview" />
+                    ) : (
+                      <span className="batch-upload-icon" aria-hidden="true">↑</span>
+                    )}
+                    <strong>{uploadingImage ? "Uploading image…" : batchImagePreview ? "Change batch image" : "Choose an image for this batch"}</strong>
+                    <span>JPG, PNG or WebP</span>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleImageChange}
+                      disabled={saving}
+                    />
+                  </label>
+                </div>
               </div>
 
-              {/* Buttons */}
-              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+              <label className="batch-checkbox">
+                <input
+                  type="checkbox"
+                  name="visibleOnWebsite"
+                  checked={formData.visibleOnWebsite}
+                  onChange={handleChange}
+                />
+                <span>Visible on website</span>
+              </label>
+              <div className="batch-form-actions">
 
                 <button
                   type="button"
                   onClick={resetForm}
                   disabled={saving}
-                  className="w-full sm:w-auto px-5 py-3 rounded-xl border border-blue-500/10 text-[#c7d8f5] hover:bg-[#142744] hover:text-white transition-colors text-sm font-medium"
+                  className="batch-button"
                 >
                   Cancel
                 </button>
@@ -1036,7 +1153,7 @@ function Batches() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="w-full sm:w-auto min-w-[150px] bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                  className="batch-button batch-button--primary"
                 >
                   {saving ? (
                     <>
@@ -1052,29 +1169,44 @@ function Batches() {
               </div>
             </form>
           </section>
+          </div>
         )}
 
         {/* Filters */}
-        <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
+        <div className="batch-toolbar">
+          <div className="batch-tabs" role="tablist" aria-label="Filter batches">
           {filterItems.map((filter) => (
             <button
               key={filter.key}
               type="button"
               onClick={() => setActiveFilter(filter.key)}
-              className={`shrink-0 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                activeFilter === filter.key
-                  ? "bg-blue-600 text-white"
-                  : "bg-[#0f1f36] border border-blue-500/10 text-[#94a8c7] hover:text-white hover:bg-[#142744]"
-              }`}
+              role="tab"
+              aria-selected={activeFilter === filter.key}
+              className={`batch-tab ${activeFilter === filter.key ? "is-active" : ""}`}
             >
               {filter.label}
             </button>
           ))}
+          </div>
+          <div className="batch-toolbar-right">
+            <input
+              type="search"
+              className="batch-search"
+              placeholder="Search batches"
+              aria-label="Search batches"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+            <div className="batch-view-toggle" aria-label="Batch layout">
+              <button type="button" className={viewMode === "list" ? "is-active" : ""} onClick={() => setViewMode("list")}>☷ <span>List</span></button>
+              <button type="button" className={viewMode === "grid" ? "is-active" : ""} onClick={() => setViewMode("grid")}>▦ <span>Grid</span></button>
+            </div>
+          </div>
         </div>
 
         {/* Empty State */}
-        {batches.length === 0 ? (
-          <div className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-8 sm:p-12 text-center">
+        {filteredBatches.length === 0 ? (
+          <div className="batch-empty">
 
             <div className="w-16 h-16 mx-auto rounded-2xl bg-blue-500/10 flex items-center justify-center">
               <svg
@@ -1092,13 +1224,9 @@ function Batches() {
               </svg>
             </div>
 
-            <h2 className="text-xl font-semibold text-white mt-5">
-              No batches found
-            </h2>
+            <h2>{batches.length === 0 ? "No batches yet" : "No matching batches"}</h2>
 
-            <p className="text-[#94a8c7] text-sm mt-2">
-              Create your first batch to start managing your tuition classes.
-            </p>
+            <p>{batches.length === 0 ? "Create your first batch to start managing your tuition classes." : "Try another search or choose a different batch type."}</p>
 
             {!isFormOpen && (
               <button
@@ -1110,10 +1238,69 @@ function Batches() {
               </button>
             )}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+        ) : viewMode === "list" ? (
+          <div className="batch-table-wrap" role="region" aria-label="Batch list" tabIndex="0">
+            <table className="batch-table">
+              <thead>
+                <tr>
+                  <th scope="col">Batch</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Dates</th>
+                  <th scope="col">Fee</th>
+                  <th scope="col">Seats</th>
+                  <th scope="col">Website</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredBatches.map((batch) => {
+                  const visible = batch.visibleOnWebsite !== undefined
+                    ? Boolean(batch.visibleOnWebsite)
+                    : true;
 
-            {batches.map((batch) => {
+                  return (
+                    <tr key={batch.batchId}>
+                      <td className="batch-table-title">
+                        <strong>{batch.title}</strong>
+                        <span>{batch.session ? `Session ${batch.session}` : batch.eligibleClasses || "No session specified"}</span>
+                      </td>
+                      <td><span className={`batch-status ${getTypeClass(batch.batchType)}`}>{getTypeLabel(batch.batchType)}</span></td>
+                      <td className="batch-table-dates">{formatDate(batch.startOn)}<br />{formatDate(batch.endOn)}</td>
+                      <td>{batch.fee ? `₹${batch.fee}` : "—"}</td>
+                      <td>{batch.allottedSeats ?? 0} / {batch.maximumSeats || "—"}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className={`batch-switch ${visible ? "is-on" : ""}`}
+                          aria-label={`${visible ? "Hide" : "Show"} ${batch.title} on website`}
+                          aria-pressed={visible}
+                          onClick={() => handleVisibility(batch.batchId, visible)}
+                          disabled={visibilityId === batch.batchId}
+                        />
+                      </td>
+                      <td>
+                        <div className="batch-row-actions">
+                          <button type="button" className="batch-button batch-button--small" onClick={() => handleEdit(batch)}>Edit</button>
+                          <button
+                            type="button"
+                            className="batch-button batch-button--small batch-button--danger"
+                            onClick={() => handleDelete(batch.batchId)}
+                            disabled={deletingId === batch.batchId}
+                          >
+                            {deletingId === batch.batchId ? "Deleting…" : "Delete"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="batch-grid">
+
+            {filteredBatches.map((batch) => {
               const visible =
                 batch.visibleOnWebsite !== undefined
                   ? Boolean(batch.visibleOnWebsite)
@@ -1122,181 +1309,100 @@ function Batches() {
               return (
                 <article
                   key={batch.batchId}
-                  className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-5 sm:p-6"
+                  className="batch-card"
                 >
-
-                  {/* Header */}
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-
-                      <h2 className="text-lg sm:text-xl font-semibold text-white break-words">
-                        {batch.title}
-                      </h2>
-
-                      <div className="flex flex-wrap items-center gap-2 mt-2">
-
-                        <span
-                          className={`px-2.5 py-1 rounded-full border text-xs font-medium ${getTypeClass(
-                            batch.batchType
-                          )}`}
-                        >
-                          {getTypeLabel(
-                            batch.batchType
-                          )}
-                        </span>
-
-                        {batch.session && (
-                          <span className="text-[#6f84a5] text-xs">
-                            Session {batch.session}
-                          </span>
-                        )}
-
-                      </div>
+                  <div className="batch-card-top">
+                    <div className="batch-card-heading">
+                      <h2 className="batch-card-title">{batch.title}</h2>
+                      {batch.session && (
+                        <span className="batch-session">Session {batch.session}</span>
+                      )}
                     </div>
-
-                    <span
-                      className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium ${
-                        visible
-                          ? "bg-green-500/10 text-green-300 border border-green-500/20"
-                          : "bg-[#0a1628] text-[#6f84a5] border border-blue-500/10"
-                      }`}
-                    >
-                      {visible
-                        ? "Website Visible"
-                        : "Hidden"}
-                    </span>
+                    <div className="batch-card-actions">
+                      <span className={`batch-status ${getTypeClass(batch.batchType)}`}>
+                        {getTypeLabel(batch.batchType)}
+                      </span>
+                      <button
+                        type="button"
+                        className="batch-button batch-button--small"
+                        onClick={() => handleEdit(batch)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="batch-button batch-button--small batch-button--danger"
+                        onClick={() => handleDelete(batch.batchId)}
+                        disabled={deletingId === batch.batchId}
+                      >
+                        {deletingId === batch.batchId ? "Deleting…" : "Delete"}
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Description */}
                   {batch.description && (
-                    <p className="text-[#c7d8f5] text-sm leading-6 mt-4 whitespace-pre-line">
+                    <p className="batch-description">
                       {batch.description}
                     </p>
                   )}
 
-                  {/* Details */}
-                  <div className="mt-5 grid grid-cols-2 gap-3">
-
-                    <div className="bg-[#0a1628] rounded-xl p-3">
-                      <p className="text-[#617391] text-xs">
-                        Fee
-                      </p>
-
-                      <p className="text-[#c7d8f5] text-sm mt-1">
-                        {batch.fee
-                          ? `₹${batch.fee}`
-                          : "Not specified"}
-                      </p>
-                    </div>
-
-                    <div className="bg-[#0a1628] rounded-xl p-3">
-                      <p className="text-[#617391] text-xs">
-                        Payment
-                      </p>
-
-                      <p className="text-[#c7d8f5] text-sm mt-1 capitalize">
-                        {batch.paymentType ||
-                          "Not specified"}
-                      </p>
-                    </div>
-
-                    <div className="bg-[#0a1628] rounded-xl p-3">
-                      <p className="text-[#617391] text-xs">
-                        Start
-                      </p>
-
-                      <p className="text-[#c7d8f5] text-sm mt-1">
-                        {formatDate(batch.startOn)}
-                      </p>
-                    </div>
-
-                    <div className="bg-[#0a1628] rounded-xl p-3">
-                      <p className="text-[#617391] text-xs">
-                        End
-                      </p>
-
-                      <p className="text-[#c7d8f5] text-sm mt-1">
-                        {formatDate(batch.endOn)}
-                      </p>
-                    </div>
-
-                    <div className="bg-[#0a1628] rounded-xl p-3">
-                      <p className="text-[#617391] text-xs">
-                        Eligible Classes
-                      </p>
-
-                      <p className="text-[#c7d8f5] text-sm mt-1">
-                        {batch.eligibleClasses ||
-                          "Not specified"}
-                      </p>
-                    </div>
-
-                    <div className="bg-[#0a1628] rounded-xl p-3">
-                      <p className="text-[#617391] text-xs">
-                        Seats
-                      </p>
-
-                      <p className="text-[#c7d8f5] text-sm mt-1">
-                        {batch.allottedSeats ?? 0}
-
-                        {batch.maximumSeats !== null &&
-                        batch.maximumSeats !== undefined &&
-                        batch.maximumSeats !== ""
-                          ? ` / ${batch.maximumSeats}`
-                          : ""}
-                      </p>
-                    </div>
-
+                  <div className="batch-details">
+                    <BatchDetail
+                      icon="calendar"
+                      value={formatDate(batch.startOn)}
+                      label="Start date"
+                    />
+                    <BatchDetail
+                      icon="calendar"
+                      value={formatDate(batch.endOn)}
+                      label="End date"
+                    />
+                    <BatchDetail
+                      icon="money"
+                      value={`${batch.fee ? `₹${batch.fee}` : "Not specified"}${batch.paymentType ? ` / ${batch.paymentType === "monthly" ? "month" : batch.paymentType}` : ""}`}
+                      label="Course fee"
+                    />
+                    <BatchDetail
+                      icon="class"
+                      value={batch.eligibleClasses || "Not specified"}
+                      label="Eligible classes"
+                    />
                   </div>
 
-                  {/* Actions */}
-                  <div className="mt-5 pt-4 border-t border-blue-500/10 flex flex-wrap gap-2">
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleVisibility(
-                          batch.batchId,
-                          visible
-                        )
-                      }
-                      disabled={
-                        visibilityId === batch.batchId
-                      }
-                      className="px-3 py-2 rounded-lg text-xs font-medium bg-[#0a1628] text-[#c7d8f5] hover:bg-[#142744] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  <div className="batch-seats">
+                    <div className="batch-seatline">
+                      <span>Seats filled</span>
+                      <strong>{batch.allottedSeats ?? 0} of {batch.maximumSeats || "—"}</strong>
+                    </div>
+                    <div
+                      className="batch-progress"
+                      role="progressbar"
+                      aria-label={`${batch.title} seats filled`}
+                      aria-valuemin={0}
+                      aria-valuemax={Number(batch.maximumSeats) || 0}
+                      aria-valuenow={Math.min(Number(batch.allottedSeats) || 0, Number(batch.maximumSeats) || 0)}
                     >
+                      <i style={{ width: `${batch.maximumSeats ? Math.min(100, (Number(batch.allottedSeats || 0) / Number(batch.maximumSeats)) * 100) : 0}%` }} />
+                    </div>
+                  </div>
+
+                  <div className="batch-card-footer">
+                    <label className="batch-visibility-control">
+                      <button
+                        type="button"
+                        className={`batch-switch ${visible ? "is-on" : ""}`}
+                        aria-label={`${visible ? "Hide" : "Show"} ${batch.title} on website`}
+                        aria-pressed={visible}
+                        onClick={() => handleVisibility(batch.batchId, visible)}
+                        disabled={visibilityId === batch.batchId}
+                      />
+                      <span>Visible on website</span>
+                    </label>
+                    <span className="batch-publish-status">
                       {visibilityId === batch.batchId
-                        ? "Updating..."
-                        : visible
-                        ? "Hide from Website"
-                        : "Show on Website"}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleEdit(batch)
-                      }
-                      className="px-3 py-2 rounded-lg text-xs font-medium bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 transition-colors"
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleDelete(batch.batchId)
-                      }
-                      disabled={
-                        deletingId === batch.batchId
-                      }
-                      className="px-3 py-2 rounded-lg text-xs font-medium bg-red-500/10 text-red-300 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {deletingId === batch.batchId
-                        ? "Deleting..."
-                        : "Delete"}
-                    </button>
-
+                        ? "Updating…"
+                        : visible ? "Published" : "Hidden"}
+                    </span>
                   </div>
                 </article>
               );

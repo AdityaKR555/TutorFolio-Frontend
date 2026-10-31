@@ -96,11 +96,19 @@ function App() {
 
               <Route path="/themes" element={<Themes />} />
 
+<<<<<<< HEAD
               <Route path="/subscription" element={<Subscription />} />
 
               <Route path="/billing" element={<Subscription />} />
 
               <Route path="/plans" element={<Subscription />} />
+=======
+              <Route path="/subscriptions" element={<div />} />
+
+              <Route path="/guide" element={<div />} />
+
+              <Route path="/report-bug" element={<div />} />
+>>>>>>> e2d2c2f3f6df4b29c8516e8c8742c47024afae84
 
             </Route>
           </Route>
