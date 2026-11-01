@@ -12,7 +12,6 @@ import {
   fetchSubscriptionStatus,
   verifyPaymentSignature,
 } from "../../api/payment";
-import "./Subscription.css";
 
 function Subscription() {
   const [billingCycle, setBillingCycle] = useState(BILLING_CYCLES.MONTHLY);
@@ -224,7 +223,7 @@ function Subscription() {
           setError(
             failedRes.error?.description ||
               "Payment was declined or cancelled. Please try again."
-          );
+         );
           setProcessingPlanId(null);
         });
 
@@ -301,7 +300,7 @@ function Subscription() {
       setError(
         verErr.message ||
           "Payment was processed, but subscription activation encountered an issue. Please contact support."
-      );
+     );
     } finally {
       setProcessingPlanId(null);
     }
@@ -325,16 +324,16 @@ function Subscription() {
   };
 
   return (
-    <div className="sub-page">
-      <div className="sub-container space-y-8">
+    <div className="min-h-full bg-[#f4f8fd] px-5 pt-[30px] pb-[60px] text-[#172b46] transition-colors duration-200 sm:px-8 sm:pt-9 sm:pb-[72px] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#101b2b] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
+      <div className="mx-auto max-w-[1200px] space-y-8">
         {/* ================= HEADER ================= */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <span className="text-2xl">👑</span>
-              <h1 className="sub-title">Plans &amp; Billing</h1>
+              <h1 className="tf-page-title">Plans &amp; Billing</h1>
             </div>
-            <p className="sub-subtitle max-w-2xl">
+            <p className="max-w-2xl text-sm leading-[1.6] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
               Supercharge your tutoring presence. Accept inquiries, display
               unlimited batches, and build credibility with instant Razorpay
               checkout.
@@ -342,7 +341,7 @@ function Subscription() {
           </div>
 
           {/* Secure Trust Badge */}
-          <div className="sub-trust-badge self-start md:self-auto">
+          <div className="inline-flex self-start items-center gap-2 rounded-xl border border-[#dfe9f3] bg-[#eaf6ff] px-3.5 py-2 text-xs font-medium text-[#1875d1] md:self-auto [&:where([data-theme=dark],[data-theme=dark]_*)]:border-blue-500/25 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-blue-900/25 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-blue-300">
             <svg
               className="w-4 h-4 shrink-0 text-blue-500"
               fill="none"
@@ -362,7 +361,7 @@ function Subscription() {
 
         {/* Error message */}
         {error && (
-          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-300 text-sm flex items-start gap-3">
+          <div className="flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-red-300">
             <svg
               className="w-5 h-5 text-red-500 shrink-0 mt-0.5"
               fill="none"
@@ -384,37 +383,37 @@ function Subscription() {
               &times;
             </button>
           </div>
-        )}
+       )}
 
         {/* ================= ACTIVE SUBSCRIPTION BANNER ================= */}
         {currentSub && currentSub.status === "active" && (
-          <div className="sub-active-banner">
+          <div className="relative overflow-hidden rounded-3xl border border-blue-200 bg-[linear-gradient(135deg,#eef6ff_0%,#ffffff_100%)] p-6 shadow-[0_10px_25px_rgba(24,117,209,0.08)] sm:px-7 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-blue-500/35 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[linear-gradient(135deg,rgba(30,58,138,0.45)_0%,#0f1f36_100%)] [&:where([data-theme=dark],[data-theme=dark]_*)]:shadow-[0_16px_36px_rgba(0,0,0,0.35)]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
               <div className="space-y-1">
                 <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-emerald-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     ACTIVE PLAN
                   </span>
-                  <span className="text-lg font-bold" style={{ color: "var(--tf-ink)" }}>
+                  <span className="text-lg font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
                     {currentSub.planName || "Pro Tutor"}
                   </span>
                 </div>
-                <p className="text-xs sm:text-sm" style={{ color: "var(--tf-copy)" }}>
+                <p className="text-xs text-[#566b84] sm:text-sm [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
                   Billing Cycle:{" "}
-                  <strong className="capitalize" style={{ color: "var(--tf-ink)" }}>
+                  <strong className="capitalize text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
                     {currentSub.billingCycle || "Monthly"}
                   </strong>{" "}
                   &bull; Valid until:{" "}
-                  <strong style={{ color: "var(--tf-ink)" }}>
+                  <strong className="text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
                     {formatDate(currentSub.validUntil)}
                   </strong>
                 </p>
                 {currentSub.paymentId && (
-                  <p className="text-xs font-mono" style={{ color: "var(--tf-muted)" }}>
+                  <p className="font-mono text-xs text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
                     Ref ID: {currentSub.paymentId}
                   </p>
-                )}
+               )}
               </div>
 
               <div className="flex items-center gap-3">
@@ -427,30 +426,38 @@ function Subscription() {
               </div>
             </div>
           </div>
-        )}
+       )}
 
         {/* ================= BILLING CYCLE TOGGLE ================= */}
         <div id="pricing-cards" className="flex flex-col items-center gap-3 pt-2">
-          <div className="sub-toggle-wrapper">
+          <div className="inline-flex items-center rounded-2xl border border-[#dfe9f3] bg-[#f8fbff] p-[5px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.03)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44]">
             <button
               type="button"
               onClick={() => setBillingCycle(BILLING_CYCLES.MONTHLY)}
-              className={`sub-toggle-btn ${billingCycle === BILLING_CYCLES.MONTHLY ? "active" : ""}`}
+              className={`cursor-pointer rounded-xl border-0 px-[18px] py-[9px] text-[13px] font-semibold transition-all ${
+                billingCycle === BILLING_CYCLES.MONTHLY
+                  ? "bg-[#1875d1] text-white shadow-[0_4px_14px_rgba(24,117,209,0.3)]"
+                  : "bg-transparent text-[#566b84] hover:text-[#172b46] [&:where([data-theme=dark],[data-theme=dark])]:text-[#b7c7db] [&:where([data-theme=dark],[data-theme=dark])]:hover:text-[#e8f0fb]"
+              }`}
             >
               Monthly Billing
             </button>
             <button
               type="button"
               onClick={() => setBillingCycle(BILLING_CYCLES.YEARLY)}
-              className={`sub-toggle-btn flex items-center gap-2 ${billingCycle === BILLING_CYCLES.YEARLY ? "active" : ""}`}
+              className={`flex cursor-pointer items-center gap-2 rounded-xl border-0 px-[18px] py-[9px] text-[13px] font-semibold transition-all ${
+                billingCycle === BILLING_CYCLES.YEARLY
+                  ? "bg-[#1875d1] text-white shadow-[0_4px_14px_rgba(24,117,209,0.3)]"
+                  : "bg-transparent text-[#566b84] hover:text-[#172b46] [&:where([data-theme=dark],[data-theme=dark])]:text-[#b7c7db] [&:where([data-theme=dark],[data-theme=dark])]:hover:text-[#e8f0fb]"
+              }`}
             >
               <span>Annual Billing</span>
-              <span className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[11px] px-2 py-0.5 rounded-full font-bold">
+              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[11px] font-bold text-emerald-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-emerald-300">
                 Save ~17%
               </span>
             </button>
           </div>
-          <p className="text-xs" style={{ color: "var(--tf-muted)" }}>
+          <p className="text-xs text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
             {billingCycle === BILLING_CYCLES.YEARLY
               ? "Billed annually. 2 months free included in each tier!"
               : "Billed monthly. Cancel or change plans anytime."}
@@ -458,7 +465,7 @@ function Subscription() {
         </div>
 
         {/* ================= 3 PRICING CARDS ================= */}
-        <div className="sub-cards-grid">
+        <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-3">
           {PLANS.map((plan) => {
             const price =
               billingCycle === BILLING_CYCLES.YEARLY
@@ -470,48 +477,52 @@ function Subscription() {
             return (
               <div
                 key={plan.id}
-                className={`sub-card ${plan.popular ? "sub-card--popular" : ""}`}
+                className={`relative flex flex-col justify-between rounded-3xl border border-[#dfe9f3] bg-white p-[30px_26px] shadow-[var(--tf-shadow)] transition hover:border-[#1875d1] hover:shadow-[0_14px_30px_rgba(0,0,0,0.08)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a] ${
+                  plan.popular
+                    ? "border-2 border-[#1875d1] bg-[linear-gradient(180deg,#f0f7ff_0%,#ffffff_100%)] shadow-[0_16px_36px_rgba(24,117,209,0.16)] lg:-translate-y-2 [&:where([data-theme=dark],[data-theme=dark])]:border-blue-500/55 [&:where([data-theme=dark],[data-theme=dark])]:bg-[linear-gradient(180deg,#132746_0%,#0a1628_100%)] [&:where([data-theme=dark],[data-theme=dark])]:shadow-[0_20px_42px_rgba(0,0,0,0.45)]"
+                    : ""
+                }`}
               >
                 {/* Popular / Recommended Badge */}
                 {plan.popular && (
-                  <span className="sub-card-popular-badge">
+                  <span className="absolute left-1/2 top-[-14px] -translate-x-1/2 rounded-full bg-[linear-gradient(90deg,#1875d1_0%,#4f46e5_100%)] px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.8px] text-white shadow-[0_6px_16px_rgba(24,117,209,0.35)]">
                     {plan.badge}
                   </span>
-                )}
+               )}
 
                 <div>
                   {/* Card Header */}
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="sub-card-name">{plan.name}</h3>
+                    <h3 className="text-xl font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">{plan.name}</h3>
                     {!plan.popular && plan.badge && (
-                      <span className="sub-card-badge">{plan.badge}</span>
-                    )}
+                      <span className="rounded-full border border-[#dfe9f3] bg-[#f8fbff] px-2.5 py-[3px] text-[11px] font-semibold text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">{plan.badge}</span>
+                   )}
                   </div>
 
-                  <p className="sub-card-desc">{plan.description}</p>
+                  <p className="my-2 mb-[18px] min-h-10 text-[13px] leading-[1.5] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">{plan.description}</p>
 
                   {/* Price */}
-                  <div className="sub-card-pricing">
-                    <span className="sub-card-amount">
+                  <div className="mb-[22px] flex items-baseline gap-1 border-b border-[#dfe9f3] pb-5 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f]">
+                    <span className="text-[38px] font-extrabold tracking-[-0.5px] text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
                       {plan.currencySymbol}
                       {price}
                     </span>
-                    <span className="sub-card-cycle">
+                    <span className="text-[13px] font-medium text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
                       /{billingCycle === BILLING_CYCLES.YEARLY ? "year" : "month"}
                     </span>
                   </div>
 
                   {/* Features List */}
                   <div className="mb-8">
-                    <p className="sub-feature-title">What's Included</p>
+                    <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.8px] text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">What's Included</p>
                     <ul>
                       {plan.features.map((feature, idx) => (
                         <li
                           key={idx}
-                          className={`sub-feature-item ${
+                          className={`mb-2.5 flex items-start gap-2.5 text-[13px] leading-[1.45] ${
                             feature.included
-                              ? "sub-feature-item--included"
-                              : "sub-feature-item--excluded"
+                              ? "text-[#172b46] [&:where([data-theme=dark],[data-theme=dark])]:text-[#e8f0fb]"
+                              : "text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark])]:text-[#91a5bf]"
                           }`}
                         >
                           {feature.included ? (
@@ -528,9 +539,9 @@ function Subscription() {
                                 d="M5 13l4 4L19 7"
                               />
                             </svg>
-                          ) : (
+                         ) : (
                             <svg
-                              className="w-4 h-4 text-slate-400 dark:text-slate-600 shrink-0 mt-0.5"
+                              className="mt-0.5 h-4 w-4 shrink-0 text-slate-400 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-slate-600"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -542,10 +553,10 @@ function Subscription() {
                                 d="M6 18L18 6M6 6l12 12"
                               />
                             </svg>
-                          )}
+                         )}
                           <span>{feature.text}</span>
                         </li>
-                      ))}
+                     ))}
                     </ul>
                   </div>
                 </div>
@@ -558,10 +569,10 @@ function Subscription() {
                     disabled={isCurrent || isProcessing}
                     className={`${
                       isCurrent
-                        ? "sub-btn-current"
+                        ? "flex w-full cursor-default items-center justify-center gap-2 rounded-[14px] border border-[#147d5a] bg-[#eaf8f1] px-5 py-[13px] text-sm font-semibold text-[#147d5a] [&:where([data-theme=dark],[data-theme=dark])]:border-[#69d4a8] [&:where([data-theme=dark],[data-theme=dark])]:bg-[#183d37] [&:where([data-theme=dark],[data-theme=dark])]:text-[#69d4a8]"
                         : plan.popular
-                        ? "sub-btn-primary"
-                        : "sub-btn-secondary"
+                        ? "flex w-full cursor-pointer items-center justify-center gap-2 rounded-[14px] border-0 bg-[#1875d1] px-5 py-[13px] text-sm font-semibold text-white shadow-[0_4px_14px_rgba(24,117,209,0.25)] transition-colors hover:bg-[#0c5fb7]"
+                        : "flex w-full cursor-pointer items-center justify-center gap-2 rounded-[14px] border border-[#dfe9f3] bg-[#f8fbff] px-5 py-[13px] text-sm font-semibold text-[#172b46] transition-all hover:bg-[#dfe9f3] [&:where([data-theme=dark],[data-theme=dark])]:border-white/10 [&:where([data-theme=dark],[data-theme=dark])]:bg-white/10 [&:where([data-theme=dark],[data-theme=dark])]:text-white [&:where([data-theme=dark],[data-theme=dark])]:hover:bg-white/15"
                     } ${isProcessing ? "opacity-75 cursor-wait" : ""}`}
                   >
                     {isProcessing ? (
@@ -569,7 +580,7 @@ function Subscription() {
                         <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                         <span>Opening Razorpay...</span>
                       </>
-                    ) : isCurrent ? (
+                   ) : isCurrent ? (
                       <>
                         <svg
                           className="w-4 h-4"
@@ -586,43 +597,43 @@ function Subscription() {
                         </svg>
                         <span>Current Active Plan</span>
                       </>
-                    ) : (
+                   ) : (
                       <>
                         <span>{plan.ctaText}</span>
                         <span>&rarr;</span>
                       </>
-                    )}
+                   )}
                   </button>
                 </div>
               </div>
-            );
+           );
           })}
         </div>
 
         {/* ================= PAYMENT METHODS & ASSURANCES ================= */}
-        <div className="sub-panel">
+        <div className="rounded-3xl border border-[#dfe9f3] bg-white p-[26px_28px] shadow-[var(--tf-shadow)] sm:p-[30px_34px] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
             <div>
-              <h4 className="sub-panel-title mb-1">
+              <h4 className="mb-1 text-lg font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
                 Accepted Payment Methods via Razorpay
               </h4>
-              <p className="sub-panel-desc">
+              <p className="text-[13px] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
                 UPI (GPay, PhonePe, Paytm, BHIM), Cards (Visa, MasterCard, RuPay),
                 NetBanking (50+ Banks) &amp; Wallets.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-2.5">
-              <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-gray-200 dark:border-slate-700">
+              <span className="rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs font-semibold text-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-slate-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-slate-200">
                 UPI / QR
               </span>
-              <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-gray-200 dark:border-slate-700">
+              <span className="rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs font-semibold text-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-slate-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-slate-200">
                 Debit &amp; Credit Cards
               </span>
-              <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-gray-200 dark:border-slate-700">
+              <span className="rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs font-semibold text-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-slate-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-slate-200">
                 NetBanking
               </span>
-              <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-gray-200 dark:border-slate-700">
+              <span className="rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs font-semibold text-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-slate-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-slate-200">
                 Wallets
               </span>
             </div>
@@ -630,25 +641,25 @@ function Subscription() {
         </div>
 
         {/* ================= TRANSACTION HISTORY ================= */}
-        <div className="sub-panel">
+        <div className="rounded-3xl border border-[#dfe9f3] bg-white p-[26px_28px] shadow-[var(--tf-shadow)] sm:p-[30px_34px] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="sub-panel-title">Billing History</h3>
-              <p className="sub-panel-desc mt-0.5">
+              <h3 className="text-lg font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">Billing History</h3>
+              <p className="mt-0.5 text-[13px] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
                 Past transactions and downloadable tax receipts
               </p>
             </div>
           </div>
 
           {paymentHistory.length === 0 ? (
-            <div className="text-center py-8 text-sm" style={{ color: "var(--tf-muted)" }}>
+            <div className="py-8 text-center text-sm text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
               No transactions recorded yet. When you upgrade via Razorpay, receipts will appear here.
             </div>
-          ) : (
+         ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead>
-                  <tr className="border-b uppercase text-[11px] tracking-wider" style={{ borderColor: "var(--tf-line)", color: "var(--tf-muted)" }}>
+                  <tr className="border-b border-[#dfe9f3] uppercase text-[11px] tracking-wider text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
                     <th className="pb-3 font-semibold">Date</th>
                     <th className="pb-3 font-semibold">Plan</th>
                     <th className="pb-3 font-semibold">Billing</th>
@@ -657,16 +668,16 @@ function Subscription() {
                     <th className="pb-3 font-semibold text-right">Receipt</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y" style={{ borderColor: "var(--tf-line)" }}>
+                <tbody className="divide-y divide-[#dfe9f3] [&:where([data-theme=dark],[data-theme=dark]_*)]:divide-[#30465f]">
                   {paymentHistory.map((item, idx) => (
-                    <tr key={item.id || idx} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                      <td className="py-3.5 font-medium" style={{ color: "var(--tf-ink)" }}>{formatDate(item.date)}</td>
-                      <td className="py-3.5 font-semibold" style={{ color: "var(--tf-ink)" }}>{item.planName || "Pro Tutor"}</td>
-                      <td className="py-3.5 capitalize" style={{ color: "var(--tf-copy)" }}>{item.billingCycle || "Monthly"}</td>
-                      <td className="py-3.5 font-bold text-emerald-600 dark:text-emerald-400">
+                    <tr key={item.id || idx} className="transition-colors hover:bg-black/5 [&:where([data-theme=dark],[data-theme=dark]_*)]:hover:bg-white/5">
+                      <td className="py-3.5 font-medium text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">{formatDate(item.date)}</td>
+                      <td className="py-3.5 font-semibold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">{item.planName || "Pro Tutor"}</td>
+                      <td className="py-3.5 capitalize text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">{item.billingCycle || "Monthly"}</td>
+                      <td className="py-3.5 font-bold text-emerald-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-emerald-400">
                         ₹{item.amount}
                       </td>
-                      <td className="py-3.5 font-mono text-[11px] truncate max-w-[120px]" style={{ color: "var(--tf-muted)" }}>
+                      <td className="max-w-[120px] truncate py-3.5 font-mono text-[11px] text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
                         {item.id || "N/A"}
                       </td>
                       <td className="py-3.5 text-right">
@@ -683,34 +694,34 @@ function Subscription() {
                               validUntil: item.date,
                             });
                           }}
-                          className="text-blue-600 dark:text-blue-400 hover:underline text-xs font-semibold cursor-pointer"
+                          className="cursor-pointer text-xs font-semibold text-blue-600 hover:underline [&:where([data-theme=dark],[data-theme=dark]_*)]:text-blue-400"
                         >
                           View Receipt
                         </button>
                       </td>
                     </tr>
-                  ))}
+                 ))}
                 </tbody>
               </table>
             </div>
-          )}
+         )}
         </div>
 
         {/* ================= BILLING FAQS ================= */}
-        <div className="sub-panel">
-          <h3 className="sub-panel-title mb-1.5">Frequently Asked Questions</h3>
-          <p className="sub-panel-desc mb-6">
+        <div className="rounded-3xl border border-[#dfe9f3] bg-white p-[26px_28px] shadow-[var(--tf-shadow)] sm:p-[30px_34px] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
+          <h3 className="mb-1.5 text-lg font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">Frequently Asked Questions</h3>
+          <p className="mb-6 text-[13px] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
             Everything you need to know about TutorFolio subscriptions and Razorpay
             billing.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {PAYMENT_FAQS.map((faq, idx) => (
-              <div key={idx} className="sub-faq-item">
-                <h4 className="sub-faq-q">{faq.q}</h4>
-                <p className="sub-faq-a">{faq.a}</p>
+              <div key={idx} className="rounded-2xl border border-[#dfe9f3] bg-[#f8fbff] p-[18px_20px] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44]">
+                <h4 className="mb-1.5 text-sm font-semibold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">{faq.q}</h4>
+                <p className="text-[13px] leading-[1.55] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">{faq.a}</p>
               </div>
-            ))}
+           ))}
           </div>
         </div>
       </div>
@@ -718,25 +729,25 @@ function Subscription() {
       {/* ================= SUCCESS & RECEIPT MODAL ================= */}
       {successModalData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-          <div className="relative w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl border" style={{ background: "var(--tf-surface)", borderColor: "var(--tf-line)", color: "var(--tf-ink)" }}>
+          <div className="relative w-full max-w-lg rounded-3xl border border-[#dfe9f3] bg-white p-6 text-[#172b46] shadow-2xl sm:p-8 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
             <button
               onClick={() => setSuccessModalData(null)}
-              className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 dark:hover:text-white p-1 rounded-lg cursor-pointer text-xl"
+              className="absolute right-5 top-5 cursor-pointer rounded-lg p-1 text-xl text-gray-400 hover:text-gray-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:hover:text-white"
               aria-label="Close"
             >
               &times;
             </button>
 
-            <div className="text-center space-y-3 pb-6 border-b" style={{ borderColor: "var(--tf-line)" }}>
-              <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-3xl mx-auto">
+            <div className="space-y-3 border-b border-[#dfe9f3] pb-6 text-center [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f]">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/15 text-3xl text-emerald-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-emerald-400">
                 ✓
               </div>
-              <h3 className="text-2xl font-bold" style={{ color: "var(--tf-ink)" }}>
+              <h3 className="text-2xl font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
                 Payment Successful!
               </h3>
-              <p className="text-xs sm:text-sm" style={{ color: "var(--tf-copy)" }}>
+              <p className="text-xs text-[#566b84] sm:text-sm [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
                 Your subscription to{" "}
-                <strong className="text-emerald-600 dark:text-emerald-400">
+                <strong className="text-emerald-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-emerald-400">
                   {successModalData.planName}
                 </strong>{" "}
                 has been activated successfully.
@@ -744,42 +755,42 @@ function Subscription() {
             </div>
 
             {/* Receipt Summary */}
-            <div className="my-6 p-4 rounded-2xl border space-y-3 text-xs sm:text-sm" style={{ background: "var(--tf-surface-soft)", borderColor: "var(--tf-line)" }}>
+            <div className="my-6 space-y-3 rounded-2xl border border-[#dfe9f3] bg-[#f8fbff] p-4 text-xs sm:text-sm [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44]">
               <div className="flex justify-between">
-                <span style={{ color: "var(--tf-copy)" }}>Amount Paid</span>
-                <span className="font-bold text-base" style={{ color: "var(--tf-ink)" }}>
+                <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Amount Paid</span>
+                <span className="text-base font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
                   {successModalData.currency}
                   {successModalData.amount}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span style={{ color: "var(--tf-copy)" }}>Billing Frequency</span>
-                <span className="capitalize font-medium" style={{ color: "var(--tf-ink)" }}>
+                <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Billing Frequency</span>
+                <span className="font-medium capitalize text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
                   {successModalData.billingCycle}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span style={{ color: "var(--tf-copy)" }}>Payment Ref ID</span>
-                <span className="font-mono text-xs font-semibold text-blue-600 dark:text-blue-400">
+                <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Payment Ref ID</span>
+                <span className="font-mono text-xs font-semibold text-blue-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-blue-400">
                   {successModalData.paymentId || "N/A"}
                 </span>
               </div>
               {successModalData.orderId && (
                 <div className="flex justify-between">
-                  <span style={{ color: "var(--tf-copy)" }}>Order ID</span>
-                  <span className="font-mono text-xs" style={{ color: "var(--tf-muted)" }}>
+                  <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Order ID</span>
+                  <span className="font-mono text-xs text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
                     {successModalData.orderId}
                   </span>
                 </div>
-              )}
+             )}
               {successModalData.validUntil && (
                 <div className="flex justify-between">
-                  <span style={{ color: "var(--tf-copy)" }}>Active Until</span>
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Active Until</span>
+                  <span className="font-semibold text-emerald-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-emerald-400">
                     {formatDate(successModalData.validUntil)}
                   </span>
                 </div>
-              )}
+             )}
             </div>
 
             {/* Actions */}
@@ -787,8 +798,7 @@ function Subscription() {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="flex-1 py-3 px-4 rounded-xl border text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
-                style={{ borderColor: "var(--tf-line)", color: "var(--tf-ink)", background: "var(--tf-surface-soft)" }}
+                className="flex-1 cursor-pointer rounded-xl border border-[#dfe9f3] bg-[#f8fbff] px-4 py-3 text-xs font-semibold text-[#172b46] transition-colors sm:text-sm [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]"
               >
                 🖨️ Print Receipt
               </button>
@@ -802,55 +812,55 @@ function Subscription() {
             </div>
           </div>
         </div>
-      )}
+     )}
 
       {/* ================= SANDBOX DEV TESTING MODAL ================= */}
       {sandboxPromptOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="relative w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl border" style={{ background: "var(--tf-surface)", borderColor: "var(--tf-line)", color: "var(--tf-ink)" }}>
+          <div className="relative w-full max-w-lg rounded-3xl border border-[#dfe9f3] bg-white p-6 text-[#172b46] shadow-2xl sm:p-8 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
             <button
               onClick={() => setSandboxPromptOrder(null)}
-              className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 dark:hover:text-white p-1 rounded-lg cursor-pointer text-xl"
+              className="absolute right-5 top-5 cursor-pointer rounded-lg p-1 text-xl text-gray-400 hover:text-gray-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:hover:text-white"
               aria-label="Close"
             >
               &times;
             </button>
 
-            <div className="space-y-2 pb-5 border-b" style={{ borderColor: "var(--tf-line)" }}>
-              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+            <div className="space-y-2 border-b border-[#dfe9f3] pb-5 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f]">
+              <div className="flex items-center gap-2 text-blue-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-blue-400">
                 <span className="text-xl">⚡</span>
                 <span className="text-xs font-bold uppercase tracking-wider">
                   Razorpay Gateway Simulation
                 </span>
               </div>
-              <h3 className="text-xl font-bold" style={{ color: "var(--tf-ink)" }}>
+              <h3 className="text-xl font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
                 Complete Sandbox Payment
               </h3>
-              <p className="text-xs sm:text-sm" style={{ color: "var(--tf-copy)" }}>
+              <p className="text-xs text-[#566b84] sm:text-sm [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
                 {sandboxPromptOrder.reason}
               </p>
             </div>
 
-            <div className="my-5 p-4 rounded-2xl border space-y-2 text-xs" style={{ background: "var(--tf-surface-soft)", borderColor: "var(--tf-line)" }}>
+            <div className="my-5 space-y-2 rounded-2xl border border-[#dfe9f3] bg-[#f8fbff] p-4 text-xs [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44]">
               <div className="flex justify-between">
-                <span style={{ color: "var(--tf-copy)" }}>Selected Plan</span>
-                <span className="font-semibold" style={{ color: "var(--tf-ink)" }}>
+                <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Selected Plan</span>
+                <span className="font-semibold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
                   {sandboxPromptOrder.plan.name}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span style={{ color: "var(--tf-copy)" }}>Amount</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+                <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Amount</span>
+                <span className="text-sm font-bold text-emerald-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-emerald-400">
                   ₹{sandboxPromptOrder.price}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span style={{ color: "var(--tf-copy)" }}>Order ID</span>
-                <span className="font-mono text-blue-600 dark:text-blue-400">
+                <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Order ID</span>
+                <span className="font-mono text-blue-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-blue-400">
                   {sandboxPromptOrder.orderData.orderId}
                 </span>
               </div>
-              <p className="pt-1 text-[11px]" style={{ color: "var(--tf-muted)" }}>
+              <p className="pt-1 text-[11px] text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
                 Note for backend dev: The API will automatically call your{" "}
                 <code>/payments/create-order</code> &amp;{" "}
                 <code>/payments/verify-payment</code> endpoints as soon as they are
@@ -862,8 +872,7 @@ function Subscription() {
               <button
                 type="button"
                 onClick={() => setSandboxPromptOrder(null)}
-                className="flex-1 py-3 px-4 rounded-xl border text-xs sm:text-sm font-medium transition-colors cursor-pointer"
-                style={{ borderColor: "var(--tf-line)", color: "var(--tf-copy)", background: "transparent" }}
+                className="flex-1 cursor-pointer rounded-xl border border-[#dfe9f3] bg-transparent px-4 py-3 text-xs font-medium text-[#566b84] transition-colors sm:text-sm [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]"
               >
                 Cancel
               </button>
@@ -886,9 +895,9 @@ function Subscription() {
             </div>
           </div>
         </div>
-      )}
+     )}
     </div>
-  );
+ );
 }
 
 export default Subscription;

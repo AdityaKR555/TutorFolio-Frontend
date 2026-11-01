@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import api from "../../api/axios";
-import "./Settings.css";
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_.-]+$/;
 
@@ -624,14 +623,14 @@ function Settings() {
     }
   };
 
-  const inputClass = "settings-input";
-  const labelClass = "settings-label";
+  const inputClass = "tf-field disabled:cursor-not-allowed disabled:bg-tf-surface-soft disabled:text-tf-muted";
+  const labelClass = "tf-label my-0";
 
   const availabilityColor = {
-    available: "is-ok",
-    taken: "is-bad",
-    invalid: "is-bad",
-    error: "is-bad",
+    available: "text-[var(--tf-success)]",
+    taken: "text-[var(--tf-danger)]",
+    invalid: "text-[var(--tf-danger)]",
+    error: "text-[var(--tf-danger)]",
     checking: "",
     same: "",
     idle: "",
@@ -641,7 +640,7 @@ function Settings() {
     <button
       type="button"
       onClick={onClick}
-      className="settings-reveal"
+      className="absolute right-[7px] top-1/2 grid min-h-[30px] min-w-[42px] -translate-y-1/2 cursor-pointer place-items-center border-0 bg-transparent p-1 text-[10px] text-[var(--tf-muted)] hover:text-[var(--tf-blue)]"
       aria-label={visible ? `Hide ${label}` : `Show ${label}`}
     >
       {visible ? "Hide" : "Show"}
@@ -649,47 +648,47 @@ function Settings() {
   );
 
   return (
-    <div className="settings-page">
-      <div className="settings-content">
-        <header className="settings-heading">
+    <div className="min-h-full bg-[var(--tf-bg)] px-8 pt-[34px] pb-14 text-[var(--tf-ink)] [font:14px/1.5_Inter,ui-sans-serif,system-ui,-apple-system,'Segoe_UI',sans-serif] max-[800px]:px-[18px] max-[800px]:pt-6 max-[800px]:pb-10 max-[560px]:px-[14px] max-[560px]:pt-5 max-[560px]:pb-8 [&:where([data-theme=dark] *)]:bg-[var(--tf-bg)] [&:where([data-theme=dark] *)]:text-[var(--tf-ink)]">
+      <div className="mx-auto max-w-[1080px]">
+        <header className="mb-6 flex items-start justify-between gap-[18px]">
           <div>
-            <h1>Settings</h1>
-            <p>Manage your username, profile picture and password.</p>
+            <h1 className="tf-page-title mt-0 mb-2">Settings</h1>
+            <p className="m-0 text-[13px] text-[var(--tf-copy)]">Manage your username, profile picture and password.</p>
           </div>
         </header>
 
         {notice.text && (
-          <div className={`settings-notice settings-notice--${notice.type || "info"}`} role="status">
+          <div className={`mb-4 rounded-lg border border-[var(--tf-line)] px-3 py-2.5 text-[11px] ${notice.type === "success" ? "bg-[var(--tf-success-soft)] text-[var(--tf-success)]" : notice.type === "error" ? "bg-[var(--tf-danger-soft)] text-[var(--tf-danger)]" : "bg-[var(--tf-sky)] text-[var(--tf-blue)]"}`} role="status">
             {notice.text}
           </div>
         )}
 
-        <div className="settings-layout">
-          <div className="settings-cards">
-          <section className="settings-card" id="account">
-            <div className="settings-card-head">
+        <div className="grid grid-cols-1">
+          <div className="grid gap-[15px]">
+          <section className="tf-card min-w-0 p-5 shadow-sm max-[560px]:p-4" id="account">
+            <div className="mb-4 flex items-start justify-between gap-3">
               <div>
-                <span className="settings-eyebrow">Account</span>
-                <h2>Username</h2>
-                <p>Choose how students identify you on Tutorfolio.</p>
+                <span className="mb-[3px] block text-[10px] font-bold uppercase tracking-[.08em] text-[var(--tf-muted)]">Account</span>
+                <h2 className="tf-section-title mt-0 mb-1">Username</h2>
+                <p className="m-0 text-[11px] text-[var(--tf-muted)]">Choose how students identify you on Tutorfolio.</p>
               </div>
             </div>
-            <div className="settings-row">
-              <div className="settings-row-main">
+            <div className="flex items-center gap-3.5 border-t border-[var(--tf-line)] py-3 max-[560px]:items-start max-[560px]:flex-wrap">
+              <div className="min-w-0 flex-1 max-[560px]:min-w-[calc(100%_-_74px)] [&_strong]:mb-0.5 [&_strong]:block [&_strong]:text-xs [&_strong]:text-[var(--tf-ink)] [&_span]:block [&_span]:break-words [&_span]:text-[11px] [&_span]:text-[var(--tf-muted)]">
                 <strong>Current username</strong>
                 <span>{currentUsername || "Not set"}</span>
               </div>
               {!usernameEditing && (
-                <button type="button" className="settings-button" onClick={() => setUsernameEditing(true)}>
+                <button type="button" className="inline-flex min-h-[34px] items-center justify-center gap-[7px] whitespace-nowrap rounded-lg border border-[var(--tf-line)] bg-[var(--tf-surface)] px-3 py-2 text-[11px] font-semibold text-[var(--tf-copy)] transition-colors hover:bg-[var(--tf-surface-soft)] hover:text-[var(--tf-blue-pressed)] disabled:cursor-not-allowed disabled:opacity-[.55] [&:where([data-theme=dark] *)]:bg-[var(--tf-surface)]" onClick={() => setUsernameEditing(true)}>
                   Change username
                 </button>
               )}
             </div>
             {usernameEditing && (
-              <form onSubmit={handleUsernameSubmit} className="settings-username-edit">
-                <div className="settings-field">
+              <form onSubmit={handleUsernameSubmit} className="mt-3 grid gap-[13px] border-t border-[var(--tf-line)] pt-[13px]">
+                <div className="grid min-w-0 gap-1.5">
                   <label className={labelClass}>New username</label>
-                  <div className="settings-input-row">
+                  <div className="flex items-center gap-[9px] max-[560px]:items-stretch max-[560px]:flex-col">
                     <input
                       type="text"
                       value={usernameDraft}
@@ -706,20 +705,20 @@ function Settings() {
                     />
                     <button
                       type="button"
-                      className="settings-button"
+                      className="inline-flex min-h-[34px] items-center justify-center gap-[7px] whitespace-nowrap rounded-lg border border-[var(--tf-line)] bg-[var(--tf-surface)] px-3 py-2 text-[11px] font-semibold text-[var(--tf-copy)] transition-colors hover:bg-[var(--tf-surface-soft)] hover:text-[var(--tf-blue-pressed)] disabled:cursor-not-allowed disabled:opacity-[.55] [&:where([data-theme=dark] *)]:bg-[var(--tf-surface)]"
                       onClick={handleCheckUsername}
                       disabled={usernameAvailability.status === "checking"}
                     >
                       Check availability
                     </button>
                   </div>
-                  <span className="settings-hint">Use 3 to 30 letters, numbers, dots, underscores, or hyphens.</span>
-                  <span className={`settings-status ${availabilityColor}`} aria-live="polite">{usernameAvailability.message}</span>
+                  <span className="text-[10px] text-[var(--tf-muted)]">Use 3 to 30 letters, numbers, dots, underscores, or hyphens.</span>
+                  <span className={`min-h-[14px] text-[10px] text-[var(--tf-muted)] ${availabilityColor}`} aria-live="polite">{usernameAvailability.message}</span>
                 </div>
-                <div className="settings-card-actions">
+                <div className="mt-[14px] flex justify-end gap-2">
                   <button
                     type="button"
-                    className="settings-button"
+                    className="inline-flex min-h-[34px] items-center justify-center gap-[7px] whitespace-nowrap rounded-lg border border-[var(--tf-line)] bg-[var(--tf-surface)] px-3 py-2 text-[11px] font-semibold text-[var(--tf-copy)] transition-colors hover:bg-[var(--tf-surface-soft)] hover:text-[var(--tf-blue-pressed)] disabled:cursor-not-allowed disabled:opacity-[.55] [&:where([data-theme=dark] *)]:bg-[var(--tf-surface)]"
                     onClick={() => {
                       setUsernameEditing(false);
                       setUsernameDraft(currentUsername);
@@ -731,7 +730,7 @@ function Settings() {
                   </button>
                   <button
                     type="submit"
-                    className="settings-button settings-button--primary"
+                    className="inline-flex min-h-[34px] items-center justify-center gap-[7px] whitespace-nowrap rounded-lg border border-[var(--tf-blue)] bg-[var(--tf-blue)] px-3 py-2 text-[11px] font-semibold text-[var(--tf-on-primary)] transition-colors hover:border-[var(--tf-blue-pressed)] hover:bg-[var(--tf-blue-pressed)] disabled:cursor-not-allowed disabled:opacity-[.55]"
                     disabled={usernameSaving || usernameDraft.trim() === currentUsername || usernameAvailability.status === "taken" || usernameAvailability.status === "invalid"}
                   >
                     {usernameSaving ? "Updating…" : "Save username"}
@@ -741,31 +740,31 @@ function Settings() {
             )}
           </section>
 
-          <section className="settings-card" id="profile-picture">
-            <div className="settings-card-head">
+          <section className="tf-card min-w-0 p-5 shadow-sm max-[560px]:p-4" id="profile-picture">
+            <div className="mb-4 flex items-start justify-between gap-3">
               <div>
-                <span className="settings-eyebrow">Profile</span>
-                <h2>Profile picture</h2>
-                <p>Update your profile picture using an image URL.</p>
+                <span className="mb-[3px] block text-[10px] font-bold uppercase tracking-[.08em] text-[var(--tf-muted)]">Profile</span>
+                <h2 className="tf-section-title mt-0 mb-1">Profile picture</h2>
+                <p className="m-0 text-[11px] text-[var(--tf-muted)]">Update your profile picture using an image URL.</p>
               </div>
             </div>
 
             {profileLoading ? (
-              <p className="settings-hint">Loading profile picture…</p>
+              <p className="text-[10px] text-[var(--tf-muted)]">Loading profile picture…</p>
             ) : (
               <>
                 {profilePicture && (
-                  <div className="settings-picture-row">
+                  <div className="flex items-center gap-[13px]">
                     <img
                       src={profilePicture}
                       alt="Current profile"
-                      className="settings-avatar"
+                      className="grid h-[58px] w-[58px] shrink-0 place-items-center overflow-hidden rounded-full border-2 border-white bg-[var(--tf-sky)] text-lg font-bold text-[var(--tf-blue-pressed)] shadow-[0_0_0_1px_#e1eaf4] [&:where([data-theme=dark] *)]:border-[var(--tf-line)] [&_img]:h-full [&_img]:w-full [&_img]:object-cover"
                       onError={(e) => {
                         e.currentTarget.style.display = "none";
                       }}
                     />
 
-                    <div className="settings-picture-copy">
+                    <div className="grid gap-[3px] [&_strong]:text-xs [&_strong]:text-[var(--tf-ink)] [&_span]:text-[10px] [&_span]:text-[var(--tf-muted)]">
                       <strong>Current profile picture</strong>
                       <span>Preview of your saved image URL.</span>
                     </div>
@@ -773,16 +772,16 @@ function Settings() {
                 )}
 
                 {!hasProfile && (
-                  <p className="settings-warning">
+                  <p className="mb-3 rounded-lg border border-[#f1dfbf] bg-[var(--tf-warning-soft)] px-3 py-2.5 text-[11px] text-[var(--tf-warning)] [&:where([data-theme=dark] *)]:border-[var(--tf-line)]">
                     Complete your Personal Details first. The backend requires an existing profile row before it can update the picture.
                   </p>
                 )}
 
                 <form
                   onSubmit={handlePictureSubmit}
-                  className="settings-picture-form"
+                  className="grid gap-[14px]"
                 >
-                  <div>
+                  <div className="grid min-w-0 gap-1.5">
                     <label className={labelClass}>
                       Profile Picture URL
                     </label>
@@ -801,7 +800,7 @@ function Settings() {
                     />
                   </div>
 
-                  <div className="settings-card-actions">
+                  <div className="mt-[14px] flex justify-end gap-2">
                     <button
                       type="submit"
                       disabled={
@@ -809,7 +808,7 @@ function Settings() {
                         profileLoading ||
                         !hasProfile
                       }
-                      className="settings-button settings-button--primary"
+                      className="inline-flex min-h-[34px] items-center justify-center gap-[7px] whitespace-nowrap rounded-lg border border-[var(--tf-blue)] bg-[var(--tf-blue)] px-3 py-2 text-[11px] font-semibold text-[var(--tf-on-primary)] transition-colors hover:border-[var(--tf-blue-pressed)] hover:bg-[var(--tf-blue-pressed)] disabled:cursor-not-allowed disabled:opacity-[.55]"
                     >
                       {pictureSaving ? (
                         <>
@@ -827,25 +826,25 @@ function Settings() {
           </section>
 
           {/* Password */}
-          <section className="settings-card" id="security">
-            <div className="settings-card-head">
+          <section className="tf-card min-w-0 p-5 shadow-sm max-[560px]:p-4" id="security">
+            <div className="mb-4 flex items-start justify-between gap-3">
               <div>
-                <span className="settings-eyebrow">Security</span>
-                <h2>Change password</h2>
-                <p>Use a strong password that you do not use elsewhere.</p>
+                <span className="mb-[3px] block text-[10px] font-bold uppercase tracking-[.08em] text-[var(--tf-muted)]">Security</span>
+                <h2 className="tf-section-title mt-0 mb-1">Change password</h2>
+                <p className="m-0 text-[11px] text-[var(--tf-muted)]">Use a strong password that you do not use elsewhere.</p>
               </div>
             </div>
 
             <form
               onSubmit={handlePasswordSubmit}
-              className="settings-password-form"
+              className="grid grid-cols-2 gap-x-[14px] gap-y-[13px] max-[560px]:grid-cols-1"
             >
-              <div className="settings-field settings-field--current">
+              <div className="col-span-full grid min-w-0 gap-1.5 max-[560px]:col-auto">
                 <label className={labelClass}>
                   Current password
                 </label>
 
-                <div className="settings-password-wrap">
+                <div className="relative">
                   <input
                     type={showCurrentPassword ? "text" : "password"}
                     value={currentPassword}
@@ -854,7 +853,7 @@ function Settings() {
                       setNotice({ type: "", text: "" });
                     }}
                     autoComplete="current-password"
-                    className={inputClass}
+                    className={`${inputClass} pr-[58px]`}
                     placeholder="Enter current password"
                     required
                   />
@@ -869,12 +868,12 @@ function Settings() {
               </div>
 
               {/* New password */}
-              <div className="settings-field">
+              <div className="grid min-w-0 gap-1.5">
                 <label className={labelClass}>
                   New password
                 </label>
 
-                <div className="settings-password-wrap">
+                <div className="relative">
                   <input
                     type={showNewPassword ? "text" : "password"}
                     value={newPassword}
@@ -885,7 +884,7 @@ function Settings() {
                     autoComplete="new-password"
                     minLength={6}
                     maxLength={128}
-                    className={inputClass}
+                    className={`${inputClass} pr-[58px]`}
                     placeholder="Enter new password"
                     required
                   />
@@ -897,18 +896,18 @@ function Settings() {
                   )}
                 </div>
 
-                <p className="settings-hint">
+                <p className="text-[10px] text-[var(--tf-muted)]">
                   Use between 6 and 128 characters.
                 </p>
               </div>
 
               {/* Confirm new password */}
-              <div className="settings-field">
+              <div className="grid min-w-0 gap-1.5">
                 <label className={labelClass}>
                   Confirm new password
                 </label>
 
-                <div className="settings-password-wrap">
+                <div className="relative">
                   <input
                     type={
                       showConfirmPassword ? "text" : "password"
@@ -919,7 +918,7 @@ function Settings() {
                       setNotice({ type: "", text: "" });
                     }}
                     autoComplete="new-password"
-                    className={inputClass}
+                    className={`${inputClass} pr-[58px]`}
                     placeholder="Re-enter new password"
                     required
                   />
@@ -934,22 +933,22 @@ function Settings() {
 
                 {confirmNewPassword &&
                   confirmNewPassword !== newPassword && (
-                    <p className="settings-inline-error">
+                    <p className="m-0 text-[10px] text-[var(--tf-danger)]">
                       Passwords do not match.
                     </p>
                   )}
               </div>
 
-              <div className="settings-security-tip">
-                  <span aria-hidden="true">✓</span>
+              <div className="col-span-full mt-px flex items-start gap-[9px] rounded-lg border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] px-3 py-2.5 text-[10px] text-[var(--tf-copy)] max-[560px]:col-auto [&:where([data-theme=dark] *)]:bg-[var(--tf-surface-soft)]">
+                  <span className="font-bold text-[var(--tf-blue)]" aria-hidden="true">✓</span>
                   <span>Passwords must be 6 to 128 characters. Your new password and confirmation must match.</span>
               </div>
 
-              <div className="settings-card-actions">
+              <div className="col-span-full mt-[14px] flex justify-end gap-2 max-[560px]:col-auto">
                 <button
                   type="submit"
                   disabled={passwordSaving}
-                  className="settings-button settings-button--primary"
+                  className="inline-flex min-h-[34px] items-center justify-center gap-[7px] whitespace-nowrap rounded-lg border border-[var(--tf-blue)] bg-[var(--tf-blue)] px-3 py-2 text-[11px] font-semibold text-[var(--tf-on-primary)] transition-colors hover:border-[var(--tf-blue-pressed)] hover:bg-[var(--tf-blue-pressed)] disabled:cursor-not-allowed disabled:opacity-[.55]"
                 >
                   {passwordSaving ? (
                     <>
@@ -964,7 +963,7 @@ function Settings() {
             </form>
           </section>
 
-          <p className="settings-bottom-note">Account and security changes are saved to your Tutorfolio account.</p>
+          <p className="m-0 text-right text-[10px] text-[var(--tf-muted)]">Account and security changes are saved to your Tutorfolio account.</p>
           </div>
         </div>
       </div>

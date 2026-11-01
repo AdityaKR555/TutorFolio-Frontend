@@ -2,7 +2,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import { clearAuthSession, getStoredUser } from "../utils/auth";
-import "./TutorLayout.css";
 
 function TutorLayout() {
   const navigate = useNavigate();
@@ -383,8 +382,10 @@ function TutorLayout() {
         to={item.path}
         onClick={closeOnClick ? closeMobileSidebar : undefined}
         className={({ isActive }) =>
-          `tutor-nav-link flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-            isActive ? "active" : ""
+          `flex items-center gap-3 rounded-xl border-l-[3px] px-[13px] py-3 transition-colors ${
+            isActive
+              ? "border-l-tf-blue bg-tf-sky text-tf-blue-pressed dark:text-tf-blue"
+              : "border-l-transparent text-tf-copy hover:bg-tf-surface-soft hover:text-tf-ink"
           }`
         }
       >
@@ -394,16 +395,16 @@ function TutorLayout() {
     ));
 
   return (
-    <div className="tutor-shell min-h-screen font-poppins" data-theme={theme}>
+    <div className="min-h-screen bg-tf-bg text-tf-ink" data-theme={theme}>
       {/* ================= NAVBAR ================= */}
-      <header className="tutor-header fixed top-0 left-0 right-0 z-50 h-[72px] border-b">
+      <header className="fixed top-0 left-0 right-0 z-50 h-[72px] border-b border-tf-line/40 bg-[color-mix(in_srgb,var(--tf-surface)_30%,transparent)] shadow-sm backdrop-blur-xl">
         <div className="h-full px-4 sm:px-6 flex items-center justify-between">
           {/* Left side */}
           <div className="flex items-center gap-4">
             {/* Mobile hamburger */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="tutor-menu-button lg:hidden p-2 transition-colors"
+              className="p-2 text-tf-copy transition-colors hover:text-tf-ink lg:hidden"
               aria-label="Open menu"
             >
               <svg
@@ -422,30 +423,35 @@ function TutorLayout() {
             </button>
 
             {/* Logo */}
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="tutor-logo-button flex items-center"
-            >
+            <a href="/" className="flex h-12 items-center gap-2 no-underline">
               <img
                 src="/tf-logo.png"
-                alt="TutorFolio"
-                className="w-[135px] sm:w-[150px] h-auto object-contain"
+                alt=""
+                aria-hidden="true"
+                className="h-9 max-h-9 w-auto max-w-[112px] object-contain sm:max-w-[132px]"
               />
-            </button>
+              <span className="text-base font-semibold tracking-tight text-tf-ink sm:text-lg">
+                Tutorfolio
+              </span>
+            </a>
           </div>
 
           {/* Profile */}
           <div className="relative flex gap-2.5 items-center" ref={profileRef}>
-            <div className={`tutor-theme-switch ${theme}`}>
+            <div className="inline-flex h-10 items-center gap-1 rounded-full border border-tf-line bg-tf-surface-soft p-1">
               <button
                 type="button"
                 onClick={() => setTheme("light")}
-                className="theme-option"
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                  theme === "light"
+                    ? "bg-tf-surface text-amber-500 shadow-sm"
+                    : "text-tf-muted hover:text-tf-ink"
+                }`}
                 aria-label="Switch to light theme"
                 aria-pressed={theme === "light"}
                 title="Light theme"
               >
-                <svg viewBox="0 0 24 24" fill="none">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                   <circle cx="12" cy="12" r="4" />
                   <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" />
                 </svg>
@@ -454,12 +460,16 @@ function TutorLayout() {
               <button
                 type="button"
                 onClick={() => setTheme("dark")}
-                className="theme-option"
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                  theme === "dark"
+                    ? "bg-tf-surface text-tf-blue-pressed shadow-sm"
+                    : "text-tf-muted hover:text-tf-ink"
+                }`}
                 aria-label="Switch to dark theme"
                 aria-pressed={theme === "dark"}
                 title="Dark theme"
               >
-                <svg viewBox="0 0 24 24" fill="none">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z" />
                 </svg>
               </button>
@@ -468,10 +478,10 @@ function TutorLayout() {
 
             <button
               onClick={() => setProfileOpen((prev) => !prev)}
-              className="tutor-profile-trigger flex items-center gap-2 p-2 rounded-xl transition-colors"
+              className="flex items-center gap-2 p-2 text-tf-ink transition-colors"
               aria-label="Profile menu"
             >
-              <div className="tutor-profile-avatar w-9 h-9 rounded-full border overflow-hidden flex items-center justify-center">
+              <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full text-tf-blue-pressed">
                 {user?.profilePicture ? (
                   <img
                     src={user.profilePicture}
@@ -499,7 +509,7 @@ function TutorLayout() {
               </div>
 
               <svg
-                className={`tutor-profile-chevron hidden sm:block w-4 h-4 transition-transform ${
+                className={`hidden h-4 w-4 text-tf-muted transition-transform sm:block ${
                   profileOpen ? "rotate-180" : ""
                 }`}
                 fill="none"
@@ -517,10 +527,10 @@ function TutorLayout() {
 
             {/* Profile dropdown */}
             {profileOpen && (
-              <div className="tutor-profile-menu absolute right-0 top-14 w-52 border rounded-2xl shadow-xl overflow-hidden">
-                <div className="tutor-profile-menu-head px-4 py-3 border-b">
-                  <p className="font-medium truncate">{user?.username}</p>
-                  <p className="tutor-profile-email text-xs truncate mt-1">
+              <div className="absolute right-0 top-14 z-50 w-52 overflow-hidden rounded-2xl border border-tf-line bg-tf-surface text-tf-ink shadow-xl">
+                <div className="border-b border-tf-line px-4 py-3">
+                  <p className="truncate font-medium">{user?.username}</p>
+                  <p className="mt-1 truncate text-xs text-tf-copy">
                     {user?.email}
                   </p>
                 </div>
@@ -530,7 +540,7 @@ function TutorLayout() {
                     setProfileOpen(false);
                     navigate("/subscription");
                   }}
-                  className="w-full px-4 py-3 flex items-center gap-3 text-amber-300 hover:bg-[#142744] hover:text-amber-200 transition-colors text-left"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-amber-600 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-amber-300 dark:hover:bg-amber-500/10 dark:hover:text-amber-200"
                 >
                   <span className="text-base">👑</span>
                   Plans &amp; Billing
@@ -541,7 +551,7 @@ function TutorLayout() {
                     setProfileOpen(false);
                     navigate("/profile");
                   }}
-                  className="tutor-profile-menu-item w-full px-4 py-3 flex items-center gap-3 transition-colors text-left"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-tf-copy transition-colors hover:bg-tf-surface-soft hover:text-tf-ink"
                 >
                   <svg
                     className="w-5 h-5"
@@ -564,7 +574,7 @@ function TutorLayout() {
                     setProfileOpen(false);
                     navigate("/settings");
                   }}
-                  className="tutor-profile-menu-item w-full px-4 py-3 flex items-center gap-3 transition-colors text-left"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-tf-copy transition-colors hover:bg-tf-surface-soft hover:text-tf-ink"
                 >
                   <svg
                     className="w-5 h-5"
@@ -590,7 +600,7 @@ function TutorLayout() {
 
                 <button
                   onClick={handleLogout}
-                  className="w-full px-4 py-3 flex items-center gap-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors text-left"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300"
                 >
                   <svg
                     className="w-5 h-5"
@@ -614,13 +624,13 @@ function TutorLayout() {
       </header>
 
       {/* ================= DESKTOP SIDEBAR ================= */}
-      <aside className="tutor-sidebar hidden lg:flex fixed top-[72px] left-0 bottom-0 w-[250px] border-r flex-col z-40">
+      <aside className="fixed bottom-0 left-0 top-[72px] z-40 hidden w-[250px] flex-col border-r border-tf-line bg-tf-surface shadow-sm lg:flex">
         <nav className="flex flex-1 flex-col overflow-y-auto p-4">
           {/* Main features stay at the top */}
           <div className="space-y-2">{renderNavItems(orderedMainNavItems)}</div>
 
           {/* Secondary features stay at the bottom */}
-          <div className="tutor-sidebar-footer mt-auto space-y-2 border-t pt-4">
+          <div className="mt-auto space-y-2 border-t border-tf-line pt-4">
             {renderNavItems(secondaryNavItems)}
           </div>
         </nav>
@@ -636,17 +646,17 @@ function TutorLayout() {
           />
 
           {/* Drawer */}
-          <aside className="tutor-sidebar tutor-mobile-sidebar absolute top-0 left-0 bottom-0 flex w-[280px] flex-col border-r shadow-2xl">
-            <div className="tutor-mobile-sidebar-head flex h-[72px] shrink-0 items-center justify-between border-b px-5">
+          <aside className="absolute bottom-0 left-0 top-0 flex w-[280px] flex-col border-r border-tf-line bg-tf-surface shadow-2xl">
+            <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-tf-line px-5">
               <img
                 src="/tf-logo.png"
                 alt="TutorFolio"
-                className="w-[135px] h-auto object-contain"
+                className="h-10 max-h-10 w-auto max-w-[135px] object-contain"
               />
 
               <button
                 onClick={closeMobileSidebar}
-                className="tutor-menu-button p-2 transition-colors"
+                className="rounded-lg p-2 text-tf-copy transition-colors hover:bg-tf-surface-soft hover:text-tf-ink"
                 aria-label="Close menu"
               >
                 <svg
@@ -672,7 +682,7 @@ function TutorLayout() {
               </div>
 
               {/* Secondary features stay at the bottom */}
-              <div className="tutor-sidebar-footer mt-auto space-y-2 border-t pt-4">
+              <div className="mt-auto space-y-2 border-t border-tf-line pt-4">
                 {renderNavItems(secondaryNavItems, true)}
               </div>
             </nav>

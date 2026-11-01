@@ -36,10 +36,10 @@ function ComingSoon({ title }) {
   return (
     <div className="p-5 sm:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-8">
-          <h1 className="text-2xl font-bold text-white">{title}</h1>
+        <div className="bg-tf-surface border border-tf-line rounded-3xl p-8">
+          <h1 className="text-2xl font-bold text-tf-ink">{title}</h1>
 
-          <p className="text-[#94a8c7] mt-2">
+          <p className="text-tf-copy mt-2">
             This section will be built next.
           </p>
         </div>

@@ -149,25 +149,25 @@ function ResumeExtractorModal({ isOpen, onClose, onApply, mode = "all" }) {
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-2xl bg-[#0f1f36] border border-blue-500/20 rounded-3xl p-6 sm:p-8 shadow-2xl text-white max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-tf-surface border border-tf-line rounded-3xl p-6 sm:p-8 shadow-2xl text-tf-ink max-h-[90vh] overflow-y-auto">
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
-        <div className="flex items-start justify-between gap-4 pb-5 border-b border-blue-500/10">
+        <div className="flex items-start justify-between gap-4 pb-5 border-b border-tf-line">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xl">✨</span>
-              <h3 className="text-xl sm:text-2xl font-bold text-white">
+              <h3 className="text-xl sm:text-2xl font-bold text-tf-ink">
                 Auto-fill from Resume
               </h3>
             </div>
-            <p className="text-[#94a8c7] text-xs sm:text-sm">
+            <p className="text-tf-copy text-xs sm:text-sm">
               Upload your resume and let AI fill in your profile details.
             </p>
           </div>
 
           <button
             onClick={handleClose}
-            className="text-[#94a8c7] hover:text-white p-1 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+            className="text-tf-copy hover:text-tf-ink p-1 rounded-lg hover:bg-tf-surface-soft transition-colors cursor-pointer"
             aria-label="Close"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,7 +178,7 @@ function ResumeExtractorModal({ isOpen, onClose, onApply, mode = "all" }) {
 
         {/* ── Error ──────────────────────────────────────────────────────── */}
         {error && (
-          <div className="mt-5 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm flex items-start gap-3">
+          <div className="mt-5 p-4 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-800 dark:text-red-300 text-sm flex items-start gap-3">
             <svg className="w-5 h-5 text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v3.5m0 3h.01M10.3 4.9L2.8 18a2 2 0 001.7 3h15a2 2 0 001.7-3L13.7 4.9a2 2 0 00-3.4 0z" />
             </svg>
@@ -191,24 +191,24 @@ function ResumeExtractorModal({ isOpen, onClose, onApply, mode = "all" }) {
           <form onSubmit={handleExtract} className="mt-6 space-y-5">
             {/* Drop / Click area */}
             <div>
-              <label className="block text-sm text-[#c7d8f5] mb-2 font-medium">
+              <label className="block text-sm text-tf-copy mb-2 font-medium">
                 Resume File
               </label>
 
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="relative flex flex-col items-center justify-center gap-3 w-full border-2 border-dashed border-blue-500/25 hover:border-blue-500/50 rounded-2xl px-6 py-10 cursor-pointer transition-colors bg-[#0a1628]/60 hover:bg-[#0a1628]"
+                className="relative flex flex-col items-center justify-center gap-3 w-full border-2 border-dashed border-tf-line hover:border-tf-blue rounded-2xl px-6 py-10 cursor-pointer transition-colors bg-tf-bg hover:bg-tf-surface-soft"
               >
                 {selectedFile ? (
                   <>
                     {/* File selected state */}
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 text-lg">
+                      <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/15 border border-blue-200 dark:border-blue-500/30 flex items-center justify-center text-blue-700 dark:text-blue-400 text-lg">
                         📄
                       </div>
                       <div className="text-left">
-                        <p className="text-white text-sm font-medium truncate max-w-xs">{selectedFile.name}</p>
-                        <p className="text-[#94a8c7] text-xs mt-0.5">
+                        <p className="text-tf-ink text-sm font-medium truncate max-w-xs">{selectedFile.name}</p>
+                        <p className="text-tf-copy text-xs mt-0.5">
                           {(selectedFile.size / 1024).toFixed(0)} KB · Click to change
                         </p>
                       </div>
@@ -217,12 +217,12 @@ function ResumeExtractorModal({ isOpen, onClose, onApply, mode = "all" }) {
                 ) : (
                   <>
                     {/* Empty state */}
-                    <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-2xl">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 flex items-center justify-center text-blue-700 dark:text-blue-400 text-2xl">
                       ⬆️
                     </div>
                     <div className="text-center">
-                      <p className="text-white text-sm font-medium">Click to upload your resume</p>
-                      <p className="text-[#6b7f9f] text-xs mt-1">PDF, DOC, or DOCX · Max 10 MB</p>
+                      <p className="text-tf-ink text-sm font-medium">Click to upload your resume</p>
+                      <p className="text-tf-muted text-xs mt-1">PDF, DOC, or DOCX · Max 10 MB</p>
                     </div>
                   </>
                 )}
@@ -238,7 +238,7 @@ function ResumeExtractorModal({ isOpen, onClose, onApply, mode = "all" }) {
             </div>
 
             {/* Info note */}
-            <p className="text-[#6b7f9f] text-xs">
+            <p className="text-tf-muted text-xs">
               Your file is uploaded securely and used only to extract profile details.
               Powered by <span className="text-blue-400 font-medium">Gemini AI</span>.
             </p>
@@ -248,7 +248,7 @@ function ResumeExtractorModal({ isOpen, onClose, onApply, mode = "all" }) {
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-4 py-2.5 rounded-xl border border-blue-500/10 text-[#94a8c7] hover:text-white hover:bg-white/5 transition-colors cursor-pointer text-sm font-medium"
+                className="px-4 py-2.5 rounded-xl border border-tf-line text-tf-copy hover:text-tf-ink hover:bg-tf-surface-soft transition-colors cursor-pointer text-sm font-medium"
               >
                 Cancel
               </button>
@@ -272,14 +272,14 @@ function ResumeExtractorModal({ isOpen, onClose, onApply, mode = "all" }) {
             <div className="relative w-16 h-16">
               <div className="absolute inset-0 rounded-full border-4 border-blue-500/20" />
               <div className="absolute inset-0 rounded-full border-4 border-t-blue-400 border-r-purple-400 border-b-transparent border-l-transparent animate-spin" />
-              <div className="absolute inset-2 rounded-full bg-[#0f1f36] flex items-center justify-center text-xl">
+              <div className="absolute inset-2 rounded-full bg-tf-surface flex items-center justify-center text-xl">
                 {loadingStep === "uploading" ? "⬆️" : "🤖"}
               </div>
             </div>
 
             <div className="text-center">
-              <p className="text-white font-semibold">{loadingLabel}</p>
-              <p className="text-[#6b7f9f] text-xs mt-1">
+              <p className="text-tf-ink font-semibold">{loadingLabel}</p>
+              <p className="text-tf-muted text-xs mt-1">
                 {loadingStep === "uploading"
                   ? "Securely uploading your file…"
                   : "Gemini AI is reading your resume. This may take 10–30 seconds."}
@@ -287,12 +287,12 @@ function ResumeExtractorModal({ isOpen, onClose, onApply, mode = "all" }) {
             </div>
 
             {/* Step indicator */}
-            <div className="flex items-center gap-2 text-xs text-[#94a8c7]">
+            <div className="flex items-center gap-2 text-xs text-tf-copy">
               <span className={loadingStep === "uploading" ? "text-blue-400 font-semibold" : "text-green-400"}>
                 {loadingStep === "uploading" ? "● Uploading" : "✓ Uploaded"}
               </span>
-              <span className="text-[#374f72]">→</span>
-              <span className={loadingStep === "extracting" ? "text-blue-400 font-semibold" : "text-[#374f72]"}>
+              <span className="text-tf-muted">→</span>
+              <span className={loadingStep === "extracting" ? "text-blue-600 dark:text-blue-400 font-semibold" : "text-tf-muted"}>
                 {loadingStep === "extracting" ? "● AI Extraction" : "○ AI Extraction"}
               </span>
             </div>
@@ -303,7 +303,7 @@ function ResumeExtractorModal({ isOpen, onClose, onApply, mode = "all" }) {
         {!loading && extractedResult && (
           <div className="mt-6 space-y-5">
             {/* Success banner */}
-            <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 text-sm flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 text-green-800 dark:text-green-300 text-sm flex items-center gap-2">
               <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
@@ -317,92 +317,92 @@ function ResumeExtractorModal({ isOpen, onClose, onApply, mode = "all" }) {
             </div>
 
             {/* Extracted fields grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-[#0a1628]/60 rounded-2xl border border-blue-500/10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-tf-bg rounded-2xl border border-tf-line">
 
               <div>
-                <span className="text-xs text-[#94a8c7] block">Name</span>
-                <span className="text-sm font-semibold text-white">
-                  {extractedResult.data.tutor_name || <span className="text-[#6b7f9f]">—</span>}
+                <span className="text-xs text-tf-copy block">Name</span>
+                <span className="text-sm font-semibold text-tf-ink">
+                  {extractedResult.data.tutor_name || <span className="text-tf-muted">—</span>}
                 </span>
               </div>
 
               <div>
-                <span className="text-xs text-[#94a8c7] block">Email</span>
-                <span className="text-sm font-semibold text-white">
-                  {extractedResult.data.email || <span className="text-[#6b7f9f]">—</span>}
+                <span className="text-xs text-tf-copy block">Email</span>
+                <span className="text-sm font-semibold text-tf-ink">
+                  {extractedResult.data.email || <span className="text-tf-muted">—</span>}
                 </span>
               </div>
 
               <div>
-                <span className="text-xs text-[#94a8c7] block">Phone</span>
-                <span className="text-sm font-semibold text-white">
-                  {extractedResult.data.phone || <span className="text-[#6b7f9f]">—</span>}
+                <span className="text-xs text-tf-copy block">Phone</span>
+                <span className="text-sm font-semibold text-tf-ink">
+                  {extractedResult.data.phone || <span className="text-tf-muted">—</span>}
                 </span>
               </div>
 
               <div>
-                <span className="text-xs text-[#94a8c7] block">Location</span>
-                <span className="text-sm font-semibold text-white">
-                  {extractedResult.data.location || <span className="text-[#6b7f9f]">—</span>}
+                <span className="text-xs text-tf-copy block">Location</span>
+                <span className="text-sm font-semibold text-tf-ink">
+                  {extractedResult.data.location || <span className="text-tf-muted">—</span>}
                 </span>
               </div>
 
               <div>
-                <span className="text-xs text-[#94a8c7] block">Experience</span>
-                <span className="text-sm font-semibold text-white">
+                <span className="text-xs text-tf-copy block">Experience</span>
+                <span className="text-sm font-semibold text-tf-ink">
                   {extractedResult.data.years_of_experience != null
                     ? `${extractedResult.data.years_of_experience} years`
-                    : <span className="text-[#6b7f9f]">—</span>}
+                    : <span className="text-tf-muted">—</span>}
                 </span>
               </div>
 
               <div>
-                <span className="text-xs text-[#94a8c7] block">Qualifications</span>
-                <span className="text-sm font-semibold text-white">
+                <span className="text-xs text-tf-copy block">Qualifications</span>
+                <span className="text-sm font-semibold text-tf-ink">
                   {Array.isArray(extractedResult.data.qualifications) && extractedResult.data.qualifications.length > 0
                     ? extractedResult.data.qualifications.join(", ")
-                    : <span className="text-[#6b7f9f]">—</span>}
+                    : <span className="text-tf-muted">—</span>}
                 </span>
               </div>
 
               {/* Teaching Subjects */}
               <div className="sm:col-span-2">
-                <span className="text-xs text-[#94a8c7] block mb-1">Teaching Subjects</span>
+                <span className="text-xs text-tf-copy block mb-1">Teaching Subjects</span>
                 <div className="flex flex-wrap gap-1.5">
                   {Array.isArray(extractedResult.data.teaching_subjects) && extractedResult.data.teaching_subjects.length > 0 ? (
                     extractedResult.data.teaching_subjects.map((s, idx) => (
-                      <span key={idx} className="text-xs bg-blue-500/15 border border-blue-500/30 text-blue-300 px-2 py-0.5 rounded-md">{s}</span>
+                      <span key={idx} className="text-xs bg-blue-50 dark:bg-blue-500/15 border border-blue-200 dark:border-blue-500/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-md">{s}</span>
                     ))
                   ) : (
-                    <span className="text-xs text-[#6b7f9f]">None listed</span>
+                    <span className="text-xs text-tf-muted">None listed</span>
                   )}
                 </div>
               </div>
 
               {/* Eligible Classes */}
               <div className="sm:col-span-2">
-                <span className="text-xs text-[#94a8c7] block mb-1">Eligible Classes</span>
+                <span className="text-xs text-tf-copy block mb-1">Eligible Classes</span>
                 <div className="flex flex-wrap gap-1.5">
                   {Array.isArray(extractedResult.data.eligible_classes) && extractedResult.data.eligible_classes.length > 0 ? (
                     extractedResult.data.eligible_classes.map((c, idx) => (
-                      <span key={idx} className="text-xs bg-purple-500/15 border border-purple-500/30 text-purple-300 px-2 py-0.5 rounded-md">{c}</span>
+                      <span key={idx} className="text-xs bg-purple-50 dark:bg-purple-500/15 border border-purple-200 dark:border-purple-500/30 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-md">{c}</span>
                     ))
                   ) : (
-                    <span className="text-xs text-[#6b7f9f]">None listed</span>
+                    <span className="text-xs text-tf-muted">None listed</span>
                   )}
                 </div>
               </div>
 
               {/* Teaching Languages */}
               <div className="sm:col-span-2">
-                <span className="text-xs text-[#94a8c7] block mb-1">Teaching Languages</span>
+                <span className="text-xs text-tf-copy block mb-1">Teaching Languages</span>
                 <div className="flex flex-wrap gap-1.5">
                   {Array.isArray(extractedResult.data.teaching_languages) && extractedResult.data.teaching_languages.length > 0 ? (
                     extractedResult.data.teaching_languages.map((l, idx) => (
-                      <span key={idx} className="text-xs bg-amber-500/15 border border-amber-500/30 text-amber-300 px-2 py-0.5 rounded-md">{l}</span>
+                      <span key={idx} className="text-xs bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-md">{l}</span>
                     ))
                   ) : (
-                    <span className="text-xs text-[#6b7f9f]">None listed</span>
+                    <span className="text-xs text-tf-muted">None listed</span>
                   )}
                 </div>
               </div>
@@ -413,7 +413,7 @@ function ResumeExtractorModal({ isOpen, onClose, onApply, mode = "all" }) {
               <button
                 type="button"
                 onClick={handleReset}
-                className="px-4 py-2.5 rounded-xl border border-blue-500/10 text-[#94a8c7] hover:text-white hover:bg-white/5 transition-colors cursor-pointer text-sm font-medium"
+                className="px-4 py-2.5 rounded-xl border border-tf-line text-tf-copy hover:text-tf-ink hover:bg-tf-surface-soft transition-colors cursor-pointer text-sm font-medium"
               >
                 Try Another File
               </button>
@@ -422,7 +422,7 @@ function ResumeExtractorModal({ isOpen, onClose, onApply, mode = "all" }) {
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="px-4 py-2.5 rounded-xl border border-blue-500/10 text-[#94a8c7] hover:text-white hover:bg-white/5 transition-colors cursor-pointer text-sm font-medium"
+                  className="px-4 py-2.5 rounded-xl border border-tf-line text-tf-copy hover:text-tf-ink hover:bg-tf-surface-soft transition-colors cursor-pointer text-sm font-medium"
                 >
                   Cancel
                 </button>
