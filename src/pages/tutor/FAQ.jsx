@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import api from "../../api/axios";
 import { getStoredUser } from "../../utils/auth";
-import "./FAQ.css";
 
 const getUserId = () => {
   const user = getStoredUser();
@@ -13,7 +12,7 @@ const getUserId = () => {
     user?.user?.userId ??
     user?.user?.id ??
     null
-  );
+ );
 };
 
 const initialForm = {
@@ -64,7 +63,7 @@ const FAQ = () => {
           err.response?.data?.message ||
           err.message ||
           "Unable to load FAQs."
-      );
+     );
     } finally {
       setLoading(false);
     }
@@ -154,7 +153,7 @@ const FAQ = () => {
             const itemId = item.faqId ?? item.faq_id ?? item.id;
             return itemId === faqId ? { ...item, ...updated } : item;
           })
-        );
+       );
 
         setSuccess("FAQ updated successfully.");
       } else {
@@ -188,7 +187,7 @@ const FAQ = () => {
           err.response?.data?.message ||
           err.message ||
           "Unable to save FAQ."
-      );
+     );
     } finally {
       setSaving(false);
     }
@@ -205,7 +204,7 @@ const FAQ = () => {
     try {
       const response = await api.patch(
         `/faqs/visibility/${faqId}?visibleOnWebsite=${newVisibility}`
-      );
+     );
 
       if (response.data?.status !== 200) {
         throw new Error(response.data?.message || "Failed to update visibility.");
@@ -218,20 +217,20 @@ const FAQ = () => {
             ? { ...item, visibleOnWebsite: newVisibility }
             : item;
         })
-      );
+     );
 
       setSuccess(
         newVisibility
           ? "FAQ is now visible on your website."
           : "FAQ is now hidden from your website."
-      );
+     );
     } catch (err) {
       setError(
         err.response?.data?.detail ||
           err.response?.data?.message ||
           err.message ||
           "Unable to update visibility."
-      );
+     );
     } finally {
       setActionId(null);
     }
@@ -242,7 +241,7 @@ const FAQ = () => {
 
     const confirmed = window.confirm(
       "Are you sure you want to delete this FAQ? This action cannot be undone."
-    );
+   );
 
     if (!confirmed) return;
 
@@ -271,7 +270,7 @@ const FAQ = () => {
           err.response?.data?.message ||
           err.message ||
           "Unable to delete FAQ."
-      );
+     );
     } finally {
       setActionId(null);
     }
@@ -294,13 +293,13 @@ const FAQ = () => {
   const hiddenCount = faqs.length - visibleCount;
 
   return (
-    <div className="faq-page">
-      <div className="faq-content">
+    <div className="min-h-full bg-[#f4f8fd] px-5 pt-[30px] pb-[60px] text-[#172b46] transition-colors duration-200 sm:px-8 sm:pt-9 sm:pb-[72px] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#101b2b] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
+      <div className="mx-auto max-w-[1100px]">
         {/* ================= PAGE HEADING ================= */}
-        <header className="faq-heading">
+        <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1>Frequently Asked Questions</h1>
-            <p>
+            <h1 className="tf-page-title mb-2">Frequently Asked Questions</h1>
+            <p className="text-[13px] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
               Manage questions and answers shown on your public tutoring website.
             </p>
           </div>
@@ -308,7 +307,7 @@ const FAQ = () => {
           <button
             type="button"
             onClick={openCreateModal}
-            className="faq-btn-primary"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1875d1] px-[18px] py-2.5 text-[13px] font-semibold text-white shadow-[0_4px_12px_rgba(24,117,209,0.25)] transition-colors hover:bg-[#0c5fb7] disabled:cursor-not-allowed disabled:opacity-60"
           >
             <span className="text-base leading-none">+</span>
             <span>Add FAQ</span>
@@ -317,70 +316,70 @@ const FAQ = () => {
 
         {/* ================= FEEDBACK NOTICES ================= */}
         {error && !isModalOpen && (
-          <div role="alert" className="faq-notice faq-notice--error">
+          <div role="alert" className="mb-5 flex items-start justify-between gap-3 rounded-xl border border-red-500/25 bg-red-50 px-4 py-3 text-[13px] text-red-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#45232d] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#ff9aa4]">
             <span>{error}</span>
             <button
               type="button"
               onClick={() => setError("")}
-              className="faq-notice-dismiss"
+              className="cursor-pointer border-0 bg-transparent text-lg leading-none opacity-70 hover:opacity-100"
               aria-label="Dismiss error"
             >
               &times;
             </button>
           </div>
-        )}
+       )}
 
         {success && (
-          <div role="status" className="faq-notice faq-notice--success">
+          <div role="status" className="mb-5 flex items-start justify-between gap-3 rounded-xl border border-emerald-700/25 bg-emerald-50 px-4 py-3 text-[13px] text-emerald-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#183d37] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#69d4a8]">
             <span>{success}</span>
             <button
               type="button"
               onClick={() => setSuccess("")}
-              className="faq-notice-dismiss"
+              className="cursor-pointer border-0 bg-transparent text-lg leading-none opacity-70 hover:opacity-100"
               aria-label="Dismiss message"
             >
               &times;
             </button>
           </div>
-        )}
+       )}
 
         {/* ================= STATS CARDS ================= */}
-        <div className="faq-stats-grid">
-          <div className="faq-stat-card">
-            <p className="faq-stat-label">Total FAQs</p>
-            <p className="faq-stat-value">{faqs.length}</p>
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-[18px] border border-[#dfe9f3] bg-white px-[22px] py-5 shadow-[var(--tf-shadow)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
+            <p className="mb-1.5 text-[13px] font-medium text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Total FAQs</p>
+            <p className="m-0 text-[30px] font-extrabold tracking-[-0.5px] text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">{faqs.length}</p>
           </div>
 
-          <div className="faq-stat-card">
-            <p className="faq-stat-label">Visible on website</p>
-            <p className="faq-stat-value faq-stat-value--visible">
+          <div className="rounded-[18px] border border-[#dfe9f3] bg-white px-[22px] py-5 shadow-[var(--tf-shadow)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
+            <p className="mb-1.5 text-[13px] font-medium text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Visible on website</p>
+            <p className="m-0 text-[30px] font-extrabold tracking-[-0.5px] text-[#147d5a] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#69d4a8]">
               {visibleCount}
             </p>
           </div>
 
-          <div className="faq-stat-card">
-            <p className="faq-stat-label">Hidden FAQs</p>
-            <p className="faq-stat-value" style={{ color: "var(--tf-muted)" }}>
+          <div className="rounded-[18px] border border-[#dfe9f3] bg-white px-[22px] py-5 shadow-[var(--tf-shadow)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
+            <p className="mb-1.5 text-[13px] font-medium text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Hidden FAQs</p>
+            <p className="m-0 text-[30px] font-extrabold tracking-[-0.5px] text-[#8394a9]">
               {hiddenCount}
             </p>
           </div>
         </div>
 
         {/* ================= FAQ LIST CONTAINER ================= */}
-        <section className="faq-card">
-          <div className="faq-card-head">
+        <section className="overflow-hidden rounded-[20px] border border-[#dfe9f3] bg-white shadow-[var(--tf-shadow)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
+          <div className="flex flex-col gap-4 border-b border-[#dfe9f3] p-5 lg:flex-row lg:items-center lg:justify-between lg:px-6 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f]">
             <div>
-              <h2 className="faq-card-title">All Questions</h2>
-              <p className="faq-card-subtitle">
+              <h2 className="tf-section-title mb-1">All Questions</h2>
+              <p className="text-[13px] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
                 Add, edit, or control which FAQs appear on your tutor website.
               </p>
             </div>
 
             {/* Search & Filter Controls */}
-            <div className="faq-controls">
-              <div className="faq-search-wrapper">
+            <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row">
+              <div className="relative w-full sm:min-w-[250px]">
                 <svg
-                  className="faq-search-icon"
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8394a9]"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -395,7 +394,7 @@ const FAQ = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search questions..."
-                  className="faq-search-input"
+                  className="w-full rounded-xl border border-[#dfe9f3] bg-[#f8fbff] py-[9px] pl-9 pr-3.5 text-[13px] text-[#172b46] outline-none transition focus:border-[#1875d1] focus:ring-[3px] focus:ring-blue-500/15 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]"
                   aria-label="Search FAQs"
                 />
               </div>
@@ -403,7 +402,7 @@ const FAQ = () => {
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="faq-filter-select"
+                className="cursor-pointer rounded-xl border border-[#dfe9f3] bg-[#f8fbff] px-3.5 py-[9px] text-[13px] text-[#172b46] outline-none focus:border-[#1875d1] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]"
                 aria-label="Filter FAQs"
               >
                 <option value="all">All FAQs</option>
@@ -415,22 +414,22 @@ const FAQ = () => {
 
           {/* Loading State */}
           {loading ? (
-            <div className="faq-state-box">
+            <div className="px-5 py-14 text-center">
               <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent text-blue-500" />
-              <p className="text-sm" style={{ color: "var(--tf-copy)" }}>
+              <p className="text-sm text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
                 Loading FAQs...
               </p>
             </div>
-          ) : filteredFaqs.length === 0 ? (
+         ) : filteredFaqs.length === 0 ? (
             /* Empty State */
-            <div className="faq-state-box">
-              <div className="faq-state-icon">💡</div>
-              <h3 className="faq-state-title">
+            <div className="px-5 py-14 text-center">
+              <div className="mb-3 text-4xl">💡</div>
+              <h3 className="mb-1.5 text-base font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
                 {search || filter !== "all"
                   ? "No matching FAQs found"
                   : "No FAQs added yet"}
               </h3>
-              <p className="faq-state-text">
+              <p className="mx-auto mb-[18px] max-w-[400px] text-[13px] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
                 {search || filter !== "all"
                   ? "Try adjusting your search query or visibility filter."
                   : "Answer common questions about tuition fees, timings, subjects, and demo classes so students can enroll faster."}
@@ -440,13 +439,13 @@ const FAQ = () => {
                 <button
                   type="button"
                   onClick={openCreateModal}
-                  className="faq-btn-primary"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1875d1] px-[18px] py-2.5 text-[13px] font-semibold text-white shadow-[0_4px_12px_rgba(24,117,209,0.25)] transition-colors hover:bg-[#0c5fb7] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   + Add your first FAQ
                 </button>
-              )}
+             )}
             </div>
-          ) : (
+         ) : (
             /* FAQ Items List */
             <div>
               {filteredFaqs.map((faq, index) => {
@@ -454,26 +453,26 @@ const FAQ = () => {
                 const isBusy = actionId === faqId;
 
                 return (
-                  <article key={faqId ?? index} className="faq-item">
+                  <article key={faqId ?? index} className="border-b border-[#dfe9f3] px-6 py-[22px] transition-colors last:border-b-0 hover:bg-[#f8fbff] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:hover:bg-[#1b2d44]">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0 flex-1">
-                        <div className="faq-item-head">
-                          <span className="faq-item-index">
+                        <div className="mb-2 flex items-center gap-2">
+                          <span className="text-[11px] font-semibold text-[#8394a9]">
                             Q{index + 1}
                           </span>
                           <span
-                            className={`faq-badge ${
+                            className={`inline-flex items-center gap-[5px] rounded-full border px-[9px] py-0.5 text-[11px] font-bold uppercase tracking-[0.4px] ${
                               faq.visibleOnWebsite
-                                ? "faq-badge--visible"
-                                : "faq-badge--hidden"
+                                ? "border-emerald-700/25 bg-[#eaf8f1] text-[#147d5a] [&:where([data-theme=dark],[data-theme=dark])]:bg-[#183d37] [&:where([data-theme=dark],[data-theme=dark])]:text-[#69d4a8]"
+                                : "border-[#dfe9f3] bg-[#f8fbff] text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark])]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark])]:bg-[#1b2d44]"
                             }`}
                           >
                             {faq.visibleOnWebsite ? "● Visible" : "○ Hidden"}
                           </span>
                         </div>
 
-                        <h3 className="faq-item-title">{faq.title}</h3>
-                        <p className="faq-item-desc">{faq.description}</p>
+                        <h3 className="mb-2 text-base font-bold leading-[1.4] text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">{faq.title}</h3>
+                        <p className="m-0 whitespace-pre-wrap text-[13.5px] leading-[1.6] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">{faq.description}</p>
                       </div>
 
                       {/* Action buttons */}
@@ -482,7 +481,7 @@ const FAQ = () => {
                           type="button"
                           onClick={() => openEditModal(faq)}
                           disabled={isBusy}
-                          className="faq-btn-action"
+                          className="inline-flex items-center justify-center rounded-[10px] border border-[#dfe9f3] bg-[#f8fbff] px-3.5 py-[7px] text-xs font-semibold text-[#172b46] transition-all hover:border-[#1875d1] hover:text-[#1875d1] disabled:cursor-not-allowed disabled:opacity-50 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]"
                         >
                           Edit
                         </button>
@@ -491,7 +490,7 @@ const FAQ = () => {
                           type="button"
                           onClick={() => toggleVisibility(faq)}
                           disabled={isBusy}
-                          className="faq-btn-action"
+                          className="inline-flex items-center justify-center rounded-[10px] border border-[#dfe9f3] bg-[#f8fbff] px-3.5 py-[7px] text-xs font-semibold text-[#172b46] transition-all hover:border-[#1875d1] hover:text-[#1875d1] disabled:cursor-not-allowed disabled:opacity-50 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]"
                         >
                           {isBusy
                             ? "Updating..."
@@ -504,31 +503,31 @@ const FAQ = () => {
                           type="button"
                           onClick={() => deleteFaq(faq)}
                           disabled={isBusy}
-                          className="faq-btn-delete"
+                          className="inline-flex items-center justify-center rounded-[10px] border border-red-700/25 bg-[#fff2f3] px-3.5 py-[7px] text-xs font-semibold text-[#b93849] transition-all hover:bg-[#b93849] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#45232d] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#ff9aa4]"
                         >
                           Delete
                         </button>
                       </div>
                     </div>
                   </article>
-                );
+               );
               })}
             </div>
-          )}
+         )}
 
           {/* Footer showing count */}
           {!loading && filteredFaqs.length > 0 && (
-            <div className="faq-card-footer">
+            <div className="border-t border-[#dfe9f3] bg-[#f8fbff] px-6 py-3 text-xs text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44]">
               Showing {filteredFaqs.length} of {faqs.length} FAQs
             </div>
-          )}
+         )}
         </section>
       </div>
 
       {/* ================= CREATE / EDIT MODAL ================= */}
       {isModalOpen && (
         <div
-          className="faq-modal-overlay"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) closeModal();
           }}
@@ -537,14 +536,14 @@ const FAQ = () => {
             role="dialog"
             aria-modal="true"
             aria-labelledby="faq-modal-title"
-            className="faq-modal-card"
+            className="max-h-[90vh] w-full max-w-[580px] overflow-y-auto rounded-[20px] border border-[#dfe9f3] bg-white text-[#172b46] shadow-[0_20px_45px_rgba(0,0,0,0.35)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]"
           >
-            <div className="faq-modal-header">
+            <div className="flex items-start justify-between border-b border-[#dfe9f3] px-6 py-5 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f]">
               <div>
-                <h2 id="faq-modal-title" className="faq-modal-title">
+                <h2 id="faq-modal-title" className="mb-1 text-lg font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
                   {editingFaq ? "Edit FAQ" : "Add New FAQ"}
                 </h2>
-                <p className="faq-modal-subtitle">
+                <p className="text-[13px] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
                   Provide a common question and answer for prospective students.
                 </p>
               </div>
@@ -553,25 +552,25 @@ const FAQ = () => {
                 type="button"
                 onClick={closeModal}
                 disabled={saving}
-                className="faq-modal-close"
+                className="cursor-pointer border-0 bg-transparent p-1 text-[22px] leading-none text-[#8394a9] hover:text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:hover:text-[#e8f0fb]"
                 aria-label="Close modal"
               >
                 &times;
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="faq-modal-body">
+            <form onSubmit={handleSubmit} className="p-6">
               {error && (
-                <div role="alert" className="faq-notice faq-notice--error">
+                <div role="alert" className="mb-5 flex items-start justify-between gap-3 rounded-xl border border-red-500/25 bg-red-50 px-4 py-3 text-[13px] text-red-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#45232d] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#ff9aa4]">
                   {error}
                 </div>
-              )}
+             )}
 
               {/* Question Field */}
-              <div className="faq-form-field">
-                <label htmlFor="faq-title" className="faq-form-label">
+              <div className="mb-5">
+                <label htmlFor="faq-title" className="mb-2 flex items-center justify-between text-[13px] font-semibold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
                   <span>Question <span className="text-red-500">*</span></span>
-                  <span className="faq-form-counter">
+                  <span className="text-[11px] font-medium text-[#8394a9]">
                     {form.title.length}/500
                   </span>
                 </label>
@@ -584,15 +583,15 @@ const FAQ = () => {
                   placeholder="e.g. What are your batch timings and duration?"
                   maxLength={500}
                   required
-                  className="faq-form-input"
+                  className="w-full rounded-xl border border-[#dfe9f3] bg-[#f8fbff] px-3.5 py-[11px] text-[13px] text-[#172b46] outline-none transition focus:border-[#1875d1] focus:ring-[3px] focus:ring-blue-500/15 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]"
                 />
               </div>
 
               {/* Answer Field */}
-              <div className="faq-form-field">
-                <label htmlFor="faq-description" className="faq-form-label">
+              <div className="mb-5">
+                <label htmlFor="faq-description" className="mb-2 flex items-center justify-between text-[13px] font-semibold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
                   <span>Answer <span className="text-red-500">*</span></span>
-                  <span className="faq-form-counter">
+                  <span className="text-[11px] font-medium text-[#8394a9]">
                     {form.description.length}/10000
                   </span>
                 </label>
@@ -604,37 +603,36 @@ const FAQ = () => {
                   placeholder="Write a clear and comprehensive answer..."
                   maxLength={10000}
                   required
-                  className="faq-form-textarea"
+                  className="min-h-[130px] w-full resize-y rounded-xl border border-[#dfe9f3] bg-[#f8fbff] px-3.5 py-[11px] text-[13px] leading-[1.55] text-[#172b46] outline-none transition focus:border-[#1875d1] focus:ring-[3px] focus:ring-blue-500/15 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]"
                 />
               </div>
 
               {/* Visibility Checkbox */}
-              <label className="faq-checkbox-label">
+              <label className="mb-6 flex cursor-pointer items-start gap-3 rounded-[14px] border border-[#dfe9f3] bg-[#f8fbff] px-4 py-3.5 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44]">
                 <input
                   type="checkbox"
                   name="visibleOnWebsite"
                   checked={form.visibleOnWebsite}
                   onChange={handleChange}
-                  className="faq-checkbox"
+                  className="mt-[3px] h-4 w-4 cursor-pointer accent-[#1875d1]"
                 />
                 <div>
-                  <span className="faq-checkbox-title">
+                  <span className="block text-[13px] font-semibold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
                     Display on public website
                   </span>
-                  <span className="faq-checkbox-desc">
+                  <span className="mt-0.5 block text-xs text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
                     When checked, students visiting your portfolio can read this FAQ.
                   </span>
                 </div>
               </label>
 
               {/* Modal Actions */}
-              <div className="faq-modal-actions">
+              <div className="flex flex-col-reverse gap-2.5 pt-2 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   onClick={closeModal}
                   disabled={saving}
-                  className="faq-btn-action"
-                  style={{ minWidth: "90px" }}
+                  className="inline-flex min-w-[90px] items-center justify-center rounded-[10px] border border-[#dfe9f3] bg-[#f8fbff] px-3.5 py-[7px] text-xs font-semibold text-[#172b46] transition-all hover:border-[#1875d1] hover:text-[#1875d1] disabled:cursor-not-allowed disabled:opacity-50 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]"
                 >
                   Cancel
                 </button>
@@ -642,8 +640,7 @@ const FAQ = () => {
                 <button
                   type="submit"
                   disabled={saving || !form.title.trim() || !form.description.trim()}
-                  className="faq-btn-primary"
-                  style={{ minWidth: "130px" }}
+                  className="inline-flex min-w-[130px] items-center justify-center gap-2 rounded-xl bg-[#1875d1] px-[18px] py-2.5 text-[13px] font-semibold text-white shadow-[0_4px_12px_rgba(24,117,209,0.25)] transition-colors hover:bg-[#0c5fb7] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {saving
                     ? "Saving..."
@@ -655,9 +652,9 @@ const FAQ = () => {
             </form>
           </div>
         </div>
-      )}
+     )}
     </div>
-  );
+ );
 };
 
 export default FAQ;

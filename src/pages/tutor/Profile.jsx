@@ -1,7 +1,6 @@
 ﻿import React, { useEffect, useRef, useState } from "react";
 import api from "../../api/axios";
 import ResumeExtractorModal from "../../components/ResumeExtractorModal";
-import "./Profile.css";
 
 const initialSocialLinks = {
   facebook: "",
@@ -35,9 +34,9 @@ function getSafeProfileUrl(value) {
 
 function ProfileViewSection({ title, subtitle, children }) {
   return (
-    <section className="profile-view-section">
-      <h2>{title}</h2>
-      <p className="profile-view-subtitle">{subtitle}</p>
+    <section className="tf-card min-w-0 p-5 shadow-sm max-[560px]:p-4">
+      <h2 className="tf-section-title mt-0 mb-1">{title}</h2>
+      <p className="mb-4 text-[11px] text-[var(--tf-muted)]">{subtitle}</p>
       {children}
     </section>
   );
@@ -52,9 +51,9 @@ function ProfileViewItem({ label, value, full = false, multiline = false, link =
   );
 
   return (
-    <div className={`profile-view-item ${full ? "profile-view-item--full" : ""}`}>
-      {label && <div className="profile-view-label">{label}</div>}
-      <div className={`profile-view-value ${multiline ? "is-multiline" : ""}`}>
+    <div className={`min-w-0 ${full ? "col-span-full max-[560px]:col-auto" : ""}`}>
+      {label && <div className="mb-[3px] text-[10px] text-[var(--tf-muted)]">{label}</div>}
+      <div className={`break-words text-xs font-semibold text-[var(--tf-ink)] [&_a]:text-[var(--tf-blue)] [&_a]:no-underline [&_a:hover]:underline ${multiline ? "whitespace-pre-line font-normal leading-relaxed" : ""}`}>
         {content}
       </div>
     </div>
@@ -631,23 +630,23 @@ function Profile() {
     }
   };
 
-  const inputClass = "profile-input";
-  const labelClass = "profile-label";
+  const inputClass = "tf-field disabled:cursor-default disabled:border-transparent disabled:bg-tf-surface-soft disabled:opacity-100";
+  const labelClass = "tf-label my-0 flex items-center gap-[7px]";
 
   if (loading) {
     return (
-      <div className="profile-page">
-        <div className="profile-loading">
-          <span className="profile-spinner" />
-          <p>Loading your profile...</p>
+      <div className="min-h-full bg-[var(--tf-bg)] px-8 pt-[34px] pb-[58px] text-[var(--tf-ink)] [font:14px/1.5_Inter,ui-sans-serif,system-ui,-apple-system,'Segoe_UI',sans-serif] max-[850px]:px-[18px] max-[850px]:pt-6 max-[850px]:pb-10 max-[560px]:px-[14px] max-[560px]:pt-5 max-[560px]:pb-8 [&:where([data-theme=dark] *)]:bg-[var(--tf-bg)] [&:where([data-theme=dark] *)]:text-[var(--tf-ink)]">
+        <div className="mx-auto grid min-h-80 place-content-center gap-3 rounded-[13px] border border-[var(--tf-line)] bg-[var(--tf-surface)] text-center text-[var(--tf-copy)] [&:where([data-theme=dark] *)]:bg-[var(--tf-surface)]">
+          <span className="m-auto h-8 w-8 animate-spin rounded-full border-[3px] border-[var(--tf-line)] border-t-[var(--tf-blue)]" />
+          <p className="m-0 text-xs">Loading your profile...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="profile-page">
-      <div className="profile-content">
+    <div className="min-h-full bg-[var(--tf-bg)] px-8 pt-[34px] pb-[58px] text-[var(--tf-ink)] [font:14px/1.5_Inter,ui-sans-serif,system-ui,-apple-system,'Segoe_UI',sans-serif] max-[850px]:px-[18px] max-[850px]:pt-6 max-[850px]:pb-10 max-[560px]:px-[14px] max-[560px]:pt-5 max-[560px]:pb-8 [&:where([data-theme=dark] *)]:bg-[var(--tf-bg)] [&:where([data-theme=dark] *)]:text-[var(--tf-ink)]">
+      <div className="mx-auto max-w-[1100px]">
         <ResumeExtractorModal
           isOpen={showResumeModal}
           onClose={() => setShowResumeModal(false)}
@@ -655,36 +654,36 @@ function Profile() {
           mode="profile"
         />
 
-        <header className="profile-heading">
+        <header className="mb-5 flex items-start justify-between gap-5 max-[560px]:flex-col">
           <div>
-            <h1>Personal details</h1>
-            <p>Add and manage the information shown on your tutor profile.</p>
+            <h1 className="tf-page-title mt-0 mb-2">Personal details</h1>
+            <p className="m-0 text-[13px] text-[var(--tf-copy)]">Add and manage the information shown on your tutor profile.</p>
           </div>
-          <div className="profile-head-actions">
+          <div className="flex items-center gap-[9px] max-[560px]:w-full">
             {!isEditing && (
-              <button type="button" onClick={handleEdit} className="profile-button profile-button--primary">
+              <button type="button" onClick={handleEdit} className="inline-flex min-h-[38px] items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-blue)] bg-[var(--tf-blue)] px-[14px] py-[9px] text-xs font-semibold text-[var(--tf-on-primary)] transition-colors hover:border-[var(--tf-blue-pressed)] hover:bg-[var(--tf-blue-pressed)] max-[560px]:w-full">
                 <span aria-hidden="true">✎</span> Edit profile
               </button>
             )}
-            <button type="button" onClick={() => setShowResumeModal(true)} className="profile-button">
+            <button type="button" onClick={() => setShowResumeModal(true)} className="inline-flex min-h-[38px] items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[14px] py-[9px] text-xs font-semibold text-[var(--tf-copy)] transition-colors hover:bg-[var(--tf-surface-soft)] hover:text-[var(--tf-blue)] max-[560px]:w-full [&:where([data-theme=dark] *)]:bg-[var(--tf-surface)]">
               <span aria-hidden="true">↑</span> Upload resume
             </button>
           </div>
         </header>
 
-        <div className="profile-resume-help">
-          <span aria-hidden="true">ⓘ</span>
-          <p><strong>Save time filling out your profile.</strong> Upload your resume to fill in your details automatically, then review them before saving.</p>
+        <div className="mb-5 flex items-start gap-2.5 rounded-[10px] border border-[var(--tf-line)] bg-gradient-to-r from-[var(--tf-sky)] to-[var(--tf-surface)] px-[14px] py-3 text-xs text-[var(--tf-copy)] max-[560px]:text-[11px] [&:where([data-theme=dark] *)]:from-[var(--tf-sky)] [&:where([data-theme=dark] *)]:to-[var(--tf-surface)]">
+          <span className="shrink-0 text-[17px] leading-[1.2] text-[var(--tf-blue)]" aria-hidden="true">ⓘ</span>
+          <p className="m-0"><strong className="text-[var(--tf-ink)]">Save time filling out your profile.</strong> Upload your resume to fill in your details automatically, then review them before saving.</p>
         </div>
 
         {error && (
-          <div className="profile-notice profile-notice--error" role="alert">
+          <div className="mb-[15px] rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-danger-soft)] px-[14px] py-[11px] text-xs text-[var(--tf-danger)]" role="alert">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="profile-notice profile-notice--success" role="status">
+          <div className="mb-[15px] rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-success-soft)] px-[14px] py-[11px] text-xs text-[var(--tf-success)]" role="status">
             {success}
           </div>
         )}
@@ -698,15 +697,15 @@ function Profile() {
               e.preventDefault();
             }
           }}
-          className="profile-form-grid"
+          className="grid grid-cols-[minmax(0,1fr)_284px] items-start gap-4 [&>section]:col-start-1 max-[850px]:grid-cols-1"
         >
-          <section className="profile-section">
-            <div className="profile-section-head">
-              <span className="profile-section-icon" aria-hidden="true">♙</span>
+          <section className="tf-card min-w-0 p-5 shadow-sm max-[560px]:p-4">
+            <div className="mb-[19px] flex items-start gap-3 [&_h2]:mt-0 [&_h2]:mb-[3px] [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_h2]:text-[var(--tf-ink)] [&_p]:m-0 [&_p]:text-[11px] [&_p]:text-[var(--tf-muted)]">
+              <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] bg-[var(--tf-sky)] text-[17px] font-bold text-[var(--tf-blue)]" aria-hidden="true">♙</span>
               <div><h2>Basic information</h2><p>Tell students a little about yourself.</p></div>
             </div>
 
-            <div className="profile-fields">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-[14px] [&>div]:grid [&>div]:min-w-0 [&>div]:content-start [&>div]:gap-1.5 max-[560px]:grid-cols-1">
               <div>
                 <label className={labelClass}>
                   First Name <span className="text-red-400">*</span>
@@ -827,7 +826,7 @@ function Profile() {
                 />
               </div>
 
-              <div className="profile-field-full">
+              <div className="col-span-full grid min-w-0 content-start gap-1.5 max-[560px]:col-auto">
                 <label className={labelClass}>About</label>
                 <textarea
                   name="about"
@@ -837,20 +836,20 @@ function Profile() {
                   placeholder="Tell students about yourself, your teaching style, experience, etc."
                   rows={5}
                   maxLength={10000}
-                  className={`${inputClass} resize-none`}
+                  className={`${inputClass} min-h-[92px] resize-none`}
                 />
-                <span className="profile-hint">{formData.about.length} / 10,000 characters</span>
+                <span className="text-[10px] text-[var(--tf-muted)]">{formData.about.length} / 10,000 characters</span>
               </div>
             </div>
           </section>
 
-          <section className="profile-section">
-            <div className="profile-section-head">
-              <span className="profile-section-icon" aria-hidden="true">▤</span>
+          <section className="tf-card min-w-0 p-5 shadow-sm max-[560px]:p-4">
+            <div className="mb-[19px] flex items-start gap-3 [&_h2]:mt-0 [&_h2]:mb-[3px] [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_h2]:text-[var(--tf-ink)] [&_p]:m-0 [&_p]:text-[11px] [&_p]:text-[var(--tf-muted)]">
+              <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] bg-[var(--tf-sky)] text-[17px] font-bold text-[var(--tf-blue)]" aria-hidden="true">▤</span>
               <div><h2>Professional information</h2><p>Add your teaching experience and professional details.</p></div>
             </div>
 
-            <div className="profile-fields">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-[14px] [&>div]:grid [&>div]:min-w-0 [&>div]:content-start [&>div]:gap-1.5 max-[560px]:grid-cols-1">
               <div>
                 <label className={labelClass}>Qualification</label>
                 <input
@@ -866,7 +865,7 @@ function Profile() {
 
               <div>
                 <label className={labelClass}>Teaching Experience</label>
-                <div className="profile-input-suffix">
+                <div className="relative">
                   <input
                     type="number"
                     name="teachingYOE"
@@ -877,7 +876,7 @@ function Profile() {
                     max="80"
                     className={`${inputClass} pr-16`}
                   />
-                  <span>years</span>
+                  <span className="pointer-events-none absolute right-[11px] top-1/2 -translate-y-1/2 text-[10px] text-[var(--tf-muted)]">years</span>
                 </div>
               </div>
 
@@ -896,14 +895,14 @@ function Profile() {
             </div>
           </section>
 
-          <section className="profile-section">
-            <div className="profile-section-head">
-              <span className="profile-section-icon" aria-hidden="true">⌖</span>
+          <section className="tf-card min-w-0 p-5 shadow-sm max-[560px]:p-4">
+            <div className="mb-[19px] flex items-start gap-3 [&_h2]:mt-0 [&_h2]:mb-[3px] [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_h2]:text-[var(--tf-ink)] [&_p]:m-0 [&_p]:text-[11px] [&_p]:text-[var(--tf-muted)]">
+              <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] bg-[var(--tf-sky)] text-[17px] font-bold text-[var(--tf-blue)]" aria-hidden="true">⌖</span>
               <div><h2>Address</h2><p>Add your current or teaching location.</p></div>
             </div>
 
-            <div className="profile-fields">
-              <div className="profile-field-full">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-[14px] [&>div]:grid [&>div]:min-w-0 [&>div]:content-start [&>div]:gap-1.5 max-[560px]:grid-cols-1">
+              <div className="col-span-full grid min-w-0 content-start gap-1.5 max-[560px]:col-auto">
                 <label className={labelClass}>Address</label>
                 <textarea
                   name="address"
@@ -912,22 +911,22 @@ function Profile() {
                   disabled={!isEditing}
                   placeholder="Enter your address"
                   rows={4}
-                  className={`${inputClass} resize-none`}
+                  className={`${inputClass} min-h-[92px] resize-none`}
                 />
               </div>
             </div>
           </section>
 
-          <section className="profile-section">
-            <div className="profile-section-head">
-              <span className="profile-section-icon" aria-hidden="true">◎</span>
+          <section className="tf-card min-w-0 p-5 shadow-sm max-[560px]:p-4">
+            <div className="mb-[19px] flex items-start gap-3 [&_h2]:mt-0 [&_h2]:mb-[3px] [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_h2]:text-[var(--tf-ink)] [&_p]:m-0 [&_p]:text-[11px] [&_p]:text-[var(--tf-muted)]">
+              <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] bg-[var(--tf-sky)] text-[17px] font-bold text-[var(--tf-blue)]" aria-hidden="true">◎</span>
               <div><h2>Social profiles</h2><p>Help students connect with your teaching community.</p></div>
             </div>
-            <div className="profile-fields profile-social-fields">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-[14px] [&>div]:grid [&>div]:min-w-0 [&>div]:content-start [&>div]:gap-1.5 max-[560px]:grid-cols-1">
               {socialPlatforms.map(({ key, label, mark }) => (
                 <div key={key}>
                   <label className={labelClass} htmlFor={`social-${key}`}>
-                    <span className={`profile-social-mark profile-social-mark--${key}`}>{mark}</span>{label}
+                    <span className={`inline-grid h-6 w-6 shrink-0 place-items-center rounded-[7px] bg-[var(--tf-sky)] text-xs font-bold text-[var(--tf-blue)] ${key === "facebook" ? "text-[#1877f2]" : key === "instagram" ? "text-[#c13584]" : key === "whatsapp" ? "text-[#128c7e]" : key === "telegram" ? "text-[#229ed9]" : key === "linkedin" ? "text-[#0a66c2]" : key === "youtube" ? "text-[#e62117]" : "text-[var(--tf-ink)]"}`}>{mark}</span>{label}
                   </label>
                   <input
                     id={`social-${key}`}
@@ -945,12 +944,12 @@ function Profile() {
             </div>
           </section>
 
-          <aside className="profile-photo-aside">
-            <section className="profile-photo-panel">
-              <h2>Profile picture</h2>
-              <p>Use a clear, recent photo so students can recognize you.</p>
-              <div className="profile-photo-showcase">
-                <div className="profile-photo">
+          <aside className="col-start-2 row-span-5 sticky top-5 max-[850px]:col-start-1 max-[850px]:row-auto max-[850px]:static">
+            <section className="tf-card min-w-0 p-5 shadow-sm">
+              <h2 className="tf-section-title mt-0 mb-1">Profile picture</h2>
+              <p className="mb-[17px] mt-0 text-[11px] text-[var(--tf-muted)]">Use a clear, recent photo so students can recognize you.</p>
+              <div className="flex min-h-28 items-center gap-3.5 rounded-[11px] border border-dashed border-[var(--tf-blue)] bg-gradient-to-br from-[var(--tf-surface-soft)] to-[var(--tf-sky)] p-[15px] [&:where([data-theme=dark] *)]:from-[var(--tf-surface-soft)] [&:where([data-theme=dark] *)]:to-[var(--tf-sky)] max-[560px]:flex-col max-[560px]:text-center">
+                <div className="grid h-[72px] w-[72px] shrink-0 place-items-center overflow-hidden rounded-full border-[3px] border-white bg-[var(--tf-sky)] text-[var(--tf-blue-pressed)] shadow-[0_0_0_1px_#e1eaf4] [&:where([data-theme=dark] *)]:border-[var(--tf-line)] [&_svg]:h-[33px] [&_svg]:w-[33px] [&_img]:h-full [&_img]:w-full [&_img]:object-cover">
                   {imagePreview ? (
                     <img src={imagePreview} alt="Profile preview" />
                   ) : (
@@ -960,10 +959,10 @@ function Profile() {
                     </svg>
                   )}
                 </div>
-                <div className="profile-photo-copy">
-                  <strong>{imagePreview ? "Profile picture selected" : "Add a profile picture"}</strong>
-                  <p>JPG, PNG or WebP · up to 20 KB</p>
-                  <label className="profile-button profile-photo-button">
+                <div className="grid min-w-0 justify-items-start gap-[5px] max-[560px]:justify-items-center">
+                  <strong className="text-xs text-[var(--tf-ink)]">{imagePreview ? "Profile picture selected" : "Add a profile picture"}</strong>
+                  <p className="m-0 text-[10px] text-[var(--tf-muted)]">JPG, PNG or WebP · up to 20 KB</p>
+                  <label className="relative inline-flex min-h-[31px] cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[9px] py-1.5 text-[11px] font-semibold text-[var(--tf-copy)] [&_input]:absolute [&_input]:h-px [&_input]:w-px [&_input]:overflow-hidden [&_input]:opacity-0 has-[input:disabled]:cursor-not-allowed has-[input:disabled]:opacity-60 [&:where([data-theme=dark] *)]:bg-[var(--tf-surface)]">
                     <span aria-hidden="true">↑</span> Choose photo
                     <input
                       ref={photoInputRef}
@@ -973,39 +972,39 @@ function Profile() {
                       disabled={!isEditing}
                     />
                   </label>
-                  <span className="profile-photo-meta">
+                  <span className="max-w-full break-words text-[10px] text-[var(--tf-muted)]">
                     {imagePreview ? "Photo ready to save" : "Select an image to upload"}
                   </span>
                 </div>
               </div>
               {imageError && (
-                <div className="profile-image-error">
-                  <p>{imageError}</p>
+                <div className="mt-3 text-[11px] text-[var(--tf-danger)]">
+                  <p className="mb-1.5 mt-0">{imageError}</p>
                   {imageTooLarge && (
-                    <a href={PIXEL_KIT_URL} target="_blank" rel="noopener noreferrer">
+                    <a className="font-semibold text-[var(--tf-blue)]" href={PIXEL_KIT_URL} target="_blank" rel="noopener noreferrer">
                       Compress image on Pixel Kit ↗
                     </a>
                   )}
                 </div>
               )}
-              <div className="profile-photo-tip">
+              <div className="mt-[14px] border-t border-[var(--tf-line)] pt-3 text-[10px] leading-relaxed text-[var(--tf-muted)]">
                 Your photo is stored with your profile and appears on your public tutor page.
               </div>
             </section>
           </aside>
 
-          <div className="profile-savebar">
-            <span>Your profile information is only updated when you save.</span>
-            <div className="profile-save-actions">
-              <button type="button" className="profile-button" onClick={handleCancelEdit} disabled={saving}>Cancel</button>
+          <div className="col-span-full flex items-center justify-between gap-[15px] px-0.5 pt-[13px] max-[850px]:col-start-1 max-[560px]:items-start max-[560px]:flex-col">
+            <span className="text-[11px] text-[var(--tf-muted)]">Your profile information is only updated when you save.</span>
+            <div className="flex items-center justify-end gap-[9px] max-[560px]:w-full">
+              <button type="button" className="inline-flex min-h-[38px] items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[14px] py-[9px] text-xs font-semibold text-[var(--tf-copy)] transition-colors hover:bg-[var(--tf-surface-soft)] hover:text-[var(--tf-blue)] disabled:cursor-not-allowed disabled:opacity-[.58] [&:where([data-theme=dark] *)]:bg-[var(--tf-surface)]" onClick={handleCancelEdit} disabled={saving}>Cancel</button>
               <button
                 type="submit"
                 disabled={saving}
-                className="profile-button profile-button--primary"
+                className="inline-flex min-h-[38px] items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-blue)] bg-[var(--tf-blue)] px-[14px] py-[9px] text-xs font-semibold text-[var(--tf-on-primary)] transition-colors hover:border-[var(--tf-blue-pressed)] hover:bg-[var(--tf-blue-pressed)] disabled:cursor-not-allowed disabled:opacity-[.58]"
               >
                 {saving ? (
                   <>
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-[var(--tf-on-primary)]" />
                     Saving...
                   </>
                 ) : (
@@ -1016,10 +1015,10 @@ function Profile() {
           </div>
         </form>
         ) : (
-          <div className="profile-view">
-            <div className="profile-view-stack">
+          <div className="grid grid-cols-[minmax(0,1fr)_284px] items-start gap-4 max-[850px]:grid-cols-1">
+            <div className="col-start-1 grid gap-4">
               <ProfileViewSection title="Basic information" subtitle="Personal and contact details.">
-                <div className="profile-view-grid">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-[14px] max-[560px]:grid-cols-1">
                   <ProfileViewItem label="First name" value={formData.firstName} />
                   <ProfileViewItem label="Last name" value={formData.lastName} />
                   <ProfileViewItem label="Date of birth" value={formData.dateOfBirth ? new Date(`${formData.dateOfBirth}T00:00:00`).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : ""} />
@@ -1033,7 +1032,7 @@ function Profile() {
               </ProfileViewSection>
 
               <ProfileViewSection title="Professional information" subtitle="Your qualifications, experience, and professional link.">
-                <div className="profile-view-grid">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-[14px] max-[560px]:grid-cols-1">
                   <ProfileViewItem label="Qualifications" value={formData.qualification} />
                   <ProfileViewItem label="Teaching experience" value={formData.teachingYOE ? `${formData.teachingYOE} years` : ""} />
                   <ProfileViewItem label="Website or profile URL" value={formData.webURL} full link />
@@ -1045,30 +1044,30 @@ function Profile() {
               </ProfileViewSection>
 
               <ProfileViewSection title="Social profiles" subtitle="Your public social links.">
-                <div className="profile-view-socials">
+                <div className="flex flex-wrap gap-2">
                   {socialPlatforms.filter(({ key }) => socialLinks[key].trim()).map(({ key, label, mark }) => {
                     const safeUrl = getSafeProfileUrl(socialLinks[key]);
-                    const content = <><span className={`profile-social-mark profile-social-mark--${key}`}>{mark}</span>{label}</>;
+                    const content = <><span className={`inline-grid h-6 w-6 shrink-0 place-items-center rounded-[7px] bg-[var(--tf-sky)] text-xs font-bold text-[var(--tf-blue)] ${key === "facebook" ? "text-[#1877f2]" : key === "instagram" ? "text-[#c13584]" : key === "whatsapp" ? "text-[#128c7e]" : key === "telegram" ? "text-[#229ed9]" : key === "linkedin" ? "text-[#0a66c2]" : key === "youtube" ? "text-[#e62117]" : "text-[var(--tf-ink)]"}`}>{mark}</span>{label}</>;
                     return safeUrl ? (
-                      <a key={key} className="profile-view-social" href={safeUrl} target="_blank" rel="noreferrer">
+                      <a key={key} className="inline-flex items-center gap-[7px] rounded-lg border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] px-[9px] py-1.5 text-[10px] text-[var(--tf-copy)] hover:text-[var(--tf-blue)] [&:where([data-theme=dark] *)]:bg-[var(--tf-surface-soft)]" href={safeUrl} target="_blank" rel="noreferrer">
                         {content}
                       </a>
                     ) : (
-                      <span key={key} className="profile-view-social">{content}</span>
+                      <span key={key} className="inline-flex items-center gap-[7px] rounded-lg border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] px-[9px] py-1.5 text-[10px] text-[var(--tf-copy)] [&:where([data-theme=dark] *)]:bg-[var(--tf-surface-soft)]">{content}</span>
                     );
                   })}
                   {!socialPlatforms.some(({ key }) => socialLinks[key].trim()) && (
-                    <span className="profile-view-empty">No social links added</span>
+                    <span className="text-[11px] text-[var(--tf-muted)]">No social links added</span>
                   )}
                 </div>
               </ProfileViewSection>
             </div>
-            <aside className="profile-photo-aside">
-              <section className="profile-photo-panel">
-                <h2>Profile picture</h2>
-                <p>Photo shown on your tutor profile.</p>
-                <div className="profile-photo-showcase profile-photo-showcase--view">
-                  <div className="profile-photo">
+            <aside className="col-start-2 row-span-5 sticky top-5 max-[850px]:col-start-1 max-[850px]:row-auto max-[850px]:static">
+              <section className="tf-card min-w-0 p-5 shadow-sm">
+                <h2 className="tf-section-title mt-0 mb-1">Profile picture</h2>
+                <p className="mb-[17px] mt-0 text-[11px] text-[var(--tf-muted)]">Photo shown on your tutor profile.</p>
+                <div className="flex min-h-28 items-center justify-center gap-3.5 rounded-[11px] border border-dashed border-[var(--tf-blue)] bg-gradient-to-br from-[var(--tf-surface-soft)] to-[var(--tf-sky)] px-2.5 py-[22px] [&:where([data-theme=dark] *)]:from-[var(--tf-surface-soft)] [&:where([data-theme=dark] *)]:to-[var(--tf-sky)]">
+                  <div className="grid h-[72px] w-[72px] shrink-0 place-items-center overflow-hidden rounded-full border-[3px] border-white bg-[var(--tf-sky)] text-[var(--tf-blue-pressed)] shadow-[0_0_0_1px_#e1eaf4] [&:where([data-theme=dark] *)]:border-[var(--tf-line)] [&_svg]:h-[33px] [&_svg]:w-[33px] [&_img]:h-full [&_img]:w-full [&_img]:object-cover">
                     {imagePreview ? (
                       <img src={imagePreview} alt="Profile" />
                     ) : (
@@ -1079,14 +1078,14 @@ function Profile() {
                     )}
                   </div>
                 </div>
-                <div className="profile-view-photo-name">
+                <div className="mt-2.5 text-center text-xs font-semibold text-[var(--tf-ink)] max-[850px]:text-left">
                   {imagePreview ? "Profile picture uploaded" : "No profile picture uploaded"}
                 </div>
-                <div className="profile-photo-tip">To update your photo, choose Edit profile.</div>
+                <div className="mt-[14px] border-t border-[var(--tf-line)] pt-3 text-[10px] leading-relaxed text-[var(--tf-muted)]">To update your photo, choose Edit profile.</div>
               </section>
             </aside>
-            <div className="profile-view-actions">
-              <button type="button" onClick={handleEdit} className="profile-button profile-button--primary">Edit profile</button>
+            <div className="col-span-full flex justify-end max-[850px]:col-start-1">
+              <button type="button" onClick={handleEdit} className="inline-flex min-h-[38px] items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-blue)] bg-[var(--tf-blue)] px-[14px] py-[9px] text-xs font-semibold text-[var(--tf-on-primary)] transition-colors hover:border-[var(--tf-blue-pressed)] hover:bg-[var(--tf-blue-pressed)]">Edit profile</button>
             </div>
           </div>
         )}

@@ -130,8 +130,8 @@ function AuthCallback() {
   }, [searchParams, navigate]);
 
   return (
-    <div className="min-h-screen bg-[#0a1628] flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-[#0f1f36] border border-blue-500/10 rounded-3xl p-8 text-center shadow-xl">
+    <div className="min-h-screen bg-tf-bg flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-md bg-tf-surface border border-tf-line rounded-3xl p-8 text-center shadow-xl shadow-slate-200/50 dark:shadow-black/20">
         <img
           src="/tf-logo.png"
           alt="TutorFolio"
@@ -141,10 +141,10 @@ function AuthCallback() {
         {status === "processing" && (
           <div>
             <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-5" />
-            <h2 className="text-xl font-bold text-white mb-2">
+            <h2 className="text-xl font-bold text-tf-ink mb-2">
               Signing you in...
             </h2>
-            <p className="text-[#94a8c7] text-sm">
+            <p className="text-tf-copy text-sm">
               Please wait while we verify your Google credentials.
             </p>
           </div>
@@ -152,13 +152,13 @@ function AuthCallback() {
 
         {status === "success" && (
           <div>
-            <div className="w-12 h-12 bg-green-500/10 border border-green-500/30 text-green-400 rounded-full flex items-center justify-center mx-auto mb-5 text-2xl">
+            <div className="w-12 h-12 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30 text-green-700 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-5 text-2xl">
               ✓
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">
+            <h2 className="text-xl font-bold text-tf-ink mb-2">
               Authentication Successful
             </h2>
-            <p className="text-[#94a8c7] text-sm">
+            <p className="text-tf-copy text-sm">
               Redirecting you to your account...
             </p>
           </div>
@@ -166,13 +166,13 @@ function AuthCallback() {
 
         {status === "error" && (
           <div>
-            <div className="w-12 h-12 bg-red-500/10 border border-red-500/30 text-red-400 rounded-full flex items-center justify-center mx-auto mb-5 text-xl font-bold">
+            <div className="w-12 h-12 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-5 text-xl font-bold">
               !
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">
+            <h2 className="text-xl font-bold text-tf-ink mb-2">
               Authentication Failed
             </h2>
-            <p className="text-red-300 text-sm mb-6 bg-red-950/30 border border-red-800/30 rounded-xl p-3">
+            <p className="text-red-700 dark:text-red-300 text-sm mb-6 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/30 rounded-xl p-3">
               {errorMessage}
             </p>
             <div className="space-y-3">
@@ -184,7 +184,7 @@ function AuthCallback() {
               </Link>
               <Link
                 to="/"
-                className="block w-full bg-[#0a1628] hover:bg-white/5 border border-blue-500/10 text-[#94a8c7] hover:text-white py-3 rounded-xl font-medium transition-colors"
+                className="block w-full bg-tf-surface-soft hover:bg-tf-sky border border-tf-line text-tf-copy hover:text-tf-ink py-3 rounded-xl font-medium transition-colors"
               >
                 Go to Home
               </Link>
@@ -197,4 +197,3 @@ function AuthCallback() {
 }
 
 export default AuthCallback;
-
