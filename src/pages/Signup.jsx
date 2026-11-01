@@ -3,6 +3,31 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { setAuthSession } from "../utils/auth";
 
+/* Same fonts and graph-paper pattern as the landing page.
+   If you move these into your global CSS, delete this block and the <style> tag below. */
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=Fraunces:opsz,wght@9..144,600&display=swap');
+.tf{font-family:'Instrument Sans',system-ui,sans-serif}
+.tf-d{font-family:'Bricolage Grotesque','Instrument Sans',sans-serif;letter-spacing:-.025em}
+.tf-s{font-family:'Fraunces',Georgia,serif}
+.tf-grid{background-image:linear-gradient(rgba(148,168,199,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(148,168,199,.05) 1px,transparent 1px),linear-gradient(rgba(148,168,199,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(148,168,199,.09) 1px,transparent 1px);background-size:28px 28px,28px 28px,140px 140px,140px 140px;background-position:-1px -1px;-webkit-mask-image:radial-gradient(ellipse 85% 75% at 50% 25%,#000 20%,transparent 100%);mask-image:radial-gradient(ellipse 85% 75% at 50% 25%,#000 20%,transparent 100%)}
+`;
+
+const ICONS = {
+  check: "M5 12.5l4.5 4.5L19 7.5",
+  back: "M19 12H5M11 18l-6-6 6-6",
+  eye: "M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z",
+  eyeOff: "M3 3l18 18M10.6 5.1A9.7 9.7 0 0112 5c6 0 10 7 10 7a17 17 0 01-3.2 3.9M6.6 6.6A17 17 0 002 12s4 7 10 7c1.7 0 3.3-.4 4.7-1.1M9.9 9.9a3 3 0 004.2 4.2",
+};
+const Icon = ({ n, c = "w-5 h-5" }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className={c} aria-hidden="true">
+    <path d={ICONS[n]} />
+  </svg>
+);
+
+const inputCls =
+  "w-full rounded-lg border border-white/10 bg-[#0a1628] px-4 py-3 text-white placeholder:text-[#5f7aa0] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25";
+
 function Signup() {
   const navigate = useNavigate();
 
@@ -127,220 +152,168 @@ function Signup() {
     }
   };
 
+  const benefits = [
+    "Your own professional teaching page",
+    "Subjects, qualifications, achievements and batches in one place",
+    "Be discovered by students and receive their enquiries",
+  ];
+
   return (
-    <div className="min-h-screen bg-tf-bg px-5 py-10 sm:px-8 flex items-center justify-center">
-      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-10 items-center">
-        {/* Left Side */}
-        <div className="hidden lg:block">
-          <Link
-            to="/"
-            className="inline-flex items-center text-tf-copy hover:text-tf-blue-pressed transition-colors mb-8"
-          >
-            ← Back to Home
+    <div className="tf relative min-h-screen overflow-x-clip bg-[#0a1628] text-white antialiased">
+      <style>{CSS}</style>
+      <div aria-hidden="true" className="tf-grid pointer-events-none absolute inset-0" />
+
+      <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-5 py-6 sm:px-8 lg:justify-center lg:py-10">
+        {/* Top bar: mobile / tablet */}
+        <div className="mb-8 flex items-center justify-between lg:hidden">
+          <Link to="/" aria-label="TutorFolio home">
+            <img src="/tf-logo.png" alt="TutorFolio" className="w-14 sm:w-22" />
           </Link>
-
-          <img src="/tf-logo.png" alt="TutorFolio" className="w-56" />
-
-          <h1 className="text-5xl font-bold text-tf-ink mt-8 leading-tight">
-            Join TutorFolio.
-          </h1>
-
-          <p className="text-tf-copy text-lg mt-5 max-w-md leading-relaxed">
-            Create your professional teaching portfolio and start building your
-            online presence.
-          </p>
-
-          <div className="mt-10 space-y-4">
-            <div className="flex items-center gap-3 text-tf-copy">
-              <span className="text-blue-400">✓</span>
-              Create Your Tutor Portfolio
-            </div>
-
-            <div className="flex items-center gap-3 text-tf-copy">
-              <span className="text-blue-400">✓</span>
-              Get Discovered By Students
-            </div>
-
-            <div className="flex items-center gap-3 text-tf-copy">
-              <span className="text-blue-400">✓</span>
-              Connect Directly
-            </div>
-          </div>
+          <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium text-[#9cb2d2] transition-colors hover:text-white rounded-full border border-white/10 bg-white/[.03] p-1.5 pr-2">
+            <Icon n="back" c="w-4 h-4" /> Back to home
+          </Link>
         </div>
 
-        {/* Form */}
-        <div className="w-full">
-          <Link
-            to="/"
-            className="lg:hidden inline-flex items-center text-tf-copy hover:text-tf-blue-pressed transition-colors mb-6"
-          >
-            ← Back to Home
-          </Link>
+        <div className="grid items-center gap-12 lg:grid-cols-[1fr_minmax(0,28rem)] lg:gap-20">
+          {/* Left side */}
+          <div className="hidden lg:block">
+            <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium text-[#9cb2d2] transition-colors hover:text-white rounded-full border border-white/10 bg-white/[.03] p-2">
+              <Icon n="back" c="w-4 h-4" /> Back to home
+            </Link>
 
-          <div className="bg-tf-surface border border-tf-line rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 dark:shadow-black/20">
-            <h2 className="text-tf-ink text-3xl font-bold">Create Account</h2>
+            <Link to="/" className="mt-10 block w-fit" aria-label="TutorFolio home">
+              <img src="/tf-logo.png" alt="TutorFolio" className="w-24" />
+            </Link>
 
-            <p className="text-tf-copy mt-2">
-              Start your TutorFolio journey.
+            <h1 className="tf-d mt-8 max-w-md text-5xl font-bold leading-[1.06] text-white">
+              Start your teaching website.
+            </h1>
+
+            <p className="mt-5 max-w-md text-lg leading-relaxed text-[#94a8c7]">
+              Create your account and build the page students will find you on.
             </p>
 
-            {/* Account Type Selector */}
-            <div className="mt-6">
-              <label className="block text-tf-copy mb-3 text-sm">
-                Account Type
-              </label>
+            <ul className="mt-9 max-w-md space-y-4">
+              {benefits.map((b) => (
+                <li key={b} className="flex items-start gap-3 text-[#c7d8f5]">
+                  <Icon n="check" c="mt-0.5 h-5 w-5 shrink-0 text-blue-400" />
+                  {b}
+                </li>
+              ))}
+            </ul>
+          </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      account_type: "Student",
-                    }))
-                  }
-                  className={`py-3 rounded-xl border transition-all cursor-pointer ${
-                    formData.account_type === "Student"
-                      ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-600/20"
-                      : "bg-tf-bg border-tf-line text-tf-copy hover:text-tf-ink"
-                  }`}
-                >
-                  Student
-                </button>
+          {/* Form */}
+          <div className="w-full">
+            <div className="rounded-2xl border border-white/10 bg-[#0f1f36] p-6 shadow-2xl shadow-black/30 sm:p-8">
+              <h2 className="tf-d text-3xl font-bold text-white">Create your tutor account</h2>
+              <p className="mt-2 text-[#94a8c7]">Free to start. It takes a minute.</p>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      account_type: "Tutor",
-                    }))
-                  }
-                  className={`py-3 rounded-xl border transition-all cursor-pointer ${
-                    formData.account_type === "Tutor"
-                      ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-600/20"
-                      : "bg-tf-bg border-tf-line text-tf-copy hover:text-tf-ink"
-                  }`}
-                >
-                  Tutor
-                </button>
-              </div>
-            </div>
-
-            {/* Google Signup Button */}
-            <button
-              type="button"
-              onClick={handleGoogleSignup}
-              disabled={googleLoading || loading}
-              className="w-full mt-6 flex items-center justify-center gap-3 bg-white dark:bg-slate-800 border border-tf-line text-slate-800 dark:text-slate-100 font-medium py-3 rounded-xl transition-all shadow-sm disabled:opacity-60 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.87c2.26-2.09 3.67-5.17 3.67-9.15z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.87-3.05c-1.08.72-2.45 1.16-4.06 1.16-3.13 0-5.78-2.11-6.73-4.96H1.26v3.15C3.25 21.37 7.31 24 12 24z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.27 14.24A7.18 7.18 0 0 1 4.9 12c0-.78.13-1.54.37-2.24V6.61H1.26A11.96 11.96 0 0 0 0 12c0 1.92.45 3.74 1.26 5.39l4.01-3.15z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.63 1.26 6.61l4.01 3.15c.95-2.85 3.6-4.96 6.73-4.96z"
-                />
-              </svg>
-              <span>
-                {googleLoading
-                  ? "Connecting to Google..."
-                  : `Sign up as ${formData.account_type} with Google`}
-              </span>
-            </button>
-
-            <div className="relative my-6 flex items-center justify-center">
-              <div className="border-t border-tf-line w-full"></div>
-              <span className="bg-tf-surface px-3 text-xs uppercase tracking-wider text-tf-muted">
-                or register with email
-              </span>
-              <div className="border-t border-tf-line w-full"></div>
-            </div>
-
-            <form className="space-y-5" onSubmit={handleSubmit}>
-              <div>
-                <label className="block text-tf-copy mb-2 text-sm">
-                  Username
-                </label>
-
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  placeholder="Choose a username"
-                  className="w-full bg-tf-bg border border-tf-line rounded-xl px-4 py-3 text-tf-ink placeholder:text-tf-muted focus:border-tf-blue focus:ring-2 focus:ring-tf-blue/20 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-tf-copy mb-2 text-sm">
-                  Email
-                </label>
-
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Enter your email"
-                  className="w-full bg-tf-bg border border-tf-line rounded-xl px-4 py-3 text-tf-ink placeholder:text-tf-muted focus:border-tf-blue focus:ring-2 focus:ring-tf-blue/20 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-tf-copy mb-2 text-sm">
-                  Password
-                </label>
-
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Create a password"
-                    className="w-full bg-tf-bg border border-tf-line rounded-xl px-4 py-3 pr-12 text-tf-ink placeholder:text-tf-muted focus:border-tf-blue focus:ring-2 focus:ring-tf-blue/20 outline-none"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-tf-copy hover:text-tf-ink"
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
-                  >
-                    {showPassword ? "🙈" : "👁️"}
-                  </button>
-                </div>
-              </div>
-
+              {/* Google Signup Button */}
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                type="button"
+                onClick={handleGoogleSignup}
+                disabled={googleLoading || loading}
+                className="mt-7 flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg bg-white py-3 font-medium text-slate-800 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {loading ? "Creating Account..." : "Create Account"}
+                <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="#4285F4"
+                    d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.87c2.26-2.09 3.67-5.17 3.67-9.15z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.87-3.05c-1.08.72-2.45 1.16-4.06 1.16-3.13 0-5.78-2.11-6.73-4.96H1.26v3.15C3.25 21.37 7.31 24 12 24z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.27 14.24A7.18 7.18 0 0 1 4.9 12c0-.78.13-1.54.37-2.24V6.61H1.26A11.96 11.96 0 0 0 0 12c0 1.92.45 3.74 1.26 5.39l4.01-3.15z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.63 1.26 6.61l4.01 3.15c.95-2.85 3.6-4.96 6.73-4.96z"
+                  />
+                </svg>
+                <span>
+                  {googleLoading ? "Connecting to Google..." : "Sign up with Google"}
+                </span>
               </button>
-            </form>
 
-            <p className="text-center text-tf-copy mt-6">
-              Already have an account?{" "}
-              <Link to="/login" className="text-tf-blue-pressed hover:text-tf-blue underline-offset-4 hover:underline">
-                Login
-              </Link>
-            </p>
+              <div className="my-6 flex items-center gap-4">
+                <div className="h-px flex-1 bg-white/10" />
+                <span className="text-sm text-[#6d86aa]">or sign up with email</span>
+                <div className="h-px flex-1 bg-white/10" />
+              </div>
+
+              <form className="space-y-5" onSubmit={handleSubmit}>
+                <div>
+                  <label htmlFor="username" className="mb-2 block text-sm font-medium text-[#c7d8f5]">Username</label>
+                  <input
+                    id="username"
+                    type="text"
+                    name="username"
+                    autoComplete="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    placeholder="Choose a username"
+                    className={inputCls}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="mb-2 block text-sm font-medium text-[#c7d8f5]">Email</label>
+                  <input
+                    id="email"
+                    type="email"
+                    name="email"
+                    autoComplete="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Enter your email"
+                    className={inputCls}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="password" className="mb-2 block text-sm font-medium text-[#c7d8f5]">Password</label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      autoComplete="new-password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="Create a password"
+                      className={`${inputCls} pr-12`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-2 text-[#94a8c7] transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      <Icon n={showPassword ? "eyeOff" : "eye"} c="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full cursor-pointer rounded-lg bg-blue-600 py-3.5 font-semibold text-white transition-colors hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {loading ? "Creating Account..." : "Create Account"}
+                </button>
+              </form>
+
+              <p className="mt-6 text-center text-[#94a8c7]">
+                Already have an account?{" "}
+                <Link to="/login" className="font-medium text-blue-400 underline-offset-4 transition-colors hover:text-blue-300 hover:underline">
+                  Log in
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -348,4 +321,4 @@ function Signup() {
   );
 }
 
-export default Signup;    
+export default Signup;
