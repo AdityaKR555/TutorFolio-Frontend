@@ -240,7 +240,7 @@ function Nav() {
   return (
     <>
       <header className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300 ${solid || open ? "border-white/10 bg-[#0a1628]/90 backdrop-blur-md" : "border-transparent"}`}>
-        <div className="mx-auto grid h-16 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-6 px-5 sm:px-8 md:grid-cols-[1fr_auto_1fr]">
+        <div className="mx-auto grid h-18 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-6 px-5 sm:px-8 md:grid-cols-[1fr_auto_1fr]">
           <a href="#top" onClick={() => setOpen(false)} className="justify-self-start" aria-label="TutorFolio home">
             <img src="/tf-logo.png" alt="TutorFolio" className="w-14 sm:w-22" />
           </a>
