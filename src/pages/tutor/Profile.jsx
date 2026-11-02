@@ -1,6 +1,8 @@
-﻿import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import api from "../../api/axios";
 import ResumeExtractorModal from "../../components/ResumeExtractorModal";
+import { setAuthSession, getStoredUser } from "../../utils/auth";
+import { UPLOAD_LIMITS } from "../../api/uploadLimits";
 
 const initialSocialLinks = {
   facebook: "",
@@ -77,7 +79,7 @@ const initialForm = {
   teachingYOE: 0,
 };
 
-const MAX_IMAGE_SIZE = 20 * 1024;
+const { maxSizeBytes: MAX_IMAGE_SIZE, label: MAX_IMAGE_LABEL } = UPLOAD_LIMITS["profile"];
 const PIXEL_KIT_URL = "https://pixel-kit-zeta.vercel.app/";
 
 function Profile() {
@@ -139,7 +141,7 @@ function Profile() {
     setIsEditing(false);
   };
 
-  // Profile picture selection: allow only images up to 20 KB.
+  // Profile picture selection: allow only images within the server-defined size limit.
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
 
@@ -159,7 +161,7 @@ function Profile() {
     if (file.size > MAX_IMAGE_SIZE) {
       setImageTooLarge(true);
       setImageError(
-        "This image is larger than 20 KB. Compress it and select it again."
+        `This image is larger than ${MAX_IMAGE_LABEL}. Compress it and select it again.`
       );
       e.target.value = "";
       return;
@@ -280,7 +282,14 @@ function Profile() {
             alternateNo: data.data.alternateNo?.toString() ?? "",
             email: data.data.email ?? "",
             about: data.data.about ?? "",
-            profilePicture: data.data.profilePicture ?? "",
+            profilePicture:
+              data.data.profilePicture ??
+              data.data.profile_picture ??
+              data.data.profilepicture ??
+              data.data.profilePhoto ??
+              data.data.profile_photo ??
+              data.data.avatar ??
+              "",
             webURL: data.data.webURL ?? "",
             qualification: data.data.qualification ?? "",
             address: data.data.address ?? "",
@@ -290,6 +299,17 @@ function Profile() {
           setFormData(profile);
           setSavedFormData(profile);
           setImagePreview(profile.profilePicture);
+
+          if (profile.profilePicture) {
+            try {
+              const currentUser = getStoredUser() || {};
+              if (currentUser.profilePicture !== profile.profilePicture) {
+                setAuthSession({ ...currentUser, profilePicture: profile.profilePicture });
+              }
+            } catch {
+              // Non-critical: auth storage error
+            }
+          }
 
           try {
             const socialResponse = await api.get("/personalDetails/socialMedia", {
@@ -553,7 +573,12 @@ function Profile() {
             email: saved.email ?? payload.email ?? "",
             about: saved.about ?? payload.about ?? "",
             profilePicture:
-              saved.profilePicture ?? payload.profilePicture ?? "",
+              saved.profilePicture ??
+              saved.profile_picture ??
+              saved.profilepicture ??
+              saved.profilePhoto ??
+              payload.profilePicture ??
+              "",
             webURL: saved.webURL ?? payload.webURL ?? "",
             qualification: saved.qualification ?? payload.qualification,
             address: saved.address ?? payload.address ?? "",
@@ -596,6 +621,18 @@ function Profile() {
         setSavedSocialLinks(socialLinks);
         setSuccess("Profile updated successfully.");
         setIsEditing(false);
+
+        // Sync the updated profilePicture into localStorage so the header
+        // avatar reflects the change without a full page reload.
+        try {
+          const currentUser = getStoredUser() || {};
+          const newPicture = updatedForm?.profilePicture ?? formData.profilePicture ?? "";
+          if (currentUser.profilePicture !== newPicture) {
+            setAuthSession({ ...currentUser, profilePicture: newPicture });
+          }
+        } catch {
+          // Non-critical: the header will show the updated picture on next reload.
+        }
       } else if (data?.status === 404) {
         setError(
           data?.message || "User account was not found. Please login again."
@@ -961,7 +998,7 @@ function Profile() {
                 </div>
                 <div className="grid min-w-0 justify-items-start gap-[5px] max-[560px]:justify-items-center">
                   <strong className="text-xs text-[var(--tf-ink)]">{imagePreview ? "Profile picture selected" : "Add a profile picture"}</strong>
-                  <p className="m-0 text-[10px] text-[var(--tf-muted)]">JPG, PNG or WebP · up to 20 KB</p>
+                  <p className="m-0 text-[10px] text-[var(--tf-muted)]">JPG, PNG or WebP · up to {MAX_IMAGE_LABEL}</p>
                   <label className="relative inline-flex min-h-[31px] cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[9px] py-1.5 text-[11px] font-semibold text-[var(--tf-copy)] [&_input]:absolute [&_input]:h-px [&_input]:w-px [&_input]:overflow-hidden [&_input]:opacity-0 has-[input:disabled]:cursor-not-allowed has-[input:disabled]:opacity-60 [&:where([data-theme=dark] *)]:bg-[var(--tf-surface)]">
                     <span aria-hidden="true">↑</span> Choose photo
                     <input

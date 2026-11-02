@@ -143,7 +143,12 @@ function Settings() {
           const details = result.data;
 
           setHasProfile(true);
-          setProfilePicture(details.profilePicture || "");
+          setProfilePicture(
+            details.profilePicture ||
+              details.profile_picture ||
+              details.profilepicture ||
+              ""
+          );
 
           if (details.username) {
             setCurrentUsername(details.username);

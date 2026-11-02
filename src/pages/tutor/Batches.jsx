@@ -1,5 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import api from "../../api/axios";
+import { UPLOAD_LIMITS } from "../../api/uploadLimits";
+
+const { maxSizeBytes: MAX_BATCH_IMAGE_SIZE, label: MAX_BATCH_IMAGE_LABEL } = UPLOAD_LIMITS["batch-image"];
 
 const pageStyles = {
   page: "min-h-full bg-tf-bg px-4 py-6 text-sm leading-relaxed text-tf-ink sm:px-6 lg:px-8",
@@ -257,8 +260,12 @@ function Batches() {
     imageUrl:
       batch?.imageUrl ??
       batch?.imageurl ??
+      batch?.image_url ??
       batch?.batchImage ??
       batch?.batchimage ??
+      batch?.batch_image ??
+      batch?.batchImageUrl ??
+      batch?.batch_image_url ??
       batch?.image ??
       "",
 
@@ -449,6 +456,11 @@ function Batches() {
       return;
     }
 
+    if (file.size > MAX_BATCH_IMAGE_SIZE) {
+      setError(`Batch image is too large. Maximum allowed size is ${MAX_BATCH_IMAGE_LABEL}.`);
+      return;
+    }
+
     setBatchImageFile(file);
     setBatchImagePreview(URL.createObjectURL(file));
     setError("");
@@ -603,7 +615,13 @@ function Batches() {
 
       const batchPayload = {
         ...payload,
-        ...(imageUrl ? { imageUrl } : {}),
+        ...(imageUrl ? {
+          imageUrl,
+          image_url: imageUrl,
+          batchImage: imageUrl,
+          batch_image: imageUrl,
+          image: imageUrl,
+        } : {}),
       };
 
       let response;
@@ -1359,8 +1377,21 @@ function Batches() {
                   return (
                     <tr key={batch.batchId}>
                       <td className={`${pageStyles.tableCell} ${pageStyles.tableTitle}`}>
-                        <strong className={pageStyles.tableTitleStrong}>{batch.title}</strong>
-                        <span className={pageStyles.tableTitleCopy}>{batch.session ? `Session ${batch.session}` : batch.eligibleClasses || "No session specified"}</span>
+                        <div className="flex items-center gap-2.5">
+                          {batch.imageUrl && (
+                            <img
+                              src={batch.imageUrl}
+                              alt=""
+                              className="h-9 w-12 shrink-0 rounded-md border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] object-cover"
+                              loading="lazy"
+                              onError={(e) => { e.currentTarget.style.display = "none"; }}
+                            />
+                          )}
+                          <div className="min-w-0">
+                            <strong className={pageStyles.tableTitleStrong}>{batch.title}</strong>
+                            <span className={pageStyles.tableTitleCopy}>{batch.session ? `Session ${batch.session}` : batch.eligibleClasses || "No session specified"}</span>
+                          </div>
+                        </div>
                       </td>
                       <td className={pageStyles.tableCell}><span className={`${pageStyles.status} ${getTypeClass(batch.batchType)}`}>{getTypeLabel(batch.batchType)}</span></td>
                       <td className={`${pageStyles.tableCell} ${pageStyles.tableDates}`}>{formatDate(batch.startOn)}<br />{formatDate(batch.endOn)}</td>
@@ -1439,23 +1470,28 @@ function Batches() {
                     </div>
                   </div>
 
-                  {batch.imageUrl && (
-                    <img
-                      className="mb-[13px] max-h-[220px] w-full rounded-[9px] bg-[var(--tf-surface-soft)] object-cover"
-                      src={batch.imageUrl}
-                      alt={`Batch: ${batch.title}`}
-                      loading="lazy"
-                      onError={(event) => {
-                        event.currentTarget.hidden = true;
-                      }}
-                    />
-                  )}
-
-                  {batch.description && (
+                  {batch.imageUrl ? (
+                    <div className="mt-3 mb-3.5 flex items-start gap-3.5">
+                      <img
+                        className="h-20 w-32 shrink-0 rounded-xl border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] object-cover shadow-sm sm:h-24 sm:w-36"
+                        src={batch.imageUrl}
+                        alt={`Batch: ${batch.title}`}
+                        loading="lazy"
+                        onError={(event) => {
+                          event.currentTarget.style.display = "none";
+                        }}
+                      />
+                      {batch.description && (
+                        <p className={`${pageStyles.description} mt-0 flex-1 line-clamp-3 leading-relaxed`}>
+                          {batch.description}
+                        </p>
+                      )}
+                    </div>
+                  ) : batch.description ? (
                     <p className={pageStyles.description}>
                       {batch.description}
                     </p>
-                  )}
+                  ) : null}
 
                   <div className={pageStyles.details}>
                     <BatchDetail
