@@ -1,7 +1,8 @@
-﻿import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
-import { clearAuthSession, getStoredUser } from "../utils/auth";
+import api from "../api/axios";
+import { clearAuthSession, getStoredUser, setAuthSession } from "../utils/auth";
 
 function TutorLayout() {
   const navigate = useNavigate();
@@ -57,6 +58,34 @@ function TutorLayout() {
       window.removeEventListener("storage", refreshUser);
     };
   }, []);
+
+  // Sync profile picture from backend if missing or outdated in session storage
+  useEffect(() => {
+    const id = user?.user_id ?? user?.userId ?? user?.id;
+    if (!id) return;
+    let cancelled = false;
+
+    api.get("/personalDetails", { params: { userId: id }, timeout: 10000 })
+      .then((res) => {
+        if (cancelled) return;
+        const details = res.data?.data;
+        const picture =
+          details?.profilePicture ||
+          details?.profile_picture ||
+          details?.profilepicture ||
+          details?.profilePhoto ||
+          "";
+        if (picture && picture !== user?.profilePicture) {
+          const current = getStoredUser() || {};
+          setAuthSession({ ...current, profilePicture: picture });
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.user_id, user?.userId, user?.id]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -246,6 +275,25 @@ function TutorLayout() {
         </svg>
       ),
     },
+    {
+      name: "FAQs",
+      path: "/faq",
+      icon: (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M8 10h8m-8 4h5m-9 7l3.5-3H18a3 3 0 003-3V6a3 3 0 00-3-3H6a3 3 0 00-3 3v12l2 3z"
+          />
+        </svg>
+      ),
+    },
   ];
 
   // Secondary navigation items
@@ -290,7 +338,7 @@ function TutorLayout() {
       ),
     },
     {
-      name: "Report a Bug",
+      name: "Report an Issue",
       path: "/report-bug",
       icon: (
         <svg
@@ -305,25 +353,6 @@ function TutorLayout() {
             strokeLinejoin="round"
             strokeWidth="2"
             d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-          />
-        </svg>
-      ),
-    },
-    {
-      name: "FAQs",
-      path: "/faq",
-      icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M8 10h8m-8 4h5m-9 7l3.5-3H18a3 3 0 003-3V6a3 3 0 00-3-3H6a3 3 0 00-3 3v12l2 3z"
           />
         </svg>
       ),
@@ -369,6 +398,7 @@ function TutorLayout() {
     "Batches",
     "Achievements",
     "Themes",
+    "FAQs",
   ];
   const orderedMainNavItems = [...mainNavItems].sort(
     (a, b) => mainNavOrder.indexOf(a.name) - mainNavOrder.indexOf(b.name),
@@ -482,9 +512,9 @@ function TutorLayout() {
               aria-label="Profile menu"
             >
               <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full text-tf-blue-pressed">
-                {user?.profilePicture ? (
+                {user?.profilePicture || user?.profile_picture || user?.profilepicture ? (
                   <img
-                    src={user.profilePicture}
+                    src={user.profilePicture || user?.profile_picture || user?.profilepicture}
                     alt="Profile"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -529,7 +559,12 @@ function TutorLayout() {
             {profileOpen && (
               <div className="absolute right-0 top-14 z-50 w-52 overflow-hidden rounded-2xl border border-tf-line bg-tf-surface text-tf-ink shadow-xl">
                 <div className="border-b border-tf-line px-4 py-3">
-                  <p className="truncate font-medium">{user?.username}</p>
+                  <p className="truncate font-medium capitalize">
+                    {user?.username
+                      ? user.username.charAt(0).toUpperCase() +
+                        user.username.slice(1)
+                      : ""}
+                  </p>
                   <p className="mt-1 truncate text-xs text-tf-copy">
                     {user?.email}
                   </p>
@@ -540,9 +575,21 @@ function TutorLayout() {
                     setProfileOpen(false);
                     navigate("/subscription");
                   }}
-                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-amber-600 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:text-amber-300 dark:hover:bg-amber-500/10 dark:hover:text-amber-200"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-tf-copy transition-colors hover:bg-tf-surface-soft hover:text-tf-ink"
                 >
-                  <span className="text-base">👑</span>
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                    />
+                  </svg>
                   Plans &amp; Billing
                 </button>
 

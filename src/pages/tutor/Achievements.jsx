@@ -1,5 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
 import api from "../../api/axios";
+import { UPLOAD_LIMITS } from "../../api/uploadLimits";
+
+const { maxSizeBytes: MAX_ACHIEVEMENT_IMAGE_SIZE, label: MAX_ACHIEVEMENT_IMAGE_LABEL } = UPLOAD_LIMITS["achievement-image"];
+const { maxSizeBytes: MAX_STUDENT_IMAGE_SIZE, label: MAX_STUDENT_IMAGE_LABEL } = UPLOAD_LIMITS["student-image"];
 
 const pageStyles = {
   page: "min-h-[calc(100vh-72px)] bg-tf-bg px-4 py-6 text-sm leading-relaxed text-tf-ink sm:px-6 lg:px-8",
@@ -421,9 +425,18 @@ function Achievements() {
     }
 
     if (type === "student") {
+      if (file.size > MAX_STUDENT_IMAGE_SIZE) {
+        setError(`Student photo is too large. Maximum allowed size is ${MAX_STUDENT_IMAGE_LABEL}.`);
+        return;
+      }
       setStudentImageFile(file);
       setStudentImagePreview(URL.createObjectURL(file));
       setError("");
+      return;
+    }
+
+    if (file.size > MAX_ACHIEVEMENT_IMAGE_SIZE) {
+      setError(`Image is too large. Maximum allowed size is ${MAX_ACHIEVEMENT_IMAGE_LABEL}.`);
       return;
     }
 
@@ -1283,12 +1296,18 @@ function Achievements() {
               );
               const studentPhoto =
                 achievement.studentImageUrl ??
+                achievement.student_image_url ??
                 achievement.studentImage ??
+                achievement.student_image ??
                 achievement.studentimage;
               const achievementPhoto =
                 achievement.achievementImageUrl ??
+                achievement.achievement_image_url ??
                 achievement.imageUrl ??
-                achievement.achievementImage;
+                achievement.image_url ??
+                achievement.achievementImage ??
+                achievement.achievement_image ??
+                achievement.image;
               const rating = Number(achievement.studentRating);
               const batch = batches.find(
                 (item) => Number(item.batchId) === Number(achievement.batchId)

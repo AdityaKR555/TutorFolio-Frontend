@@ -326,7 +326,7 @@ export default function DiscoverTutors() {
                         onClick={() => chooseSuggestion(item)}
                         className="flex w-full items-center gap-[10px] bg-white px-3 py-[10px] text-left text-[#172b46] hover:bg-[#f8fbff] [[data-theme=dark]_&]:bg-[#17263a] [[data-theme=dark]_&]:text-[#e8f0fb] [[data-theme=dark]_&]:hover:bg-[#1b2d44]"
                       >
-                        <Avatar src={item.profilePicture} name={getTutorName(item)} size="h-[38px] w-[38px] rounded-[9px]" />
+                        <Avatar src={item.profilePicture || item.profile_picture || item.profilepicture} name={getTutorName(item)} size="h-[38px] w-[38px] rounded-[9px]" />
                         <span className="grid min-w-0 flex-1">
                           <strong className="text-sm">{getTutorName(item)}</strong>
                           <small className="overflow-hidden text-ellipsis whitespace-nowrap text-xs text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">@{item.username}{item.tuitionName ? ` · ${item.tuitionName}` : ""}</small>
@@ -399,7 +399,7 @@ export default function DiscoverTutors() {
               return (
                 <article key={tutor.userId ?? tutor.username ?? index} className={`min-w-0 rounded-[13px] border border-[#dfe9f3] bg-white p-4 shadow-[0_2px_9px_rgba(29,64,101,0.025)] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a] ${viewMode === "list" ? "grid min-h-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_auto] max-[520px]:grid-cols-1" : "flex min-h-[250px] flex-col"}`}>
                   <div className={`flex min-w-0 items-start gap-[13px] ${viewMode === "list" ? "col-start-1 row-start-1" : ""}`}>
-                    <Avatar src={tutor.profilePicture} name={name} size={viewMode === "list" ? "h-12 w-12 rounded-[14px]" : "h-[58px] w-[58px] rounded-[14px]"} />
+                    <Avatar src={tutor.profilePicture || tutor.profile_picture || tutor.profilepicture} name={name} size={viewMode === "list" ? "h-12 w-12 rounded-[14px]" : "h-[58px] w-[58px] rounded-[14px]"} />
                     <div className="grid min-w-0"><h2 className={`my-[2px] mb-1 break-words text-base leading-[1.3] ${viewMode === "list" ? "text-sm" : ""}`}>{name}</h2><span className="overflow-hidden text-xs text-[#8394a9] text-ellipsis [[data-theme=dark]_&]:text-[#91a5bf]">@{tutor.username || "username unavailable"}</span>{location && <span className="mt-[6px] flex items-center gap-[5px] text-[11px] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]"><DetailIcon type="location" />{location}</span>}{tutor.averageRating != null && <span className="mt-[6px] text-[11px] text-[#93621a] [[data-theme=dark]_&]:text-[#f3c567]">★ {Number(tutor.averageRating).toFixed(1)} <small className="ml-1 text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">({Number(tutor.totalReviews || 0)} reviews)</small></span>}</div>
                   </div>
                   {viewMode === "list" ? (
@@ -449,7 +449,7 @@ export default function DiscoverTutors() {
             {detailLoading ? <p className="py-[30px] text-center text-[13px] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">Loading tutor profile…</p> : (
               <>
                 <div className="flex items-center gap-[14px] rounded-xl border border-[#dfe9f3] bg-[#f8fbff] p-[14px] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#1b2d44]">
-                  <Avatar src={selectedTutor.profilePicture} name={getTutorName(selectedTutor)} size="h-[60px] w-[60px] rounded-[13px]" />
+                  <Avatar src={selectedTutor.profilePicture || selectedTutor.profile_picture || selectedTutor.profilepicture} name={getTutorName(selectedTutor)} size="h-[60px] w-[60px] rounded-[13px]" />
                   <div className="grid min-w-0 gap-1"><p className="m-0 text-xs text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">@{selectedTutor.username || "username unavailable"}</p><span className="flex items-center gap-[5px] text-xs text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]"><DetailIcon type="location" />{getLocation(selectedTutor) || "Location not provided"}</span>{selectedTutor.tuitionName && <strong className="text-xs text-[#0c5fb7] [[data-theme=dark]_&]:text-[#8bcdf7]">{selectedTutor.tuitionName}</strong>}</div>
                 </div>
                 <div className="mt-[14px] grid grid-cols-2 gap-[9px]">

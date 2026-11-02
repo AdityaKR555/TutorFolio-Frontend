@@ -1,6 +1,9 @@
 import React, { useRef, useState } from "react";
 import api from "../api/axios";
 import { extractResumeDetails } from "../api/refox";
+import { UPLOAD_LIMITS } from "../api/uploadLimits";
+
+const { maxSizeBytes: MAX_RESUME_SIZE, label: MAX_RESUME_LABEL } = UPLOAD_LIMITS["resume"];
 
 /**
  * ResumeExtractorModal
@@ -43,8 +46,8 @@ function ResumeExtractorModal({ isOpen, onClose, onApply, mode = "all" }) {
       setSelectedFile(null);
       return;
     }
-    if (file.size > 10 * 1024 * 1024) {
-      setError("File is too large. Please upload a file under 10 MB.");
+    if (file.size > MAX_RESUME_SIZE) {
+      setError(`File is too large. Please upload a file under ${MAX_RESUME_LABEL}.`);
       setSelectedFile(null);
       return;
     }
@@ -222,7 +225,7 @@ function ResumeExtractorModal({ isOpen, onClose, onApply, mode = "all" }) {
                     </div>
                     <div className="text-center">
                       <p className="text-tf-ink text-sm font-medium">Click to upload your resume</p>
-                      <p className="text-tf-muted text-xs mt-1">PDF, DOC, or DOCX · Max 10 MB</p>
+                      <p className="text-tf-muted text-xs mt-1">PDF, DOC, or DOCX · Max {MAX_RESUME_LABEL}</p>
                     </div>
                   </>
                 )}

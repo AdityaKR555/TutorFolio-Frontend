@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/axios";
+import { UPLOAD_LIMITS } from "../../api/uploadLimits";
+
+const { maxSizeBytes: MAX_LOGO_SIZE, label: MAX_LOGO_LABEL } = UPLOAD_LIMITS["tuition-logo"];
 
 const initialForm = {
   tuitionName: "",
@@ -76,7 +79,7 @@ function TuitionDetails() {
             eligibleClasses: tuition.eligibleClasses ?? "",
             tags: tuition.tags ?? "",
           };
-          setLogoUrl(tuition.logo ?? "");
+          setLogoUrl(tuition.logo ?? tuition.logoUrl ?? tuition.logo_url ?? "");
           setFormData(loadedFormData);
           setSavedFormData(loadedFormData);
           setCoordinatesOpen(
@@ -143,6 +146,11 @@ function TuitionDetails() {
     const supportedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (!supportedTypes.includes(file.type)) {
       setError("Choose a JPEG, PNG, or WebP image for your tuition logo.");
+      return;
+    }
+
+    if (file.size > MAX_LOGO_SIZE) {
+      setError(`Logo is too large. Maximum allowed size is ${MAX_LOGO_LABEL}.`);
       return;
     }
 
@@ -582,7 +590,7 @@ function TuitionDetails() {
               <span className="text-[11px] text-[var(--tf-muted)]">
                 {logoUrl ? "Choose a new image for your tuition logo" : "Choose an image for your tuition logo"}
               </span>
-              <span className="mt-auto self-stretch pt-3 text-left text-[11px] text-[var(--tf-muted)]">JPG, PNG or WebP</span>
+              <span className="mt-auto self-stretch pt-3 text-left text-[11px] text-[var(--tf-muted)]">JPG, PNG or WebP · up to {MAX_LOGO_LABEL}</span>
             </label>
           </section>
 
