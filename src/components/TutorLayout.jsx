@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+﻿import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import api from "../api/axios";
@@ -124,9 +124,7 @@ function TutorLayout() {
     },
     {
       name: "Website",
-      path: user?.username
-        ? `/tutor/${encodeURIComponent(user.username)}`
-        : "/profile",
+      path: "/website",
       icon: (
         <svg
           className="w-5 h-5"
@@ -252,29 +250,29 @@ function TutorLayout() {
         </svg>
       ),
     },
-    {
-      name: "Themes",
-      path: "/themes",
-      icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M12 3a9 9 0 100 18h1.2a2 2 0 001.4-3.4 1.8 1.8 0 011.3-3.1H18a3 3 0 003-3c0-4.7-4-8.5-9-8.5Z"
-          />
-          <circle cx="7.5" cy="11" r="1" />
-          <circle cx="10" cy="7.5" r="1" />
-          <circle cx="15" cy="8" r="1" />
-        </svg>
-      ),
-    },
+    // {
+    //   name: "Themes",
+    //   path: "/themes",
+    //   icon: (
+    //     <svg
+    //       className="w-5 h-5"
+    //       fill="none"
+    //       stroke="currentColor"
+    //       viewBox="0 0 24 24"
+    //       aria-hidden="true"
+    //     >
+    //       <path
+    //         strokeLinecap="round"
+    //         strokeLinejoin="round"
+    //         strokeWidth="2"
+    //         d="M12 3a9 9 0 100 18h1.2a2 2 0 001.4-3.4 1.8 1.8 0 011.3-3.1H18a3 3 0 003-3c0-4.7-4-8.5-9-8.5Z"
+    //       />
+    //       <circle cx="7.5" cy="11" r="1" />
+    //       <circle cx="10" cy="7.5" r="1" />
+    //       <circle cx="15" cy="8" r="1" />
+    //     </svg>
+    //   ),
+    // },
     {
       name: "FAQs",
       path: "/faq",
