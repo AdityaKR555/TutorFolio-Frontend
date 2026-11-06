@@ -103,6 +103,9 @@ function Subscription() {
       } catch (err) {
         if (mounted) {
           console.error("Error loading subscription data:", err);
+          setError(
+            "Unable to load your subscription details. Showing last known status. Please refresh to try again."
+          );
         }
       } finally {
         if (mounted) setLoading(false);
@@ -385,8 +388,53 @@ function Subscription() {
           </div>
        )}
 
+        {/* ================= LOADING SKELETON ================= */}
+        {loading && (
+          <div className="animate-pulse rounded-3xl border border-[#dfe9f3] bg-white p-6 shadow-[var(--tf-shadow)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+              <div className="space-y-3 flex-1">
+                <div className="h-5 w-32 rounded-full bg-gray-200 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#30465f]" />
+                <div className="h-4 w-56 rounded-full bg-gray-200 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#30465f]" />
+              </div>
+              <div className="h-9 w-28 rounded-xl bg-gray-200 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#30465f]" />
+            </div>
+          </div>
+        )}
+
+        {/* ================= EXPIRED SUBSCRIPTION BANNER ================= */}
+        {!loading && currentSub && currentSub.status === "expired" && (
+          <div className="relative overflow-hidden rounded-3xl border border-amber-200 bg-[linear-gradient(135deg,#fffbeb_0%,#ffffff_100%)] p-6 shadow-[0_10px_25px_rgba(245,158,11,0.08)] sm:px-7 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-amber-500/35 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[linear-gradient(135deg,rgba(120,53,15,0.35)_0%,#0f1f36_100%)]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+              <div className="space-y-1">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-amber-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    EXPIRED
+                  </span>
+                  <span className="text-lg font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
+                    {currentSub.planName || "Previous Plan"}
+                  </span>
+                </div>
+                <p className="text-xs text-[#566b84] sm:text-sm [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
+                  Your subscription expired on{" "}
+                  <strong className="text-amber-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-amber-400">
+                    {formatDate(currentSub.validUntil)}
+                  </strong>
+                  . Renew below to restore access.
+                </p>
+              </div>
+              <a
+                href="#pricing-cards"
+                className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-white text-xs sm:text-sm font-medium transition-colors cursor-pointer shadow-md shadow-amber-500/20"
+              >
+                Renew Plan
+              </a>
+            </div>
+          </div>
+        )}
+
         {/* ================= ACTIVE SUBSCRIPTION BANNER ================= */}
-        {currentSub && currentSub.status === "active" && (
+        {!loading && currentSub && currentSub.status === "active" && (
           <div className="relative overflow-hidden rounded-3xl border border-blue-200 bg-[linear-gradient(135deg,#eef6ff_0%,#ffffff_100%)] p-6 shadow-[0_10px_25px_rgba(24,117,209,0.08)] sm:px-7 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-blue-500/35 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[linear-gradient(135deg,rgba(30,58,138,0.45)_0%,#0f1f36_100%)] [&:where([data-theme=dark],[data-theme=dark]_*)]:shadow-[0_16px_36px_rgba(0,0,0,0.35)]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
               <div className="space-y-1">
@@ -427,6 +475,13 @@ function Subscription() {
             </div>
           </div>
        )}
+
+        {/* ================= NO ACTIVE PLAN BANNER ================= */}
+        {!loading && !currentSub && (
+          <div className="rounded-3xl border border-[#dfe9f3] bg-[#f8fbff] p-5 text-sm text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
+            You don't have an active subscription yet. Choose a plan below to get started.
+          </div>
+        )}
 
         {/* ================= BILLING CYCLE TOGGLE ================= */}
         <div id="pricing-cards" className="flex flex-col items-center gap-3 pt-2">

@@ -233,6 +233,7 @@ export const verifyPaymentSignature = async ({
 /**
  * 3. GET CURRENT SUBSCRIPTION STATUS
  * Calls GET /payments/subscription-status?userId=...
+ * Always prefers the server response; falls back to cache only on network failure.
  */
 export const fetchSubscriptionStatus = async (userId) => {
   if (!userId) return getCachedSubscription();
@@ -244,14 +245,20 @@ export const fetchSubscriptionStatus = async (userId) => {
     });
 
     if (response.data?.status === 200 && response.data?.data) {
+      // Server is authoritative — overwrite cache with fresh data
       setCachedSubscription(response.data.data);
       return response.data.data;
     }
-  } catch (err) {
-    // Silent fallback to cached status
-  }
 
-  return getCachedSubscription();
+    // 200 OK but no active subscription data → user has no active plan
+    // Clear any stale cached subscription so the UI reflects reality
+    localStorage.removeItem("tutorfolio_subscription");
+    return null;
+  } catch (err) {
+    // Network/server error — log it and fall back to cache
+    console.warn("Could not fetch subscription status from server:", err?.message);
+    return getCachedSubscription();
+  }
 };
 
 /**
