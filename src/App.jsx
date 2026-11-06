@@ -28,6 +28,7 @@ import Notifications from "./pages/tutor/Notifications";
 import FAQ from "./pages/tutor/FAQ";
 
 import Themes from "./pages/tutor/Themes";
+import Website from "./pages/tutor/Website";
 
 import Subscription from "./pages/tutor/Subscription";
 import ReportBug from "./pages/tutor/ReportBug";
@@ -95,7 +96,9 @@ function App() {
 
               <Route path="/faq" element={<FAQ />} />
 
-              <Route path="/themes" element={<Themes />} />
+              {/* <Route path="/themes" element={<Themes />} /> */}
+
+              <Route path="/website" element={<Website />} />
 
               <Route path="/subscription" element={<Subscription />} />
 
