@@ -105,32 +105,8 @@ export const createPaymentOrder = async ({
       };
     }
   } catch (err) {
-    // If backend returns 404/501 (not implemented yet) or network unreachable
-    console.warn(
-      "Backend /payments/create-order endpoint not yet available. Using safe sandbox initialization.",
-      err.message
-    );
+    throw new Error(err.response?.data?.detail || err.message || "Could not create payment order.");
   }
-
-  // Safe fallback while backend is under development:
-  // Generate a client-side order reference with fallback key
-  const fallbackKeyId =
-    import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_TutorFolioTestKey";
-
-  const simulatedOrderId = `order_${Date.now().toString(36)}_${Math.random()
-    .toString(36)
-    .slice(2, 7)}`;
-
-  return {
-    orderId: simulatedOrderId,
-    amount: amount * 100, // Razorpay works in paise
-    currency,
-    keyId: fallbackKeyId,
-    planId,
-    planName,
-    billingCycle,
-    isSimulated: true,
-  };
 };
 
 /**
@@ -183,51 +159,8 @@ export const verifyPaymentSignature = async ({
       return activeSub;
     }
   } catch (err) {
-    console.warn(
-      "Backend /payments/verify-payment endpoint not yet available. Activating subscription locally.",
-      err.message
-    );
+    throw new Error(err.response?.data?.detail || err.message || "Payment verification failed.");
   }
-
-  // Calculate validity date (30 days for monthly, 365 days for yearly)
-  const now = new Date();
-  const validUntil = new Date(now);
-  if (billingCycle === "yearly") {
-    validUntil.setFullYear(validUntil.getFullYear() + 1);
-  } else {
-    validUntil.setDate(validUntil.getDate() + 30);
-  }
-
-  const activatedSubscription = {
-    subscriptionId: `sub_${Date.now().toString(36)}`,
-    planId,
-    planName,
-    status: "active",
-    billingCycle,
-    amount,
-    currency,
-    paymentId: razorpay_payment_id || `pay_sim_${Date.now()}`,
-    orderId: razorpay_order_id,
-    startDate: now.toISOString(),
-    validUntil: validUntil.toISOString(),
-    isSimulated: true,
-  };
-
-  // Cache locally
-  setCachedSubscription(activatedSubscription);
-  addCachedPaymentRecord({
-    id: activatedSubscription.paymentId,
-    orderId: razorpay_order_id,
-    planId,
-    planName,
-    amount,
-    currency,
-    billingCycle,
-    status: "success",
-    date: now.toISOString(),
-  });
-
-  return activatedSubscription;
 };
 
 /**
@@ -255,9 +188,11 @@ export const fetchSubscriptionStatus = async (userId) => {
     localStorage.removeItem("tutorfolio_subscription");
     return null;
   } catch (err) {
-    // Network/server error — log it and fall back to cache
-    console.warn("Could not fetch subscription status from server:", err?.message);
-    return getCachedSubscription();
+    if (err.response?.status === 404) {
+      localStorage.removeItem(STORAGE_KEY_SUB);
+      return null;
+    }
+    throw new Error(err.response?.data?.detail || err.message || "Could not load subscription status.");
   }
 };
 
@@ -278,9 +213,7 @@ export const fetchPaymentHistory = async (userId) => {
       return response.data.data;
     }
   } catch (err) {
-    // Silent fallback to local history
+    throw new Error(err.response?.data?.detail || err.message || "Could not load payment history.");
   }
-
-  return getCachedPaymentHistory();
 };
 

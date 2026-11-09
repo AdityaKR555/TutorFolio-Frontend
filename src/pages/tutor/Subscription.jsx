@@ -21,7 +21,6 @@ function Subscription() {
   const [processingPlanId, setProcessingPlanId] = useState(null);
   const [error, setError] = useState("");
   const [successModalData, setSuccessModalData] = useState(null);
-  const [sandboxPromptOrder, setSandboxPromptOrder] = useState(null);
 
   // Active theme tracking (light / dark)
   const [theme, setTheme] = useState(() => {
@@ -169,12 +168,7 @@ function Subscription() {
       const isLoaded = await loadRazorpayScript();
 
       if (!isLoaded || !window.Razorpay) {
-        setSandboxPromptOrder({
-          plan,
-          orderData,
-          price,
-          reason: "Razorpay Checkout script could not be reached from your browser.",
-        });
+        setError("Razorpay Checkout could not load. Your order was not charged; please try again.");
         setProcessingPlanId(null);
         return;
       }
@@ -187,7 +181,7 @@ function Subscription() {
         name: "TutorFolio",
         description: `${plan.name} (${billingCycle === BILLING_CYCLES.YEARLY ? "Annual" : "Monthly"})`,
         image: "https://alpha.tutorfolio.site/favicon.ico",
-        ...(orderData.isSimulated ? {} : { order_id: orderData.orderId }),
+        order_id: orderData.orderId,
         handler: async (response) => {
           await completeVerification({
             plan,
@@ -195,7 +189,7 @@ function Subscription() {
             price,
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_order_id: response.razorpay_order_id || orderData.orderId,
-            razorpay_signature: response.razorpay_signature || "test_signature_valid",
+            razorpay_signature: response.razorpay_signature,
           });
         },
         prefill: {
@@ -233,13 +227,7 @@ function Subscription() {
         rzp.open();
       } catch (rzpInitErr) {
         console.warn("Razorpay instance initialization notice:", rzpInitErr);
-        setSandboxPromptOrder({
-          plan,
-          orderData,
-          price,
-          reason:
-            "Awaiting backend live Razorpay API Key. You can test the end-to-end checkout flow below:",
-        });
+        setError("Razorpay Checkout could not start. Please try again.");
         setProcessingPlanId(null);
       }
     } catch (err) {
@@ -261,31 +249,23 @@ function Subscription() {
     try {
       const activeSub = await verifyPaymentSignature({
         userId,
-        planId: plan.id,
-        planName: plan.name,
+        planId: orderData.planId,
+        planName: orderData.planName,
         billingCycle,
         amount: price,
-        currency: plan.currency,
+        currency: orderData.currency || plan.currency,
         razorpay_order_id,
         razorpay_payment_id,
         razorpay_signature,
       });
 
       setCurrentSub(activeSub);
-      setPaymentHistory((prev) => [
-        {
-          id: razorpay_payment_id,
-          orderId: razorpay_order_id,
-          planId: plan.id,
-          planName: plan.name,
-          amount: price,
-          currency: plan.currency,
-          billingCycle,
-          status: "success",
-          date: new Date().toISOString(),
-        },
-        ...prev,
+      const [confirmedSub, confirmedHistory] = await Promise.all([
+        fetchSubscriptionStatus(userId),
+        fetchPaymentHistory(userId),
       ]);
+      setCurrentSub(confirmedSub);
+      setPaymentHistory(confirmedHistory || []);
 
       setSuccessModalData({
         planName: plan.name,
@@ -297,7 +277,6 @@ function Subscription() {
         validUntil: activeSub.validUntil,
       });
 
-      setSandboxPromptOrder(null);
     } catch (verErr) {
       console.error("Verification error:", verErr);
       setError(
@@ -327,24 +306,21 @@ function Subscription() {
   };
 
   return (
-    <div className="min-h-full bg-[#f4f8fd] px-5 pt-[30px] pb-[60px] text-[#172b46] transition-colors duration-200 sm:px-8 sm:pt-9 sm:pb-[72px] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#101b2b] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
+    <div className="min-h-full bg-[#f4f8fd] px-5 pt-[30px] pb-[60px] text-[#172b46] transition-colors duration-200 sm:px-8 sm:pt-9 sm:pb-[72px] [[data-theme=dark]_&]:bg-[#101b2b] [[data-theme=dark]_&]:text-[#e8f0fb]">
       <div className="mx-auto max-w-[1200px] space-y-8">
         {/* ================= HEADER ================= */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-2xl">👑</span>
               <h1 className="tf-page-title">Plans &amp; Billing</h1>
             </div>
-            <p className="max-w-2xl text-sm leading-[1.6] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
-              Supercharge your tutoring presence. Accept inquiries, display
-              unlimited batches, and build credibility with instant Razorpay
-              checkout.
+            <p className="max-w-2xl text-sm leading-[1.6] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">
+              Compare Free, Pro, and Elite features and choose the plan that fits your tutoring business.
             </p>
           </div>
 
           {/* Secure Trust Badge */}
-          <div className="inline-flex self-start items-center gap-2 rounded-xl border border-[#dfe9f3] bg-[#eaf6ff] px-3.5 py-2 text-xs font-medium text-[#1875d1] md:self-auto [&:where([data-theme=dark],[data-theme=dark]_*)]:border-blue-500/25 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-blue-900/25 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-blue-300">
+          <div className="inline-flex self-start items-center gap-2 rounded-xl border border-[#dfe9f3] bg-[#eaf6ff] px-3.5 py-2 text-xs font-medium text-[#1875d1] md:self-auto [[data-theme=dark]_&]:border-blue-500/25 [[data-theme=dark]_&]:bg-blue-900/25 [[data-theme=dark]_&]:text-blue-300">
             <svg
               className="w-4 h-4 shrink-0 text-blue-500"
               fill="none"
@@ -364,7 +340,7 @@ function Subscription() {
 
         {/* Error message */}
         {error && (
-          <div className="flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-red-300">
+          <div className="flex items-start gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-600 [[data-theme=dark]_&]:text-red-300">
             <svg
               className="w-5 h-5 text-red-500 shrink-0 mt-0.5"
               fill="none"
@@ -390,34 +366,34 @@ function Subscription() {
 
         {/* ================= LOADING SKELETON ================= */}
         {loading && (
-          <div className="animate-pulse rounded-3xl border border-[#dfe9f3] bg-white p-6 shadow-[var(--tf-shadow)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
+          <div className="animate-pulse rounded-3xl border border-[#dfe9f3] bg-white p-6 shadow-[var(--tf-shadow)] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
               <div className="space-y-3 flex-1">
-                <div className="h-5 w-32 rounded-full bg-gray-200 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#30465f]" />
-                <div className="h-4 w-56 rounded-full bg-gray-200 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#30465f]" />
+                <div className="h-5 w-32 rounded-full bg-gray-200 [[data-theme=dark]_&]:bg-[#30465f]" />
+                <div className="h-4 w-56 rounded-full bg-gray-200 [[data-theme=dark]_&]:bg-[#30465f]" />
               </div>
-              <div className="h-9 w-28 rounded-xl bg-gray-200 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#30465f]" />
+              <div className="h-9 w-28 rounded-xl bg-gray-200 [[data-theme=dark]_&]:bg-[#30465f]" />
             </div>
           </div>
         )}
 
         {/* ================= EXPIRED SUBSCRIPTION BANNER ================= */}
         {!loading && currentSub && currentSub.status === "expired" && (
-          <div className="relative overflow-hidden rounded-3xl border border-amber-200 bg-[linear-gradient(135deg,#fffbeb_0%,#ffffff_100%)] p-6 shadow-[0_10px_25px_rgba(245,158,11,0.08)] sm:px-7 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-amber-500/35 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[linear-gradient(135deg,rgba(120,53,15,0.35)_0%,#0f1f36_100%)]">
+          <div className="relative overflow-hidden rounded-3xl border border-amber-200 bg-[linear-gradient(135deg,#fffbeb_0%,#ffffff_100%)] p-6 shadow-[0_10px_25px_rgba(245,158,11,0.08)] sm:px-7 [[data-theme=dark]_&]:border-amber-500/35 [[data-theme=dark]_&]:bg-[linear-gradient(135deg,rgba(120,53,15,0.35)_0%,#0f1f36_100%)]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
               <div className="space-y-1">
                 <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-amber-400">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-600 [[data-theme=dark]_&]:text-amber-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                     EXPIRED
                   </span>
-                  <span className="text-lg font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
+                  <span className="text-lg font-bold text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">
                     {currentSub.planName || "Previous Plan"}
                   </span>
                 </div>
-                <p className="text-xs text-[#566b84] sm:text-sm [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
+                <p className="text-xs text-[#566b84] sm:text-sm [[data-theme=dark]_&]:text-[#b7c7db]">
                   Your subscription expired on{" "}
-                  <strong className="text-amber-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-amber-400">
+                  <strong className="text-amber-600 [[data-theme=dark]_&]:text-amber-400">
                     {formatDate(currentSub.validUntil)}
                   </strong>
                   . Renew below to restore access.
@@ -435,30 +411,30 @@ function Subscription() {
 
         {/* ================= ACTIVE SUBSCRIPTION BANNER ================= */}
         {!loading && currentSub && currentSub.status === "active" && (
-          <div className="relative overflow-hidden rounded-3xl border border-blue-200 bg-[linear-gradient(135deg,#eef6ff_0%,#ffffff_100%)] p-6 shadow-[0_10px_25px_rgba(24,117,209,0.08)] sm:px-7 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-blue-500/35 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[linear-gradient(135deg,rgba(30,58,138,0.45)_0%,#0f1f36_100%)] [&:where([data-theme=dark],[data-theme=dark]_*)]:shadow-[0_16px_36px_rgba(0,0,0,0.35)]">
+          <div className="relative overflow-hidden rounded-3xl border border-blue-200 bg-[linear-gradient(135deg,#eef6ff_0%,#ffffff_100%)] p-6 shadow-[0_10px_25px_rgba(24,117,209,0.08)] sm:px-7 [[data-theme=dark]_&]:border-blue-500/35 [[data-theme=dark]_&]:bg-[linear-gradient(135deg,rgba(30,58,138,0.45)_0%,#0f1f36_100%)] [[data-theme=dark]_&]:shadow-[0_16px_36px_rgba(0,0,0,0.35)]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
               <div className="space-y-1">
                 <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-emerald-400">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-600 [[data-theme=dark]_&]:text-emerald-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     ACTIVE PLAN
                   </span>
-                  <span className="text-lg font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
+                  <span className="text-lg font-bold text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">
                     {currentSub.planName || "Pro Tutor"}
                   </span>
                 </div>
-                <p className="text-xs text-[#566b84] sm:text-sm [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
+                <p className="text-xs text-[#566b84] sm:text-sm [[data-theme=dark]_&]:text-[#b7c7db]">
                   Billing Cycle:{" "}
-                  <strong className="capitalize text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
+                  <strong className="capitalize text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">
                     {currentSub.billingCycle || "Monthly"}
                   </strong>{" "}
                   &bull; Valid until:{" "}
-                  <strong className="text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
+                  <strong className="text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">
                     {formatDate(currentSub.validUntil)}
                   </strong>
                 </p>
                 {currentSub.paymentId && (
-                  <p className="font-mono text-xs text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
+                  <p className="font-mono text-xs text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">
                     Ref ID: {currentSub.paymentId}
                   </p>
                )}
@@ -478,21 +454,21 @@ function Subscription() {
 
         {/* ================= NO ACTIVE PLAN BANNER ================= */}
         {!loading && !currentSub && (
-          <div className="rounded-3xl border border-[#dfe9f3] bg-[#f8fbff] p-5 text-sm text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
+          <div className="rounded-3xl border border-[#dfe9f3] bg-[#f8fbff] p-5 text-sm text-[#566b84] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#1b2d44] [[data-theme=dark]_&]:text-[#b7c7db]">
             You don't have an active subscription yet. Choose a plan below to get started.
           </div>
         )}
 
         {/* ================= BILLING CYCLE TOGGLE ================= */}
         <div id="pricing-cards" className="flex flex-col items-center gap-3 pt-2">
-          <div className="inline-flex items-center rounded-2xl border border-[#dfe9f3] bg-[#f8fbff] p-[5px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.03)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44]">
+          <div className="inline-flex items-center rounded-2xl border border-[#dfe9f3] bg-[#f8fbff] p-[5px] shadow-[inset_0_2px_4px_rgba(0,0,0,0.03)] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#1b2d44]">
             <button
               type="button"
               onClick={() => setBillingCycle(BILLING_CYCLES.MONTHLY)}
               className={`cursor-pointer rounded-xl border-0 px-[18px] py-[9px] text-[13px] font-semibold transition-all ${
                 billingCycle === BILLING_CYCLES.MONTHLY
                   ? "bg-[#1875d1] text-white shadow-[0_4px_14px_rgba(24,117,209,0.3)]"
-                  : "bg-transparent text-[#566b84] hover:text-[#172b46] [&:where([data-theme=dark],[data-theme=dark])]:text-[#b7c7db] [&:where([data-theme=dark],[data-theme=dark])]:hover:text-[#e8f0fb]"
+                  : "bg-transparent text-[#566b84] hover:text-[#172b46] [[data-theme=dark]_&]:text-[#b7c7db] [[data-theme=dark]_&]:hover:text-[#e8f0fb]"
               }`}
             >
               Monthly Billing
@@ -503,19 +479,14 @@ function Subscription() {
               className={`flex cursor-pointer items-center gap-2 rounded-xl border-0 px-[18px] py-[9px] text-[13px] font-semibold transition-all ${
                 billingCycle === BILLING_CYCLES.YEARLY
                   ? "bg-[#1875d1] text-white shadow-[0_4px_14px_rgba(24,117,209,0.3)]"
-                  : "bg-transparent text-[#566b84] hover:text-[#172b46] [&:where([data-theme=dark],[data-theme=dark])]:text-[#b7c7db] [&:where([data-theme=dark],[data-theme=dark])]:hover:text-[#e8f0fb]"
+                  : "bg-transparent text-[#566b84] hover:text-[#172b46] [[data-theme=dark]_&]:text-[#b7c7db] [[data-theme=dark]_&]:hover:text-[#e8f0fb]"
               }`}
             >
               <span>Annual Billing</span>
-              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[11px] font-bold text-emerald-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-emerald-300">
-                Save ~17%
-              </span>
             </button>
           </div>
-          <p className="text-xs text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
-            {billingCycle === BILLING_CYCLES.YEARLY
-              ? "Billed annually. 2 months free included in each tier!"
-              : "Billed monthly. Cancel or change plans anytime."}
+          <p className="text-xs text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">
+            {billingCycle === BILLING_CYCLES.YEARLY ? "Billed annually." : "Billed monthly."}
           </p>
         </div>
 
@@ -532,9 +503,9 @@ function Subscription() {
             return (
               <div
                 key={plan.id}
-                className={`relative flex flex-col justify-between rounded-3xl border border-[#dfe9f3] bg-white p-[30px_26px] shadow-[var(--tf-shadow)] transition hover:border-[#1875d1] hover:shadow-[0_14px_30px_rgba(0,0,0,0.08)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a] ${
+                className={`relative flex flex-col justify-between rounded-3xl border border-[#dfe9f3] bg-white p-[30px_26px] shadow-[var(--tf-shadow)] transition hover:border-[#1875d1] hover:shadow-[0_14px_30px_rgba(0,0,0,0.08)] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a] ${
                   plan.popular
-                    ? "border-2 border-[#1875d1] bg-[linear-gradient(180deg,#f0f7ff_0%,#ffffff_100%)] shadow-[0_16px_36px_rgba(24,117,209,0.16)] lg:-translate-y-2 [&:where([data-theme=dark],[data-theme=dark])]:border-blue-500/55 [&:where([data-theme=dark],[data-theme=dark])]:bg-[linear-gradient(180deg,#132746_0%,#0a1628_100%)] [&:where([data-theme=dark],[data-theme=dark])]:shadow-[0_20px_42px_rgba(0,0,0,0.45)]"
+                    ? "border-2 border-[#1875d1] bg-[linear-gradient(180deg,#f0f7ff_0%,#ffffff_100%)] shadow-[0_16px_36px_rgba(24,117,209,0.16)] lg:-translate-y-2 [[data-theme=dark]_&]:border-blue-500/55 [[data-theme=dark]_&]:bg-[linear-gradient(180deg,#132746_0%,#0a1628_100%)] [[data-theme=dark]_&]:shadow-[0_20px_42px_rgba(0,0,0,0.45)]"
                     : ""
                 }`}
               >
@@ -548,36 +519,36 @@ function Subscription() {
                 <div>
                   {/* Card Header */}
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xl font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">{plan.name}</h3>
+                    <h3 className="text-xl font-bold text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">{plan.name}</h3>
                     {!plan.popular && plan.badge && (
-                      <span className="rounded-full border border-[#dfe9f3] bg-[#f8fbff] px-2.5 py-[3px] text-[11px] font-semibold text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">{plan.badge}</span>
+                      <span className="rounded-full border border-[#dfe9f3] bg-[#f8fbff] px-2.5 py-[3px] text-[11px] font-semibold text-[#566b84] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#1b2d44] [[data-theme=dark]_&]:text-[#b7c7db]">{plan.badge}</span>
                    )}
                   </div>
 
-                  <p className="my-2 mb-[18px] min-h-10 text-[13px] leading-[1.5] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">{plan.description}</p>
+                  <p className="my-2 mb-[18px] min-h-10 text-[13px] leading-[1.5] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">{plan.description}</p>
 
                   {/* Price */}
-                  <div className="mb-[22px] flex items-baseline gap-1 border-b border-[#dfe9f3] pb-5 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f]">
-                    <span className="text-[38px] font-extrabold tracking-[-0.5px] text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
+                  <div className="mb-[22px] flex items-baseline gap-1 border-b border-[#dfe9f3] pb-5 [[data-theme=dark]_&]:border-[#30465f]">
+                    <span className="text-[38px] font-extrabold tracking-[-0.5px] text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">
                       {plan.currencySymbol}
                       {price}
                     </span>
-                    <span className="text-[13px] font-medium text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
+                    <span className="text-[13px] font-medium text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">
                       /{billingCycle === BILLING_CYCLES.YEARLY ? "year" : "month"}
                     </span>
                   </div>
 
                   {/* Features List */}
                   <div className="mb-8">
-                    <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.8px] text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">What's Included</p>
+                    <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.8px] text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">What's Included</p>
                     <ul>
                       {plan.features.map((feature, idx) => (
                         <li
                           key={idx}
                           className={`mb-2.5 flex items-start gap-2.5 text-[13px] leading-[1.45] ${
                             feature.included
-                              ? "text-[#172b46] [&:where([data-theme=dark],[data-theme=dark])]:text-[#e8f0fb]"
-                              : "text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark])]:text-[#91a5bf]"
+                              ? "text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]"
+                              : "text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]"
                           }`}
                         >
                           {feature.included ? (
@@ -596,7 +567,7 @@ function Subscription() {
                             </svg>
                          ) : (
                             <svg
-                              className="mt-0.5 h-4 w-4 shrink-0 text-slate-400 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-slate-600"
+                              className="mt-0.5 h-4 w-4 shrink-0 text-slate-400 [[data-theme=dark]_&]:text-slate-600"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -624,10 +595,10 @@ function Subscription() {
                     disabled={isCurrent || isProcessing}
                     className={`${
                       isCurrent
-                        ? "flex w-full cursor-default items-center justify-center gap-2 rounded-[14px] border border-[#147d5a] bg-[#eaf8f1] px-5 py-[13px] text-sm font-semibold text-[#147d5a] [&:where([data-theme=dark],[data-theme=dark])]:border-[#69d4a8] [&:where([data-theme=dark],[data-theme=dark])]:bg-[#183d37] [&:where([data-theme=dark],[data-theme=dark])]:text-[#69d4a8]"
+                        ? "flex w-full cursor-default items-center justify-center gap-2 rounded-[14px] border border-[#147d5a] bg-[#eaf8f1] px-5 py-[13px] text-sm font-semibold text-[#147d5a] [[data-theme=dark]_&]:border-[#69d4a8] [[data-theme=dark]_&]:bg-[#183d37] [[data-theme=dark]_&]:text-[#69d4a8]"
                         : plan.popular
                         ? "flex w-full cursor-pointer items-center justify-center gap-2 rounded-[14px] border-0 bg-[#1875d1] px-5 py-[13px] text-sm font-semibold text-white shadow-[0_4px_14px_rgba(24,117,209,0.25)] transition-colors hover:bg-[#0c5fb7]"
-                        : "flex w-full cursor-pointer items-center justify-center gap-2 rounded-[14px] border border-[#dfe9f3] bg-[#f8fbff] px-5 py-[13px] text-sm font-semibold text-[#172b46] transition-all hover:bg-[#dfe9f3] [&:where([data-theme=dark],[data-theme=dark])]:border-white/10 [&:where([data-theme=dark],[data-theme=dark])]:bg-white/10 [&:where([data-theme=dark],[data-theme=dark])]:text-white [&:where([data-theme=dark],[data-theme=dark])]:hover:bg-white/15"
+                        : "flex w-full cursor-pointer items-center justify-center gap-2 rounded-[14px] border border-[#dfe9f3] bg-[#f8fbff] px-5 py-[13px] text-sm font-semibold text-[#172b46] transition-all hover:bg-[#dfe9f3] [[data-theme=dark]_&]:border-white/10 [[data-theme=dark]_&]:bg-white/10 [[data-theme=dark]_&]:text-white [[data-theme=dark]_&]:hover:bg-white/15"
                     } ${isProcessing ? "opacity-75 cursor-wait" : ""}`}
                   >
                     {isProcessing ? (
@@ -666,29 +637,29 @@ function Subscription() {
         </div>
 
         {/* ================= PAYMENT METHODS & ASSURANCES ================= */}
-        <div className="rounded-3xl border border-[#dfe9f3] bg-white p-[26px_28px] shadow-[var(--tf-shadow)] sm:p-[30px_34px] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
+        <div className="rounded-3xl border border-[#dfe9f3] bg-white p-[26px_28px] shadow-[var(--tf-shadow)] sm:p-[30px_34px] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a]">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
             <div>
-              <h4 className="mb-1 text-lg font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
+              <h4 className="mb-1 text-lg font-bold text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">
                 Accepted Payment Methods via Razorpay
               </h4>
-              <p className="text-[13px] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
+              <p className="text-[13px] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">
                 UPI (GPay, PhonePe, Paytm, BHIM), Cards (Visa, MasterCard, RuPay),
                 NetBanking (50+ Banks) &amp; Wallets.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-2.5">
-              <span className="rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs font-semibold text-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-slate-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-slate-200">
+              <span className="rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs font-semibold text-slate-800 [[data-theme=dark]_&]:border-slate-700 [[data-theme=dark]_&]:bg-slate-800 [[data-theme=dark]_&]:text-slate-200">
                 UPI / QR
               </span>
-              <span className="rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs font-semibold text-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-slate-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-slate-200">
+              <span className="rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs font-semibold text-slate-800 [[data-theme=dark]_&]:border-slate-700 [[data-theme=dark]_&]:bg-slate-800 [[data-theme=dark]_&]:text-slate-200">
                 Debit &amp; Credit Cards
               </span>
-              <span className="rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs font-semibold text-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-slate-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-slate-200">
+              <span className="rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs font-semibold text-slate-800 [[data-theme=dark]_&]:border-slate-700 [[data-theme=dark]_&]:bg-slate-800 [[data-theme=dark]_&]:text-slate-200">
                 NetBanking
               </span>
-              <span className="rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs font-semibold text-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-slate-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-slate-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-slate-200">
+              <span className="rounded-lg border border-gray-200 bg-gray-100 px-3 py-1.5 text-xs font-semibold text-slate-800 [[data-theme=dark]_&]:border-slate-700 [[data-theme=dark]_&]:bg-slate-800 [[data-theme=dark]_&]:text-slate-200">
                 Wallets
               </span>
             </div>
@@ -696,25 +667,25 @@ function Subscription() {
         </div>
 
         {/* ================= TRANSACTION HISTORY ================= */}
-        <div className="rounded-3xl border border-[#dfe9f3] bg-white p-[26px_28px] shadow-[var(--tf-shadow)] sm:p-[30px_34px] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
+        <div className="rounded-3xl border border-[#dfe9f3] bg-white p-[26px_28px] shadow-[var(--tf-shadow)] sm:p-[30px_34px] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a]">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="text-lg font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">Billing History</h3>
-              <p className="mt-0.5 text-[13px] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
+              <h3 className="text-lg font-bold text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">Billing History</h3>
+              <p className="mt-0.5 text-[13px] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">
                 Past transactions and downloadable tax receipts
               </p>
             </div>
           </div>
 
           {paymentHistory.length === 0 ? (
-            <div className="py-8 text-center text-sm text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
+            <div className="py-8 text-center text-sm text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">
               No transactions recorded yet. When you upgrade via Razorpay, receipts will appear here.
             </div>
          ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead>
-                  <tr className="border-b border-[#dfe9f3] uppercase text-[11px] tracking-wider text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
+                  <tr className="border-b border-[#dfe9f3] uppercase text-[11px] tracking-wider text-[#8394a9] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:text-[#91a5bf]">
                     <th className="pb-3 font-semibold">Date</th>
                     <th className="pb-3 font-semibold">Plan</th>
                     <th className="pb-3 font-semibold">Billing</th>
@@ -723,16 +694,16 @@ function Subscription() {
                     <th className="pb-3 font-semibold text-right">Receipt</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#dfe9f3] [&:where([data-theme=dark],[data-theme=dark]_*)]:divide-[#30465f]">
+                <tbody className="divide-y divide-[#dfe9f3] [[data-theme=dark]_&]:divide-[#30465f]">
                   {paymentHistory.map((item, idx) => (
-                    <tr key={item.id || idx} className="transition-colors hover:bg-black/5 [&:where([data-theme=dark],[data-theme=dark]_*)]:hover:bg-white/5">
-                      <td className="py-3.5 font-medium text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">{formatDate(item.date)}</td>
-                      <td className="py-3.5 font-semibold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">{item.planName || "Pro Tutor"}</td>
-                      <td className="py-3.5 capitalize text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">{item.billingCycle || "Monthly"}</td>
-                      <td className="py-3.5 font-bold text-emerald-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-emerald-400">
+                    <tr key={item.id || idx} className="transition-colors hover:bg-black/5 [[data-theme=dark]_&]:hover:bg-white/5">
+                      <td className="py-3.5 font-medium text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">{formatDate(item.date)}</td>
+                      <td className="py-3.5 font-semibold text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">{item.planName || "Pro Tutor"}</td>
+                      <td className="py-3.5 capitalize text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">{item.billingCycle || "Monthly"}</td>
+                      <td className="py-3.5 font-bold text-emerald-600 [[data-theme=dark]_&]:text-emerald-400">
                         ₹{item.amount}
                       </td>
-                      <td className="max-w-[120px] truncate py-3.5 font-mono text-[11px] text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
+                      <td className="max-w-[120px] truncate py-3.5 font-mono text-[11px] text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">
                         {item.id || "N/A"}
                       </td>
                       <td className="py-3.5 text-right">
@@ -749,7 +720,7 @@ function Subscription() {
                               validUntil: item.date,
                             });
                           }}
-                          className="cursor-pointer text-xs font-semibold text-blue-600 hover:underline [&:where([data-theme=dark],[data-theme=dark]_*)]:text-blue-400"
+                          className="cursor-pointer text-xs font-semibold text-blue-600 hover:underline [[data-theme=dark]_&]:text-blue-400"
                         >
                           View Receipt
                         </button>
@@ -763,18 +734,18 @@ function Subscription() {
         </div>
 
         {/* ================= BILLING FAQS ================= */}
-        <div className="rounded-3xl border border-[#dfe9f3] bg-white p-[26px_28px] shadow-[var(--tf-shadow)] sm:p-[30px_34px] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
-          <h3 className="mb-1.5 text-lg font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">Frequently Asked Questions</h3>
-          <p className="mb-6 text-[13px] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
+        <div className="rounded-3xl border border-[#dfe9f3] bg-white p-[26px_28px] shadow-[var(--tf-shadow)] sm:p-[30px_34px] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a]">
+          <h3 className="mb-1.5 text-lg font-bold text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">Frequently Asked Questions</h3>
+          <p className="mb-6 text-[13px] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">
             Everything you need to know about TutorFolio subscriptions and Razorpay
             billing.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {PAYMENT_FAQS.map((faq, idx) => (
-              <div key={idx} className="rounded-2xl border border-[#dfe9f3] bg-[#f8fbff] p-[18px_20px] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44]">
-                <h4 className="mb-1.5 text-sm font-semibold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">{faq.q}</h4>
-                <p className="text-[13px] leading-[1.55] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">{faq.a}</p>
+              <div key={idx} className="rounded-2xl border border-[#dfe9f3] bg-[#f8fbff] p-[18px_20px] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#1b2d44]">
+                <h4 className="mb-1.5 text-sm font-semibold text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">{faq.q}</h4>
+                <p className="text-[13px] leading-[1.55] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">{faq.a}</p>
               </div>
            ))}
           </div>
@@ -784,25 +755,25 @@ function Subscription() {
       {/* ================= SUCCESS & RECEIPT MODAL ================= */}
       {successModalData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-          <div className="relative w-full max-w-lg rounded-3xl border border-[#dfe9f3] bg-white p-6 text-[#172b46] shadow-2xl sm:p-8 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
+          <div className="relative w-full max-w-lg rounded-3xl border border-[#dfe9f3] bg-white p-6 text-[#172b46] shadow-2xl sm:p-8 [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a] [[data-theme=dark]_&]:text-[#e8f0fb]">
             <button
               onClick={() => setSuccessModalData(null)}
-              className="absolute right-5 top-5 cursor-pointer rounded-lg p-1 text-xl text-gray-400 hover:text-gray-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:hover:text-white"
+              className="absolute right-5 top-5 cursor-pointer rounded-lg p-1 text-xl text-gray-400 hover:text-gray-700 [[data-theme=dark]_&]:hover:text-white"
               aria-label="Close"
             >
               &times;
             </button>
 
-            <div className="space-y-3 border-b border-[#dfe9f3] pb-6 text-center [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f]">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/15 text-3xl text-emerald-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-emerald-400">
+            <div className="space-y-3 border-b border-[#dfe9f3] pb-6 text-center [[data-theme=dark]_&]:border-[#30465f]">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/15 text-3xl text-emerald-600 [[data-theme=dark]_&]:text-emerald-400">
                 ✓
               </div>
-              <h3 className="text-2xl font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
+              <h3 className="text-2xl font-bold text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">
                 Payment Successful!
               </h3>
-              <p className="text-xs text-[#566b84] sm:text-sm [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
+              <p className="text-xs text-[#566b84] sm:text-sm [[data-theme=dark]_&]:text-[#b7c7db]">
                 Your subscription to{" "}
-                <strong className="text-emerald-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-emerald-400">
+                <strong className="text-emerald-600 [[data-theme=dark]_&]:text-emerald-400">
                   {successModalData.planName}
                 </strong>{" "}
                 has been activated successfully.
@@ -810,38 +781,38 @@ function Subscription() {
             </div>
 
             {/* Receipt Summary */}
-            <div className="my-6 space-y-3 rounded-2xl border border-[#dfe9f3] bg-[#f8fbff] p-4 text-xs sm:text-sm [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44]">
+            <div className="my-6 space-y-3 rounded-2xl border border-[#dfe9f3] bg-[#f8fbff] p-4 text-xs sm:text-sm [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#1b2d44]">
               <div className="flex justify-between">
-                <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Amount Paid</span>
-                <span className="text-base font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
+                <span className="text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">Amount Paid</span>
+                <span className="text-base font-bold text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">
                   {successModalData.currency}
                   {successModalData.amount}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Billing Frequency</span>
-                <span className="font-medium capitalize text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
+                <span className="text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">Billing Frequency</span>
+                <span className="font-medium capitalize text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">
                   {successModalData.billingCycle}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Payment Ref ID</span>
-                <span className="font-mono text-xs font-semibold text-blue-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-blue-400">
+                <span className="text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">Payment Ref ID</span>
+                <span className="font-mono text-xs font-semibold text-blue-600 [[data-theme=dark]_&]:text-blue-400">
                   {successModalData.paymentId || "N/A"}
                 </span>
               </div>
               {successModalData.orderId && (
                 <div className="flex justify-between">
-                  <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Order ID</span>
-                  <span className="font-mono text-xs text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
+                  <span className="text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">Order ID</span>
+                  <span className="font-mono text-xs text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">
                     {successModalData.orderId}
                   </span>
                 </div>
              )}
               {successModalData.validUntil && (
                 <div className="flex justify-between">
-                  <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Active Until</span>
-                  <span className="font-semibold text-emerald-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-emerald-400">
+                  <span className="text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">Active Until</span>
+                  <span className="font-semibold text-emerald-600 [[data-theme=dark]_&]:text-emerald-400">
                     {formatDate(successModalData.validUntil)}
                   </span>
                 </div>
@@ -853,7 +824,7 @@ function Subscription() {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="flex-1 cursor-pointer rounded-xl border border-[#dfe9f3] bg-[#f8fbff] px-4 py-3 text-xs font-semibold text-[#172b46] transition-colors sm:text-sm [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]"
+                className="flex-1 cursor-pointer rounded-xl border border-[#dfe9f3] bg-[#f8fbff] px-4 py-3 text-xs font-semibold text-[#172b46] transition-colors sm:text-sm [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#1b2d44] [[data-theme=dark]_&]:text-[#e8f0fb]"
               >
                 🖨️ Print Receipt
               </button>
@@ -869,88 +840,7 @@ function Subscription() {
         </div>
      )}
 
-      {/* ================= SANDBOX DEV TESTING MODAL ================= */}
-      {sandboxPromptOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="relative w-full max-w-lg rounded-3xl border border-[#dfe9f3] bg-white p-6 text-[#172b46] shadow-2xl sm:p-8 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
-            <button
-              onClick={() => setSandboxPromptOrder(null)}
-              className="absolute right-5 top-5 cursor-pointer rounded-lg p-1 text-xl text-gray-400 hover:text-gray-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:hover:text-white"
-              aria-label="Close"
-            >
-              &times;
-            </button>
 
-            <div className="space-y-2 border-b border-[#dfe9f3] pb-5 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f]">
-              <div className="flex items-center gap-2 text-blue-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-blue-400">
-                <span className="text-xl">⚡</span>
-                <span className="text-xs font-bold uppercase tracking-wider">
-                  Razorpay Gateway Simulation
-                </span>
-              </div>
-              <h3 className="text-xl font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
-                Complete Sandbox Payment
-              </h3>
-              <p className="text-xs text-[#566b84] sm:text-sm [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
-                {sandboxPromptOrder.reason}
-              </p>
-            </div>
-
-            <div className="my-5 space-y-2 rounded-2xl border border-[#dfe9f3] bg-[#f8fbff] p-4 text-xs [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44]">
-              <div className="flex justify-between">
-                <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Selected Plan</span>
-                <span className="font-semibold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
-                  {sandboxPromptOrder.plan.name}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Amount</span>
-                <span className="text-sm font-bold text-emerald-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-emerald-400">
-                  ₹{sandboxPromptOrder.price}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Order ID</span>
-                <span className="font-mono text-blue-600 [&:where([data-theme=dark],[data-theme=dark]_*)]:text-blue-400">
-                  {sandboxPromptOrder.orderData.orderId}
-                </span>
-              </div>
-              <p className="pt-1 text-[11px] text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#91a5bf]">
-                Note for backend dev: The API will automatically call your{" "}
-                <code>/payments/create-order</code> &amp;{" "}
-                <code>/payments/verify-payment</code> endpoints as soon as they are
-                deployed!
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setSandboxPromptOrder(null)}
-                className="flex-1 cursor-pointer rounded-xl border border-[#dfe9f3] bg-transparent px-4 py-3 text-xs font-medium text-[#566b84] transition-colors sm:text-sm [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  completeVerification({
-                    plan: sandboxPromptOrder.plan,
-                    orderData: sandboxPromptOrder.orderData,
-                    price: sandboxPromptOrder.price,
-                    razorpay_payment_id: `pay_test_${Date.now().toString(36)}`,
-                    razorpay_order_id: sandboxPromptOrder.orderData.orderId,
-                    razorpay_signature: "simulated_sha256_signature",
-                  })
-                }
-                className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer shadow-lg shadow-emerald-600/30"
-              >
-                Simulate Success ✓
-              </button>
-            </div>
-          </div>
-        </div>
-     )}
     </div>
  );
 }
