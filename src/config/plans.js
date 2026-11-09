@@ -1,113 +1,60 @@
-/**
- * TutorFolio Subscription Plans Configuration
- * Placeholder pricing: Starter (₹39), Pro (₹49), Ultimate (₹59)
- * Easily customizable when production pricing is finalized.
- */
+/** TutorFolio subscription tiers and displayed pricing. */
+export const BILLING_CYCLES = { MONTHLY: "monthly", YEARLY: "yearly" };
 
-export const BILLING_CYCLES = {
-  MONTHLY: "monthly",
-  YEARLY: "yearly",
-};
+const sharedFeatures = [
+  { text: "Website Management", included: true },
+  { text: "Website Visitors Tracker", included: true },
+  { text: "Platform Messenger", included: true },
+  { text: "All-in-One Dashboard", included: true },
+  { text: "Conversations", included: true },
+];
 
 export const PLANS = [
   {
-    id: "starter",
-    name: "Starter",
-    badge: "Basic",
-    description: "Essential tools to build your professional tutoring web presence.",
-    popular: false,
-    monthlyPrice: 39,
-    yearlyPrice: 390, // ~17% off (2 months free)
-    currency: "INR",
-    currencySymbol: "₹",
+    id: "free", name: "Free (Lifetime)", badge: "Free", description: "The essentials to create and manage your tutor website.", popular: false,
+    monthlyPrice: 1, yearlyPrice: 1, currency: "INR", currencySymbol: "₹",
     features: [
-      { text: "1 Custom Tutor Portfolio Website", included: true },
-      { text: "Up to 3 Active Batches showcase", included: true },
-      { text: "Student Inquiries via Contact Form", included: true },
-      { text: "Standard Dark & Light Portfolio Themes", included: true },
-      { text: "SEO Meta Tags & Social Share Previews", included: true },
-      { text: "Basic Profile Analytics (Views)", included: true },
-      { text: "Verified Tutor Trust Badge", included: false },
-      { text: "Unlimited Batches & Subjects", included: false },
-      { text: "AI Resume Auto-fill", included: false },
-      { text: "Custom Domain Support", included: false },
+      ...sharedFeatures,
+      { text: "Batches Management: 1 image", included: true },
+      { text: "Student Achievements & Reviews: 1 image", included: true },
+      { text: "Tuition Classes Gallery: up to 10 images", included: true },
+      { text: "Multiple Website Themes", included: false },
+      { text: "Dashboard Refresh Rate: 1 day", included: true },
     ],
-    highlightFeature: "3 Batches + Public Website",
-    ctaText: "Get Started",
-    accentColor: "blue",
+    highlightFeature: "Free lifetime access", ctaText: "Get Started", accentColor: "blue",
   },
   {
-    id: "pro",
-    name: "Pro Tutor",
-    badge: "Most Popular",
-    description: "The complete toolkit to grow your student base and automate inquiries.",
-    popular: true,
-    monthlyPrice: 49,
-    yearlyPrice: 490, // ~17% off (2 months free)
-    currency: "INR",
-    currencySymbol: "₹",
+    id: "pro", name: "Pro", badge: "Popular", description: "More room to showcase your batches, achievements, and brand.", popular: true,
+    monthlyPrice: 2, yearlyPrice: 2, currency: "INR", currencySymbol: "₹",
     features: [
-      { text: "1 Custom Tutor Portfolio Website", included: true },
-      { text: "Unlimited Active Batches showcase", included: true },
-      { text: "Instant WhatsApp & Email Inquiries", included: true },
-      { text: "All Premium Themes + Custom Brand Accent", included: true },
-      { text: "Verified Tutor Trust Badge on Directory", included: true },
-      { text: "Unlimited AI Resume Auto-Fill", included: true },
-      { text: "Student Testimonials & Achievements Showcase", included: true },
-      { text: "Priority Search Ranking on Discover Tutors", included: true },
-      { text: "Priority 24/7 Email & Chat Support", included: true },
-      { text: "Custom Domain Support", included: false },
+      ...sharedFeatures,
+      { text: "Batches Management: up to 5 images", included: true },
+      { text: "Student Achievements & Reviews: up to 5 images", included: true },
+      { text: "Tuition Classes Gallery: up to 20 images", included: true },
+      { text: "Multiple Website Themes", included: true },
+      { text: "Dashboard Refresh Rate: 1 day", included: true },
     ],
-    highlightFeature: "Unlimited Batches + Verified Badge + AI Auto-fill",
-    ctaText: "Upgrade to Pro",
-    accentColor: "indigo",
+    highlightFeature: "More images and multiple themes", ctaText: "Choose Pro", accentColor: "indigo",
   },
   {
-    id: "ultimate",
-    name: "Ultimate",
-    badge: "Best Value",
-    description: "For top educators, coaching institutes, and growing teaching brands.",
-    popular: false,
-    monthlyPrice: 59,
-    yearlyPrice: 590, // ~17% off (2 months free)
-    currency: "INR",
-    currencySymbol: "₹",
+    id: "elite", name: "Elite", badge: "Best Value", description: "Maximum image capacity and live dashboard updates.", popular: false,
+    monthlyPrice: 3, yearlyPrice: 3, currency: "INR", currencySymbol: "₹",
     features: [
-      { text: "Everything in Pro Tutor Plan", included: true },
-      { text: "Custom Domain Mapping (yourdomain.com)", included: true },
-      { text: "Remove TutorFolio Footer Branding", included: true },
-      { text: "Multiple Branch / Assistant Accounts", included: true },
-      { text: "Automated Fee Receipts & Payment Links", included: true },
-      { text: "Advanced Visitor & Conversion Analytics", included: true },
-      { text: "Dedicated Account Manager", included: true },
-      { text: "Early Access to Beta Features", included: true },
+      ...sharedFeatures,
+      { text: "Batches Management: up to 20 images", included: true },
+      { text: "Student Achievements & Reviews: up to 20 images", included: true },
+      { text: "Tuition Classes Gallery: up to 200 images", included: true },
+      { text: "Multiple Website Themes", included: true },
+      { text: "Dashboard Refresh Rate: Live", included: true },
     ],
-    highlightFeature: "Custom Domain + Zero Branding + White-label",
-    ctaText: "Go Ultimate",
-    accentColor: "purple",
+    highlightFeature: "Highest limits with live dashboard", ctaText: "Choose Elite", accentColor: "purple",
   },
 ];
 
 export const PAYMENT_FAQS = [
-  {
-    q: "What payment methods are supported via Razorpay?",
-    a: "Razorpay supports all major payment modes across India, including UPI (Google Pay, PhonePe, Paytm, BHIM), Credit/Debit Cards (Visa, MasterCard, RuPay, Maestro), NetBanking (50+ banks), and popular Wallets.",
-  },
-  {
-    q: "Is my payment secure?",
-    a: "Yes. All transactions are securely processed through Razorpay's PCI-DSS Level 1 compliant infrastructure with 256-bit SSL encryption. TutorFolio never stores your card or banking credentials.",
-  },
-  {
-    q: "Can I upgrade or downgrade my plan later?",
-    a: "Yes, you can change your subscription tier anytime. When upgrading, the prorated remainder of your previous payment will be credited toward your new plan.",
-  },
-  {
-    q: "Will I receive an invoice / tax receipt for my purchase?",
-    a: "Yes! As soon as payment is confirmed, an official GST-compliant tax receipt is generated and available to download directly from your billing history.",
-  },
-  {
-    q: "Can I cancel my subscription at any time?",
-    a: "Yes, you can cancel whenever you wish. You will retain access to all plan features until the end of your current paid billing period.",
-  },
+  { q: "What payment methods are supported via Razorpay?", a: "Razorpay supports UPI, cards, net banking, and popular wallets." },
+  { q: "Is my payment secure?", a: "Payments are processed securely by Razorpay. TutorFolio does not store your card or banking credentials." },
+  { q: "Can I change my plan later?", a: "You can change your subscription plan at any time." },
+  { q: "Will I receive a receipt?", a: "Your payment record is available in Billing History after the payment is verified." },
+  { q: "Can I cancel my subscription?", a: "Contact TutorFolio support for help with your subscription." },
 ];
-
