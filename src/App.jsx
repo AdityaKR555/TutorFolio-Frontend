@@ -32,6 +32,7 @@ import Website from "./pages/tutor/Website";
 
 import Subscription from "./pages/tutor/Subscription";
 import ReportBug from "./pages/tutor/ReportBug";
+import Guide from "./pages/tutor/Guide";
 
 function ComingSoon({ title }) {
   return (
@@ -108,7 +109,7 @@ function App() {
 
               <Route path="/plans" element={<Subscription />} />
 
-              <Route path="/guide" element={<ComingSoon title="User Guide" />} />
+              <Route path="/guide" element={<Guide />} />
 
               <Route path="/report-bug" element={<ReportBug />} />
 
@@ -118,6 +119,7 @@ function App() {
 
         {/* Public tutor website */}
         <Route path="/tutor/:username" element={<PublicTutorWebsite />} />
+        <Route path="/tutor/:username/:section" element={<PublicTutorWebsite />} />
       </Routes>
     </div>
   );

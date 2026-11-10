@@ -35,10 +35,13 @@ export const getCachedSubscription = () => {
 /**
  * Saves subscription to local cache
  */
-export const setCachedSubscription = (sub) => {
+export const setCachedSubscription = (sub, { notify = true } = {}) => {
   try {
-    localStorage.setItem(STORAGE_KEY_SUB, JSON.stringify(sub));
-    window.dispatchEvent(new Event("tutorfolio-subscription-updated"));
+    const serialized = JSON.stringify(sub);
+    const previous = localStorage.getItem(STORAGE_KEY_SUB);
+    if (previous === serialized) return;
+    localStorage.setItem(STORAGE_KEY_SUB, serialized);
+    if (notify) window.dispatchEvent(new Event("tutorfolio-subscription-updated"));
   } catch (e) {
     console.error("Failed to cache subscription:", e);
   }
@@ -179,7 +182,7 @@ export const fetchSubscriptionStatus = async (userId) => {
 
     if (response.data?.status === 200 && response.data?.data) {
       // Server is authoritative — overwrite cache with fresh data
-      setCachedSubscription(response.data.data);
+      setCachedSubscription(response.data.data, { notify: false });
       return response.data.data;
     }
 
@@ -217,3 +220,16 @@ export const fetchPaymentHistory = async (userId) => {
   }
 };
 
+
+
+export const fetchSubscriptionPlans = async () => {
+  const response = await api.get("/payments/plans", { timeout: 8000 });
+  if (response.data?.status !== 200 || !Array.isArray(response.data?.data)) {
+    throw new Error("Could not load subscription plans.");
+  }
+  return response.data.data;
+};
+
+export const closePaymentOrder = async ({ userId, orderId, status = "cancelled" }) => {
+  await api.post("/payments/close-order", { userId, orderId, status });
+};

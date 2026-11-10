@@ -426,9 +426,9 @@ function TutorLayout() {
     <div className="min-h-screen bg-tf-bg text-tf-ink" data-theme={theme}>
       {/* ================= NAVBAR ================= */}
       <header className="fixed top-0 left-0 right-0 z-50 h-[72px] border-b border-tf-line/40 bg-[color-mix(in_srgb,var(--tf-surface)_30%,transparent)] shadow-sm backdrop-blur-xl">
-        <div className="h-full px-4 sm:px-6 flex items-center justify-between">
+        <div className="h-full px-2 sm:px-6 flex items-center justify-between gap-2">
           {/* Left side */}
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-center gap-1 sm:gap-4">
             {/* Mobile hamburger */}
             <button
               onClick={() => setSidebarOpen(true)}
@@ -458,15 +458,18 @@ function TutorLayout() {
                 aria-hidden="true"
                 className="h-9 max-h-9 w-auto max-w-[112px] object-contain sm:max-w-[132px]"
               />
-              <span className="text-base font-semibold tracking-tight text-tf-ink sm:text-lg">
+              <span className="hidden text-base font-semibold tracking-tight text-tf-ink sm:inline sm:text-lg">
                 Tutorfolio
               </span>
             </a>
           </div>
 
           {/* Profile */}
-          <div className="relative flex gap-2.5 items-center" ref={profileRef}>
-            <div className="inline-flex h-10 items-center gap-1 rounded-full border border-tf-line bg-tf-surface-soft p-1">
+          <div className="relative flex shrink-0 gap-1 items-center sm:gap-2.5" ref={profileRef}>
+            <button type="button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} className="flex h-9 w-9 items-center justify-center rounded-full border border-tf-line bg-tf-surface-soft text-tf-copy sm:hidden" aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}>
+              {theme === "light" ? <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z" /></svg> : <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2"/></svg>}
+            </button>
+            <div className="hidden h-10 items-center gap-1 rounded-full border border-tf-line bg-tf-surface-soft p-1 sm:inline-flex">
               <button
                 type="button"
                 onClick={() => setTheme("light")}
@@ -506,7 +509,7 @@ function TutorLayout() {
 
             <button
               onClick={() => setProfileOpen((prev) => !prev)}
-              className="flex items-center gap-2 p-2 text-tf-ink transition-colors"
+              className="flex items-center gap-2 p-1 text-tf-ink transition-colors sm:p-2"
               aria-label="Profile menu"
             >
               <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full text-tf-blue-pressed">

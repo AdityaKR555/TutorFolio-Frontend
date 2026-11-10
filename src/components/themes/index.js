@@ -6,45 +6,12 @@ export { default as ThemeBold } from './ThemeBold';
 export { default as ThemeMinimal } from './ThemeMinimal';
 
 /** Metadata for all themes – consumed by Website.jsx settings page */
+/** Renderer bindings for database theme IDs. Theme availability and display metadata
+ * are supplied by the backend catalog. */
 export const THEMES = [
-  {
-    id: 'theme_classic',
-    label: 'Classic',
-    component: 'ThemeClassic',
-    primaryColor: '#3B82F6',
-    secondaryColor: '#93C5FD',
-    backgroundColor: '#F8FAFC',
-    description: 'Clean, professional and timeless. Great for a formal tutor presence.',
-    features: ['Blue accent palette', 'Grid content layout', 'Professional look'],
-  },
-  {
-    id: 'theme_modern',
-    label: 'Modern',
-    component: 'ThemeModern',
-    primaryColor: '#6366F1',
-    secondaryColor: '#818CF8',
-    backgroundColor: '#0F0F1A',
-    description: 'Dark, sleek and minimal. Perfect for a contemporary, standout profile.',
-    features: ['Dark surfaces', 'Indigo accents', 'Underline tab nav'],
-  },
-  {
-    id: 'theme_bold',
-    label: 'Bold',
-    component: 'ThemeBold',
-    primaryColor: '#0D9488',
-    secondaryColor: '#F59E0B',
-    backgroundColor: '#FFFFFF',
-    description: 'Vibrant, colorful and energetic. Makes your profile pop.',
-    features: ['Teal + amber palette', 'Gradient hero', 'Rounded pill tabs'],
-  },
-  {
-    id: 'theme_minimal',
-    label: 'Minimal',
-    component: 'ThemeMinimal',
-    primaryColor: '#111827',
-    secondaryColor: '#6B7280',
-    backgroundColor: '#FAFAFA',
-    description: 'Ultra-clean and typography-first. Elegant simplicity.',
-    features: ['Serif headings', 'Ample whitespace', 'Monochrome palette'],
-  },
+  { id: "classic", label: "Classic Academic", component: "ThemeClassic", primaryColor: "#1763e9", secondaryColor: "#0c54cc", backgroundColor: "#ffffff", description: "Clean, structured academic theme.", features: [] },
+  { id: "minimal", label: "Modern Minimal", component: "ThemeMinimal", primaryColor: "#111827", secondaryColor: "#4f46e5", backgroundColor: "#f9fafb", description: "Sleek, distraction-free theme.", features: [] },
+  { id: "vibrant_slate", label: "Vibrant Slate", component: "ThemeModern", primaryColor: "#0ea5e9", secondaryColor: "#0284c7", backgroundColor: "#f8fafc", description: "Contemporary high-contrast theme.", features: [] },
+  { id: "bold_educator", label: "Bold Educator", component: "ThemeBold", primaryColor: "#f97316", secondaryColor: "#ea580c", backgroundColor: "#fff7ed", description: "Energetic and colorful theme.", features: [] },
+  { id: "elite_academy", label: "Elite Academy", component: "ThemeBold", primaryColor: "#8b5cf6", secondaryColor: "#6d28d9", backgroundColor: "#ffffff", description: "Institute-grade premium theme.", features: [] },
 ];

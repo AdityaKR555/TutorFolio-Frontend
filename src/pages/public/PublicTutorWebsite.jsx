@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import api from "../../api/axios";
 import VisitorChatWidget from "../../components/VisitorChatWidget";
 import { ThemeClassic, ThemeModern, ThemeBold, ThemeMinimal } from "../../components/themes/index.js";
@@ -30,17 +30,26 @@ function normalizeWebsite(root) {
   const tuition = fo(root, ["tuition","tuitionDetails","tuition_details","tuitionInformation"]) || {};
   const achievements = fa(root, ["achievements","studentAchievements","visibleAchievements"]);
   const batches = fa(root, ["batches","tuitionBatches","visibleBatches"]);
-  return { profile, tuition, achievements, batches };
+  const experience = fa(root, ["experience","experiences","workExperience"]);
+  const faqs = fa(root, ["faqs","FAQs","questions"]);
+  const gallery = fa(root, ["gallery","galleryImages","images"]);
+  return { profile, tuition, achievements, batches, experience, faqs, gallery };
 }
 
 /* ─── theme registry ───────────────────────────────────────────────────────── */
 const THEME_MAP = {
+  classic: ThemeClassic,
+  minimal: ThemeMinimal,
+  vibrant_slate: ThemeModern,
+  bold_educator: ThemeBold,
+  elite_academy: ThemeBold,
+  // Keep rendering support for previously saved identifiers.
   theme_classic: ThemeClassic,
   theme_modern: ThemeModern,
   theme_bold: ThemeBold,
   theme_minimal: ThemeMinimal,
 };
-const DEFAULT_THEME = "theme_classic";
+const DEFAULT_THEME = "classic";
 
 /* ─── fallback UI components (used when theme components aren't loaded) ─────── */
 function LoadingScreen() {
@@ -69,15 +78,13 @@ function ErrorScreen({ error, onRetry }) {
 
 /* ─── main component ────────────────────────────────────────────────────────── */
 export default function PublicTutorWebsite() {
-  const { username = "" } = useParams();
+  const { username = "", section = "" } = useParams();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const [website, setWebsite] = useState(null);
-  const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
-  const [sectionLoading, setSectionLoading] = useState(false);
   const [error, setError] = useState("");
-  const [sectionErrors, setSectionErrors] = useState({});
   const [copyMessage, setCopyMessage] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
   const [themeId, setThemeId] = useState(searchParams.get("theme") || DEFAULT_THEME);
@@ -116,36 +123,14 @@ export default function PublicTutorWebsite() {
 
   useEffect(() => { if (username) fetchWebsite(); }, [fetchWebsite, username]);
 
-  /* fetch individual sections on tab change */
-  const fetchSection = useCallback(async (sectionId) => {
-    if (!username || sectionId === "overview") return;
-    setSectionLoading(true);
-    setSectionErrors((p) => ({ ...p, [sectionId]: "" }));
-    try {
-      const res = await api.get(`/website/u/${encodeURIComponent(username)}/${sectionId}`, { timeout: 15000 });
-      const body = res?.data ?? {};
-      if (body.status !== undefined && body.status !== 200) throw new Error(body.message || `Unable to load ${sectionId}.`);
-      const result = unwrap(body);
-      setWebsite((prev) => {
-        if (!prev) return prev;
-        const next = { ...prev };
-        if (sectionId === "tuition") { const o = fo(result, ["tuition","tuitionDetails","tuition_details"]); next.tuition = Object.keys(o).length ? o : result; }
-        else if (sectionId === "batches") { next.batches = Array.isArray(result) ? result : fa(result, ["batches","tuitionBatches","visibleBatches","details"]); }
-        else if (sectionId === "achievements") { next.achievements = Array.isArray(result) ? result : fa(result, ["achievements","studentAchievements","visibleAchievements","details"]); }
-        return next;
-      });
-    } catch (err) {
-      setSectionErrors((p) => ({ ...p, [sectionId]: err?.response?.data?.message || err.message || `Unable to refresh ${sectionId}.` }));
-    } finally {
-      setSectionLoading(false);
-    }
-  }, [username]);
-
   /* derived data */
   const profile = website?.profile ?? {};
   const tuition = website?.tuition ?? {};
   const achievements = website?.achievements ?? [];
   const batches = website?.batches ?? [];
+  const experience = website?.experience ?? [];
+  const faqs = website?.faqs ?? [];
+  const gallery = website?.gallery ?? [];
   const tutorId = Number(fd(profile, ["userId","user_id","userid","tutorId","tutor_id"], 0)) || null;
   const name = [fd(profile, ["firstName","first_name"]), fd(profile, ["lastName","last_name"])].filter(Boolean).join(" ") || fd(profile, ["username"], username);
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
@@ -165,8 +150,10 @@ export default function PublicTutorWebsite() {
     api.post("/notifications/visit", { tutorId, referrer }, { timeout: 10000 }).catch(() => {});
   }, [website, tutorId]);
 
-  /* tab handler */
-  const setTab = (tab) => { setActiveTab(tab); fetchSection(tab); };
+  const validPages = ["about", "classes", "batches", "gallery", "achievements", "experience"];
+  const currentPage = ["faqs", "contact"].includes(section) ? "about" : validPages.includes(section) ? section : "home";
+  const navigatePage = (page) => navigate(page === "home" ? `/tutor/${encodeURIComponent(username)}` : `/tutor/${encodeURIComponent(username)}/${page}`);
+  const navigateLegacySection = (tab) => navigatePage(({ overview: "home", tuition: "classes", faqs: "about", contact: "about" })[tab] || tab);
 
   /* copy link */
   const copyLink = async () => {
@@ -187,13 +174,19 @@ export default function PublicTutorWebsite() {
     tuition,
     achievements,
     batches,
-    activeTab,
-    onTabChange: setTab,
+    experience,
+    faqs,
+    gallery,
+    username,
+    currentPage,
+    activeTab: ({ home: "overview", classes: "tuition" })[currentPage] || currentPage,
+    onPageChange: navigatePage,
+    onTabChange: navigateLegacySection,
     onContactClick: () => setChatOpen(true),
     onCopyLink: copyLink,
     copyMessage,
-    sectionLoading,
-    sectionErrors,
+    sectionLoading: false,
+    sectionErrors: {},
   };
 
   return (

@@ -12,7 +12,7 @@ const sharedFeatures = [
 export const PLANS = [
   {
     id: "free", name: "Free (Lifetime)", badge: "Free", description: "The essentials to create and manage your tutor website.", popular: false,
-    monthlyPrice: 1, yearlyPrice: 1, currency: "INR", currencySymbol: "₹",
+    price: null, billingCycle: "lifetime", currency: "INR", currencySymbol: "₹",
     features: [
       ...sharedFeatures,
       { text: "Batches Management: 1 image", included: true },
@@ -25,7 +25,7 @@ export const PLANS = [
   },
   {
     id: "pro", name: "Pro", badge: "Popular", description: "More room to showcase your batches, achievements, and brand.", popular: true,
-    monthlyPrice: 2, yearlyPrice: 2, currency: "INR", currencySymbol: "₹",
+    price: null, billingCycle: "monthly", currency: "INR", currencySymbol: "₹",
     features: [
       ...sharedFeatures,
       { text: "Batches Management: up to 5 images", included: true },
@@ -38,7 +38,7 @@ export const PLANS = [
   },
   {
     id: "elite", name: "Elite", badge: "Best Value", description: "Maximum image capacity and live dashboard updates.", popular: false,
-    monthlyPrice: 3, yearlyPrice: 3, currency: "INR", currencySymbol: "₹",
+    price: null, billingCycle: "monthly", currency: "INR", currencySymbol: "₹",
     features: [
       ...sharedFeatures,
       { text: "Batches Management: up to 20 images", included: true },

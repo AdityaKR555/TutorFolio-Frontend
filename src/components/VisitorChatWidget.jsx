@@ -69,12 +69,6 @@ export default function VisitorChatWidget({ tutorId, tutorName = "Tutor", open, 
     else { setThread(null); }
   }, [open, tutorId, storageKey, loadThread]);
 
-  useEffect(() => {
-    if (!open || !visitorIdentifier || !tutorId) return undefined;
-    const timer = window.setInterval(() => loadThread(visitorIdentifier, true), 12000);
-    return () => window.clearInterval(timer);
-  }, [open, visitorIdentifier, tutorId, loadThread]);
-
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [thread?.messages?.length, open]);
 
   const startNewConversation = () => {
