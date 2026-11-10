@@ -8,7 +8,9 @@ import {
 import { loadRazorpayScript } from "../../utils/razorpay";
 import {
   createPaymentOrder,
+  closePaymentOrder,
   fetchPaymentHistory,
+  fetchSubscriptionPlans,
   fetchSubscriptionStatus,
   verifyPaymentSignature,
 } from "../../api/payment";
@@ -17,6 +19,7 @@ function Subscription() {
   const [billingCycle, setBillingCycle] = useState(BILLING_CYCLES.MONTHLY);
   const [currentSub, setCurrentSub] = useState(null);
   const [paymentHistory, setPaymentHistory] = useState([]);
+  const [plans, setPlans] = useState(PLANS);
   const [loading, setLoading] = useState(true);
   const [processingPlanId, setProcessingPlanId] = useState(null);
   const [error, setError] = useState("");
@@ -90,14 +93,19 @@ function Subscription() {
       try {
         setLoading(true);
         setError("");
-        const [sub, history] = await Promise.all([
+        const [sub, history, catalog] = await Promise.all([
           fetchSubscriptionStatus(userId),
           fetchPaymentHistory(userId),
+          fetchSubscriptionPlans(),
         ]);
 
         if (mounted) {
           setCurrentSub(sub);
           setPaymentHistory(history || []);
+          setPlans(PLANS.map((uiPlan) => {
+            const dbPlan = catalog.find((item) => item.planId === uiPlan.id);
+            return dbPlan ? { ...uiPlan, name: dbPlan.name, description: dbPlan.description || uiPlan.description, price: Number(dbPlan.price), currency: dbPlan.currency, billingCycle: dbPlan.billingCycle } : uiPlan;
+          }));
         }
       } catch (err) {
         if (mounted) {
@@ -144,10 +152,18 @@ function Subscription() {
     setError("");
     setProcessingPlanId(plan.id);
 
-    const price =
-      billingCycle === BILLING_CYCLES.YEARLY
-        ? plan.yearlyPrice
-        : plan.monthlyPrice;
+    const price = plan.price;
+    const selectedCycle = plan.billingCycle;
+    if (plan.id === "free" || selectedCycle === "lifetime") {
+      setError("The Free lifetime plan does not require payment checkout.");
+      setProcessingPlanId(null);
+      return;
+    }
+    if (billingCycle !== selectedCycle) {
+      setError(`This plan is currently billed ${selectedCycle}. Select the matching billing option.`);
+      setProcessingPlanId(null);
+      return;
+    }
 
     try {
       // Step 1: Create Order via Backend API
@@ -155,7 +171,7 @@ function Subscription() {
         userId,
         planId: plan.id,
         planName: plan.name,
-        billingCycle,
+        billingCycle: selectedCycle,
         amount: price,
         currency: plan.currency,
       });
@@ -179,7 +195,7 @@ function Subscription() {
         amount: orderData.amount, // in paise
         currency: orderData.currency || "INR",
         name: "TutorFolio",
-        description: `${plan.name} (${billingCycle === BILLING_CYCLES.YEARLY ? "Annual" : "Monthly"})`,
+        description: `${plan.name} (${selectedCycle})`,
         image: "https://alpha.tutorfolio.site/favicon.ico",
         order_id: orderData.orderId,
         handler: async (response) => {
@@ -208,6 +224,9 @@ function Subscription() {
         },
         modal: {
           ondismiss: () => {
+            closePaymentOrder({ userId, orderId: orderData.orderId, status: "cancelled" })
+              .then(() => fetchPaymentHistory(userId).then(setPaymentHistory))
+              .catch((err) => console.error("Could not mark dismissed order:", err));
             setProcessingPlanId(null);
           },
         },
@@ -217,6 +236,9 @@ function Subscription() {
         const rzp = new window.Razorpay(options);
         rzp.on("payment.failed", (failedRes) => {
           console.error("Razorpay Payment Failed:", failedRes.error);
+          closePaymentOrder({ userId, orderId: orderData.orderId, status: "failed" })
+            .then(() => fetchPaymentHistory(userId).then(setPaymentHistory))
+            .catch((err) => console.error("Could not mark failed order:", err));
           setError(
             failedRes.error?.description ||
               "Payment was declined or cancelled. Please try again."
@@ -476,7 +498,8 @@ function Subscription() {
             <button
               type="button"
               onClick={() => setBillingCycle(BILLING_CYCLES.YEARLY)}
-              className={`flex cursor-pointer items-center gap-2 rounded-xl border-0 px-[18px] py-[9px] text-[13px] font-semibold transition-all ${
+              disabled={!plans.some((plan) => plan.billingCycle === "yearly")}
+              className={`flex cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 items-center gap-2 rounded-xl border-0 px-[18px] py-[9px] text-[13px] font-semibold transition-all ${
                 billingCycle === BILLING_CYCLES.YEARLY
                   ? "bg-[#1875d1] text-white shadow-[0_4px_14px_rgba(24,117,209,0.3)]"
                   : "bg-transparent text-[#566b84] hover:text-[#172b46] [[data-theme=dark]_&]:text-[#b7c7db] [[data-theme=dark]_&]:hover:text-[#e8f0fb]"
@@ -492,11 +515,8 @@ function Subscription() {
 
         {/* ================= 3 PRICING CARDS ================= */}
         <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-3">
-          {PLANS.map((plan) => {
-            const price =
-              billingCycle === BILLING_CYCLES.YEARLY
-                ? plan.yearlyPrice
-                : plan.monthlyPrice;
+          {plans.map((plan) => {
+            const price = plan.price;
             const isCurrent = isCurrentPlan(plan.id);
             const isProcessing = processingPlanId === plan.id;
 
@@ -534,7 +554,7 @@ function Subscription() {
                       {price}
                     </span>
                     <span className="text-[13px] font-medium text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">
-                      /{billingCycle === BILLING_CYCLES.YEARLY ? "year" : "month"}
+                      /{plan.billingCycle === "lifetime" ? "lifetime" : plan.billingCycle === "yearly" ? "year" : "month"}
                     </span>
                   </div>
 
@@ -690,6 +710,7 @@ function Subscription() {
                     <th className="pb-3 font-semibold">Plan</th>
                     <th className="pb-3 font-semibold">Billing</th>
                     <th className="pb-3 font-semibold">Amount</th>
+                    <th className="pb-3 font-semibold">Status</th>
                     <th className="pb-3 font-semibold">Payment ID</th>
                     <th className="pb-3 font-semibold text-right">Receipt</th>
                   </tr>
@@ -703,11 +724,16 @@ function Subscription() {
                       <td className="py-3.5 font-bold text-emerald-600 [[data-theme=dark]_&]:text-emerald-400">
                         ₹{item.amount}
                       </td>
+                      <td className="py-3.5">
+                        <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${item.status === "paid" ? "bg-emerald-100 text-emerald-700" : item.status === "created" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>
+                          {item.status === "paid" ? "Completed" : item.status === "created" ? "Pending" : item.status === "cancelled" ? "Cancelled" : "Failed"}
+                        </span>
+                      </td>
                       <td className="max-w-[120px] truncate py-3.5 font-mono text-[11px] text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">
-                        {item.id || "N/A"}
+                        {item.paymentId || "—"}
                       </td>
                       <td className="py-3.5 text-right">
-                        <button
+                        {item.status === "paid" && <button
                           type="button"
                           onClick={() => {
                             setSuccessModalData({
@@ -723,7 +749,7 @@ function Subscription() {
                           className="cursor-pointer text-xs font-semibold text-blue-600 hover:underline [[data-theme=dark]_&]:text-blue-400"
                         >
                           View Receipt
-                        </button>
+                        </button>}
                       </td>
                     </tr>
                  ))}

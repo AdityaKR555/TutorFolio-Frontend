@@ -261,7 +261,7 @@ function Dashboard() {
             <p className="text-tf-copy text-sm mb-2">Tutor Dashboard</p>
 
             <h1 className="tf-page-title">
-              Hello, {user?.username || "Tutor"} 👋
+              Hello, {user?.username || "Tutor"}
             </h1>
 
             <p className="text-tf-copy mt-2 text-sm sm:text-base">

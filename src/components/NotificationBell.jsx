@@ -87,17 +87,8 @@ export default function NotificationBell() {
 
   useEffect(() => {
     refreshCounts();
-    const refresh = () => refreshCounts();
-    window.addEventListener("focus", refresh);
-    window.addEventListener("tutorfolio-notifications-updated", refresh);
-    window.addEventListener("tutorfolio-chat-updated", refresh);
-    const timer = window.setInterval(refresh, 45000);
-    return () => {
-      window.removeEventListener("focus", refresh);
-      window.removeEventListener("tutorfolio-notifications-updated", refresh);
-      window.removeEventListener("tutorfolio-chat-updated", refresh);
-      window.clearInterval(timer);
-    };
+    const timer = window.setInterval(refreshCounts, 10 * 60 * 1000);
+    return () => window.clearInterval(timer);
   }, [refreshCounts]);
 
   useEffect(() => {

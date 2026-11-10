@@ -119,6 +119,11 @@ function ThemePreviewMini({ theme, isSelected, onClick, disabled }) {
               Active
             </span>
           )}
+          {!isSelected && theme.isPlanAllowed === false && (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-500/15 dark:text-amber-300">
+              Upgrade to unlock
+            </span>
+          )}
         </div>
         <p className="mt-0.5 text-[11px] text-tf-muted line-clamp-2">
           {theme.description}
@@ -146,7 +151,8 @@ export default function Website() {
     ? `${window.location.origin}/tutor/${encodeURIComponent(username)}`
     : "";
 
-  const [activeThemeId, setActiveThemeId] = useState("theme_classic");
+  const [activeThemeId, setActiveThemeId] = useState("");
+  const [availableThemes, setAvailableThemes] = useState([]);
   const [userPlan, setUserPlan] = useState("free");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -162,25 +168,31 @@ export default function Website() {
     }
     setLoading(true);
     try {
-      const [themesRes, currentRes] = await Promise.all([
-        api.get("/themes", { params: { userId } }),
-        api.get(`/themes/current/${userId}`),
-      ]);
+      const themesRes = await api.get("/themes", { params: { userId } });
       const themesData = checkApiResponse(themesRes, "Unable to fetch themes.");
-      const currentData = checkApiResponse(
-        currentRes,
-        "Unable to fetch current theme.",
-      );
-      if (currentData?.theme?.themeId)
-        setActiveThemeId(currentData.theme.themeId);
-      else if (themesData?.themes) {
-        const sel = themesData.themes.find((t) => t.isSelected);
-        if (sel) setActiveThemeId(sel.themeId);
-      }
-      setUserPlan(themesData?.userPlan || currentData?.userPlan || "free");
+      const registry = new Map(THEMES.map((theme) => [theme.id, theme]));
+      const backendThemes = (themesData?.themes || [])
+        .map((theme) => {
+          const visual = registry.get(theme.themeId) || THEMES[0];
+          return {
+            ...visual,
+            ...theme,
+            id: theme.themeId,
+            label: theme.title || visual.label,
+            primaryColor: theme.primaryColor || visual.primaryColor,
+            secondaryColor: theme.secondaryColor || visual.secondaryColor,
+            backgroundColor: theme.backgroundColor || visual.backgroundColor,
+            description: theme.description || visual.description,
+            isPlanAllowed: theme.isPlanAllowed !== false,
+          };
+        });
+      setAvailableThemes(backendThemes);
+      const selected = backendThemes.find((theme) => theme.isSelected);
+      if (selected) setActiveThemeId(selected.id);
+      setUserPlan(themesData?.userPlan || "free");
     } catch (err) {
-      // If API unavailable, keep defaults - not a blocking error
-      console.warn("Could not load theme from API:", err.message);
+      console.error("Could not load themes from API:", err.message);
+      setError(getErrorMessage(err, "Unable to fetch themes from the server."));
     } finally {
       setLoading(false);
     }
@@ -387,13 +399,13 @@ export default function Website() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {THEMES.map((theme) => (
+              {availableThemes.map((theme) => (
                 <ThemePreviewMini
                   key={theme.id}
                   theme={theme}
                   isSelected={activeThemeId === theme.id}
                   onClick={() => handleApplyTheme(theme.id)}
-                  disabled={saving}
+                  disabled={saving || !theme.isPlanAllowed}
                 />
               ))}
             </div>
