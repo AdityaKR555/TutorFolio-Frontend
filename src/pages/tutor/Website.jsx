@@ -9,6 +9,8 @@ import {
   Trophy,
   AlertTriangle,
   Check,
+  Copy,
+  ExternalLink,
 } from "lucide-react";
 
 /* ─── helpers ──────────────────────────────────────────────────────────────── */
@@ -52,51 +54,51 @@ function ThemePreviewMini({ theme, isSelected, onClick, disabled }) {
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`group relative w-full overflow-hidden rounded-2xl border-2 transition-all ${
+      className={`group relative w-full overflow-hidden rounded-xl sm:rounded-2xl border-2 transition-all ${
         isSelected
-          ? "border-indigo-500 ring-4 ring-indigo-100 dark:ring-indigo-900/60"
+          ? "border-indigo-500 ring-2 sm:ring-4 ring-indigo-100 dark:ring-indigo-900/60"
           : "border-tf-line hover:border-slate-400 dark:hover:border-slate-500"
       } disabled:cursor-not-allowed disabled:opacity-60`}
       aria-pressed={isSelected}
     >
       {/* mini visual preview */}
       <div
-        className="relative h-32 overflow-hidden p-3"
+        className="relative h-20 sm:h-32 overflow-hidden p-2 sm:p-3"
         style={{ backgroundColor: bg }}
       >
-        <div className="flex h-full gap-2">
+        <div className="flex h-full gap-1.5 sm:gap-2">
           <div
-            className="w-1/4 rounded-lg p-1.5"
+            className="w-1/4 rounded sm:rounded-lg p-1 sm:p-1.5"
             style={{ backgroundColor: p }}
           >
-            <div className="mb-2 h-3 w-3 rounded-full bg-white/80" />
-            <div className="mb-1.5 h-1.5 rounded bg-white/70" />
-            <div className="h-1.5 w-3/4 rounded bg-white/40" />
+            <div className="mb-1 sm:mb-2 h-2 sm:h-3 w-2 sm:w-3 rounded-full bg-white/80" />
+            <div className="mb-1 sm:mb-1.5 h-1 sm:h-1.5 rounded bg-white/70" />
+            <div className="h-1 sm:h-1.5 w-3/4 rounded bg-white/40" />
           </div>
-          <div className="flex flex-1 flex-col gap-2">
+          <div className="flex flex-1 flex-col gap-1.5 sm:gap-2">
             <div className="flex items-center justify-between">
               <div
-                className="h-2 w-16 rounded"
+                className="h-1.5 sm:h-2 w-10 sm:w-16 rounded"
                 style={{ backgroundColor: p }}
               />
               <div
-                className="h-4 w-10 rounded-lg"
+                className="h-3 sm:h-4 w-6 sm:w-10 rounded sm:rounded-lg"
                 style={{ backgroundColor: s }}
               />
             </div>
-            <div className="flex-1 rounded-lg border border-white/30 bg-white/60 p-2">
+            <div className="flex-1 rounded sm:rounded-lg border border-white/30 bg-white/60 p-1 sm:p-2">
               <div
-                className="mb-1.5 h-1.5 w-2/3 rounded"
+                className="mb-1 sm:mb-1.5 h-1 sm:h-1.5 w-2/3 rounded"
                 style={{ backgroundColor: p, opacity: 0.8 }}
               />
-              <div className="mb-1.5 h-1 w-full rounded bg-slate-300/60" />
-              <div className="h-1 w-3/4 rounded bg-slate-300/60" />
+              <div className="mb-1 sm:mb-1.5 h-0.5 sm:h-1 w-full rounded bg-slate-300/60" />
+              <div className="h-0.5 sm:h-1 w-3/4 rounded bg-slate-300/60" />
             </div>
             <div className="flex gap-1">
               {[0, 1].map((i) => (
                 <div
                   key={i}
-                  className="h-5 flex-1 rounded-lg"
+                  className="h-3 sm:h-5 flex-1 rounded sm:rounded-lg"
                   style={{
                     backgroundColor: i === 0 ? p : s,
                     opacity: i === 0 ? 1 : 0.55,
@@ -109,31 +111,31 @@ function ThemePreviewMini({ theme, isSelected, onClick, disabled }) {
       </div>
 
       {/* info */}
-      <div className="p-3 text-left">
-        <div className="flex items-center justify-between gap-2">
-          <span className="font-semibold text-tf-ink text-sm">
+      <div className="p-2 sm:p-3 text-center sm:text-left flex flex-col items-center sm:items-stretch">
+        <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-1 sm:gap-2 w-full">
+          <span className="font-semibold text-tf-ink text-xs sm:text-sm text-center sm:text-left">
             {theme.label}
           </span>
           {isSelected && (
-            <span className="rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white">
+            <span className="rounded-full bg-indigo-600 px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-bold text-white shrink-0">
               Active
             </span>
           )}
           {!isSelected && theme.isPlanAllowed === false && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-500/15 dark:text-amber-300">
-              Upgrade to unlock
+            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-bold text-amber-800 dark:bg-amber-500/15 dark:text-amber-300 text-center shrink-0">
+              Upgrade
             </span>
           )}
         </div>
-        <p className="mt-0.5 text-[11px] text-tf-muted line-clamp-2">
+        <p className="mt-0.5 text-[10px] sm:text-[11px] text-tf-muted line-clamp-2 text-center sm:text-left">
           {theme.description}
         </p>
-        <div className="mt-2 flex items-center gap-1.5">
+        <div className="mt-1.5 sm:mt-2 flex items-center justify-center sm:justify-start gap-1 sm:gap-1.5">
           {[p, s, bg].map((c, i) => (
             <span
               key={`${c}-${i}`}
               title={c}
-              className="h-4 w-4 rounded-full border border-tf-line"
+              className="h-3 w-3 sm:h-4 sm:w-4 rounded-full border border-tf-line"
               style={{ backgroundColor: c }}
             />
           ))}
@@ -242,68 +244,59 @@ export default function Website() {
   };
 
   return (
-    <div className="min-h-full bg-tf-bg px-4 py-6 text-tf-ink sm:px-6 lg:px-8">
+    <div className="min-h-full bg-tf-bg px-3 py-4 text-tf-ink sm:px-6 sm:py-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         {/* ── Page header ── */}
-        <div className="mb-8">
-          <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
+        <div className="mb-5 sm:mb-8">
+          <p className="text-xs sm:text-sm font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
             Your Public Website
           </p>
-          <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mt-1.5 sm:mt-2 flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-tf-ink sm:text-3xl">
+              <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-tf-ink">
                 Website Settings
               </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-tf-copy">
+              <p className="mt-1 sm:mt-2 max-w-2xl text-xs sm:text-sm leading-5 sm:leading-6 text-tf-copy">
                 Customize how your public tutor portfolio looks. Changes apply
                 immediately to your live website.
               </p>
             </div>
 
             {/* View website button */}
-            <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2 w-full sm:w-auto">
               {username ? (
                 <>
                   <button
                     type="button"
                     onClick={handleCopyLink}
-                    className="inline-flex items-center gap-2 rounded-xl border border-tf-line bg-tf-surface px-4 py-2.5 text-sm font-semibold text-tf-copy transition hover:bg-tf-surface-soft"
+                    className="flex-1 sm:flex-initial sm:w-40 sm:min-w-[150px] h-9 sm:h-10 inline-flex justify-center items-center gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl border border-tf-line bg-tf-surface px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-tf-copy transition hover:bg-tf-surface-soft"
                   >
                     {copied ? (
-                      <span className="inline-flex items-center gap-1.5">
-                        <Check size={16} />
-                        Copied!
-                      </span>
+                      <>
+                        <Check size={15} className="text-emerald-500" />
+                        <span>Copied!</span>
+                      </>
                     ) : (
-                      "Copy link"
+                      <>
+                        <Copy size={15} />
+                        <span>Copy link</span>
+                      </>
                     )}
                   </button>
                   <a
                     href={websiteUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                    className="flex-1 sm:flex-initial sm:w-40 sm:min-w-[150px] h-9 sm:h-10 inline-flex justify-center items-center gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl border border-transparent bg-indigo-600 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-indigo-700"
                   >
-                    View your website
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
+                    <span>View website</span>
+                    <ExternalLink size={15} />
                   </a>
                 </>
               ) : (
                 <Link
                   to="/settings"
-                  className="inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-800 transition hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
+                  className="w-full sm:w-auto sm:min-w-[150px] h-9 sm:h-10 inline-flex justify-center items-center gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl border border-amber-300 bg-amber-50 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-amber-800 transition hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
                 >
                   ⚠ Set a username first
                 </Link>
@@ -314,17 +307,17 @@ export default function Website() {
 
         {/* ── Website URL card ── */}
         {username && (
-          <div className="mb-6 flex items-center gap-3 rounded-2xl border border-tf-line bg-tf-surface px-5 py-4">
-            <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" />
+          <div className="mb-4 sm:mb-6 flex items-center gap-2.5 sm:gap-3 rounded-xl sm:rounded-2xl border border-tf-line bg-tf-surface px-3 py-2.5 sm:px-5 sm:py-4">
+            <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 shrink-0 rounded-full bg-emerald-500" />
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-tf-muted uppercase tracking-wider">
+              <p className="text-[10px] sm:text-xs font-semibold text-tf-muted uppercase tracking-wider">
                 Your website URL
               </p>
-              <p className="mt-0.5 truncate text-sm font-medium text-tf-ink">
+              <p className="mt-0.5 truncate text-xs sm:text-sm font-medium text-tf-ink">
                 {websiteUrl}
               </p>
             </div>
-            <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+            <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
               Live
             </span>
           </div>
@@ -365,16 +358,18 @@ export default function Website() {
         )}
 
         {/* ── Theme section ── */}
-        <section className="rounded-2xl border border-tf-line bg-tf-surface p-5 sm:p-6">
-          <div className="mb-5 flex items-start justify-between gap-4">
+        <section className="rounded-xl sm:rounded-2xl border border-tf-line bg-tf-surface p-3.5 sm:p-6">
+          <div className="mb-3.5 sm:mb-5 flex items-center justify-between gap-2 sm:gap-4">
             <div>
-              <h2 className="text-lg font-bold text-tf-ink">Choose a Theme</h2>
-              <p className="mt-1 text-sm text-tf-copy">
+              <h2 className="text-base sm:text-lg font-bold text-tf-ink">
+                Choose a Theme
+              </h2>
+              <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-tf-copy hidden sm:block">
                 Select a visual style for your public website. The change is
                 saved instantly.
               </p>
             </div>
-            <div className="shrink-0 rounded-xl border border-tf-line px-3 py-2 text-xs text-tf-copy">
+            <div className="shrink-0 rounded-lg sm:rounded-xl border border-tf-line px-2.5 sm:px-3 py-1 sm:py-2 text-[11px] sm:text-xs text-tf-copy">
               Plan:{" "}
               <span className="font-bold text-tf-ink">
                 {formatPlan(userPlan)}
@@ -383,22 +378,22 @@ export default function Website() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {[0, 1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="animate-pulse overflow-hidden rounded-2xl border border-tf-line bg-tf-surface"
+                  className="animate-pulse overflow-hidden rounded-xl sm:rounded-2xl border border-tf-line bg-tf-surface"
                 >
-                  <div className="h-32 bg-slate-200 dark:bg-slate-700" />
-                  <div className="space-y-2 p-3">
-                    <div className="h-4 w-1/2 rounded bg-slate-200 dark:bg-slate-700" />
-                    <div className="h-3 w-full rounded bg-slate-100 dark:bg-slate-800" />
+                  <div className="h-20 sm:h-32 bg-slate-200 dark:bg-slate-700" />
+                  <div className="space-y-1.5 sm:space-y-2 p-2 sm:p-3">
+                    <div className="mx-auto sm:mx-0 h-3 sm:h-4 w-1/2 rounded bg-slate-200 dark:bg-slate-700" />
+                    <div className="h-2 sm:h-3 w-full rounded bg-slate-100 dark:bg-slate-800" />
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {availableThemes.map((theme) => (
                 <ThemePreviewMini
                   key={theme.id}
@@ -412,15 +407,14 @@ export default function Website() {
           )}
 
           {saving && (
-            <p className="mt-4 text-center text-sm text-tf-muted">
+            <p className="mt-3 sm:mt-4 text-center text-xs sm:text-sm text-tf-muted">
               Applying theme…
             </p>
           )}
         </section>
 
         {/* ── Quick links ── */}
-        {/* ── Quick links ── */}
-        <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <section className="mt-4 sm:mt-6 grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-4">
           {[
             {
               label: "Edit Profile",
@@ -435,7 +429,7 @@ export default function Website() {
               icon: MessageCircle,
             },
             {
-              label: "Add Achievements",
+              label: "Achievements",
               desc: "Showcase student success stories.",
               href: "/achievements",
               icon: Trophy,
@@ -444,23 +438,26 @@ export default function Website() {
             <Link
               key={item.href}
               to={item.href}
-              className="flex items-start gap-3 rounded-2xl border border-tf-line bg-tf-surface p-4 transition hover:border-indigo-300 hover:shadow-sm dark:hover:border-indigo-700"
+              className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-1.5 sm:gap-3 rounded-xl sm:rounded-2xl border border-tf-line bg-tf-surface p-2 sm:p-4 transition hover:border-indigo-300 hover:shadow-sm dark:hover:border-indigo-700"
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center text-tf-copy">
-                <item.icon size={22} strokeWidth={1.8} />
+              <span className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center text-tf-copy">
+                <item.icon size={18} strokeWidth={1.8} className="sm:hidden" />
+                <item.icon size={22} strokeWidth={1.8} className="hidden sm:block" />
               </span>
 
-              <div>
-                <p className="font-semibold text-tf-ink text-sm">
+              <div className="min-w-0 w-full">
+                <p className="font-semibold text-tf-ink text-[11px] sm:text-sm truncate">
                   {item.label}
                 </p>
-                <p className="mt-0.5 text-xs text-tf-muted">{item.desc}</p>
+                <p className="mt-0.5 text-xs text-tf-muted hidden sm:block">
+                  {item.desc}
+                </p>
               </div>
             </Link>
           ))}
         </section>
 
-        <p className="mt-6 text-xs text-tf-muted">
+        <p className="mt-4 sm:mt-6 text-xs text-tf-muted text-center sm:text-left">
           Your public website is accessible at{" "}
           {username ? (
             <a
