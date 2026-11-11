@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ExpandableText from "../ExpandableText";
 
 // ── Inline helpers ────────────────────────────────────────────────────────────
 function fd(src, keys, fb = "") {
@@ -33,7 +34,7 @@ function Detail({ label, value }) {
   return (
     <div className="rounded-xl border border-white/5 bg-white/5 p-3.5">
       <p className="text-xs text-slate-400">{label}</p>
-      <p className="mt-1 whitespace-pre-line break-words text-sm font-medium text-slate-100">{String(value)}</p>
+      <ExpandableText lines={2} className="mt-1 text-sm font-medium text-slate-100" preserveWhitespace>{String(value)}</ExpandableText>
     </div>
   );
 }
@@ -77,9 +78,9 @@ function OverviewSection({ profile, tuition, achievements, batches, onTabChange 
       {/* About */}
       <section className={`${card} lg:col-span-2`}>
         <SectionHeading eyebrow="About" title="A little about the tutor" description="Get to know the teacher and their approach." />
-        <p className="whitespace-pre-line text-sm leading-7 text-slate-400">
+        <ExpandableText lines={5} className="text-sm leading-7 text-slate-400" preserveWhitespace>
           {fd(profile, ["about", "description"], "This tutor hasn't added an introduction yet.")}
-        </p>
+        </ExpandableText>
         {fd(profile, ["webURL", "webUrl", "website"]) && (
           <a href={fd(profile, ["webURL", "webUrl", "website"])} target="_blank" rel="noreferrer"
             className="mt-4 inline-flex items-center gap-1 break-all text-sm text-indigo-400 hover:text-indigo-300">
@@ -128,7 +129,7 @@ function OverviewSection({ profile, tuition, achievements, batches, onTabChange 
             {achievements.slice(0, 3).map((item, i) => (
               <div key={item.achievementId ?? item.id ?? i} className="rounded-xl border border-white/5 bg-white/5 p-4">
                 <p className="font-semibold text-slate-100">{fd(item, ["title"], "Achievement")}</p>
-                <p className="mt-1 line-clamp-3 text-sm leading-6 text-slate-400">{fd(item, ["description", "studentReview"], "")}</p>
+                <ExpandableText lines={3} className="mt-1 text-sm leading-6 text-slate-400">{fd(item, ["description", "studentReview"], "")}</ExpandableText>
               </div>
             ))}
             <button type="button" onClick={() => onTabChange("achievements")} className="text-sm font-semibold text-indigo-400 hover:text-indigo-300">
@@ -185,7 +186,7 @@ function TuitionSection({ tuition }) {
       {fd(tuition, ["description"]) && (
         <div className="mt-5">
           <h3 className="mb-2 text-sm font-semibold text-slate-200">About this tuition</h3>
-          <p className="whitespace-pre-line text-sm leading-7 text-slate-400">{fd(tuition, ["description"])}</p>
+          <ExpandableText lines={4} className="text-sm leading-7 text-slate-400" preserveWhitespace>{fd(tuition, ["description"])}</ExpandableText>
         </div>
       )}
       {chips(fd(tuition, ["tags"])).length > 0 && (
@@ -216,7 +217,7 @@ function BatchesSection({ batches }) {
               <h3 className="text-lg font-semibold text-slate-100">{fd(batch, ["title", "batchName"], "Batch")}</h3>
               <span className="rounded-lg bg-indigo-500/10 px-2.5 py-1 text-xs text-indigo-300">{fd(batch, ["batchType", "session"], "Class")}</span>
             </div>
-            {fd(batch, ["description"]) && <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-400">{fd(batch, ["description"])}</p>}
+            {fd(batch, ["description"]) && <ExpandableText lines={3} className="mt-3 text-sm leading-6 text-slate-400" preserveWhitespace>{fd(batch, ["description"])}</ExpandableText>}
             <div className="mt-4 grid grid-cols-2 gap-3">
               <Detail label="Eligible classes" value={fd(batch, ["eligibleClasses", "eligible_classes"])} />
               <Detail label="Fee" value={fd(batch, ["fee"]) ? `₹${fd(batch, ["fee"])}` : "Not listed"} />
@@ -252,7 +253,7 @@ function AchievementsSection({ achievements }) {
               {fd(item, ["studentRating", "rating"]) &&
                 <span className="shrink-0 rounded-lg bg-amber-400/10 px-2.5 py-1 text-sm text-amber-300">★ {fd(item, ["studentRating", "rating"])}</span>}
             </div>
-            {fd(item, ["description"]) && <p className="mt-3 whitespace-pre-line text-sm leading-6 text-slate-400">{fd(item, ["description"])}</p>}
+            {fd(item, ["description"]) && <ExpandableText lines={3} className="mt-3 text-sm leading-6 text-slate-400" preserveWhitespace>{fd(item, ["description"])}</ExpandableText>}
             {fd(item, ["studentReview"]) && (
               <blockquote className="mt-4 rounded-xl border-l-2 border-indigo-500/50 bg-white/5 p-4 text-sm italic leading-6 text-slate-400">
                 "{fd(item, ["studentReview"])}"

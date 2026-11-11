@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import api from "../../api/axios";
+import ExpandableText from "../../components/ExpandableText";
 import { getStoredUser } from "../../utils/auth";
 
 const getUserId = () => {
@@ -471,8 +472,8 @@ const FAQ = () => {
                           </span>
                         </div>
 
-                        <h3 className="mb-2 text-base font-bold leading-[1.4] text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">{faq.title}</h3>
-                        <p className="m-0 whitespace-pre-wrap text-[13.5px] leading-[1.6] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">{faq.description}</p>
+                        <h3 className="mb-2 [overflow-wrap:anywhere] text-base font-bold leading-[1.4] text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">{faq.title}</h3>
+                        <ExpandableText lines={3} className="m-0 text-[13.5px] leading-[1.6] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]" preserveWhitespace>{faq.description}</ExpandableText>
                       </div>
 
                       {/* Action buttons */}

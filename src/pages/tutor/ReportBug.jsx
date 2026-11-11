@@ -6,6 +6,7 @@ import {
   getUserIssueReports,
 } from "../../api/issueReports";
 import { getStoredUser } from "../../utils/auth";
+import ExpandableText from "../../components/ExpandableText";
 
 const MAX_TITLE_LENGTH = 200;
 const MAX_DESC_LENGTH = 10000;
@@ -451,7 +452,7 @@ function ReportBug() {
                         </div>
                       </div>
 
-                      <p className="mb-2.5 whitespace-pre-wrap text-[13px] leading-[1.6] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">{item.description}</p>
+                      <ExpandableText lines={4} className="mb-2.5 text-[13px] leading-[1.6] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]" preserveWhitespace>{item.description}</ExpandableText>
 
                       {item.pageUrl && (
                         <div>

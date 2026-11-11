@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import api from "../../api/axios";
+import ExpandableText from "../../components/ExpandableText";
 import { UPLOAD_LIMITS } from "../../api/uploadLimits";
 
 const { maxSizeBytes: MAX_BATCH_IMAGE_SIZE, label: MAX_BATCH_IMAGE_LABEL } = UPLOAD_LIMITS["batch-image"];
@@ -369,10 +370,6 @@ function Batches() {
 
     let nextValue = e.target.type === "checkbox" ? e.target.checked : value;
 
-    // Fee should contain amount only.
-    if (name === "fee") {
-      nextValue = value.replace(/[^\d]/g, "");
-    }
 
     setFormData((prev) => ({
       ...prev,
@@ -521,6 +518,11 @@ function Batches() {
       return;
     }
 
+    if (formData.fee.trim() && !/^\d+(?:\.\d{1,2})?$/.test(formData.fee.trim())) {
+      setError("Fee must be a non-negative amount with up to two decimal places.");
+      return;
+    }
+
     const maximumSeats =
       formData.maximumSeats === ""
         ? null
@@ -615,13 +617,7 @@ function Batches() {
 
       const batchPayload = {
         ...payload,
-        ...(imageUrl ? {
-          imageUrl,
-          image_url: imageUrl,
-          batchImage: imageUrl,
-          batch_image: imageUrl,
-          image: imageUrl,
-        } : {}),
+        ...(imageUrl ? { imageUrl } : {}),
       };
 
       let response;
@@ -1086,10 +1082,10 @@ function Batches() {
                   <input
                     type="text"
                     name="fee"
+                    inputMode="decimal"
                     value={formData.fee}
                     onChange={handleChange}
                     placeholder="e.g. 500"
-                    inputMode="numeric"
                     className={pageStyles.input}
                   />
 
@@ -1396,7 +1392,7 @@ function Batches() {
                       <td className={pageStyles.tableCell}><span className={`${pageStyles.status} ${getTypeClass(batch.batchType)}`}>{getTypeLabel(batch.batchType)}</span></td>
                       <td className={`${pageStyles.tableCell} ${pageStyles.tableDates}`}>{formatDate(batch.startOn)}<br />{formatDate(batch.endOn)}</td>
                       <td className={pageStyles.tableCell}>{batch.fee ? `₹${batch.fee}` : "—"}</td>
-                      <td className={pageStyles.tableCell}>{batch.allottedSeats ?? 0} / {batch.maximumSeats || "—"}</td>
+                      <td className={pageStyles.tableCell}>{batch.allottedSeats ?? 0} / {batch.maximumSeats ?? "—"}</td>
                       <td className={pageStyles.tableCell}>
                         <button
                           type="button"
@@ -1442,7 +1438,7 @@ function Batches() {
                 >
                   <div className={pageStyles.cardTop}>
                     <div className={pageStyles.cardHeading}>
-                      <h2 className={pageStyles.cardTitle}>{batch.title}</h2>
+                      <h2 className={`${pageStyles.cardTitle} [overflow-wrap:anywhere]`}>{batch.title}</h2>
                       {batch.session && (
                         <span className={pageStyles.session}>Session {batch.session}</span>
                       )}
@@ -1482,15 +1478,11 @@ function Batches() {
                         }}
                       />
                       {batch.description && (
-                        <p className={`${pageStyles.description} mt-0 flex-1 line-clamp-3 leading-relaxed`}>
-                          {batch.description}
-                        </p>
+                        <ExpandableText lines={3} className={`${pageStyles.description} mt-0 leading-relaxed`} containerClassName="flex-1" preserveWhitespace>{batch.description}</ExpandableText>
                       )}
                     </div>
                   ) : batch.description ? (
-                    <p className={pageStyles.description}>
-                      {batch.description}
-                    </p>
+                    <ExpandableText lines={3} className={pageStyles.description} preserveWhitespace>{batch.description}</ExpandableText>
                   ) : null}
 
                   <div className={pageStyles.details}>
@@ -1519,7 +1511,7 @@ function Batches() {
                   <div className={pageStyles.seats}>
                     <div className={pageStyles.seatline}>
                       <span>Seats filled</span>
-                      <strong className={pageStyles.seatValue}>{batch.allottedSeats ?? 0} of {batch.maximumSeats || "—"}</strong>
+                      <strong className={pageStyles.seatValue}>{batch.allottedSeats ?? 0} of {batch.maximumSeats ?? "—"}</strong>
                     </div>
                     <div
                       className={pageStyles.progress}

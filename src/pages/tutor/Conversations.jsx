@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import api from "../../api/axios";
+import ExpandableText from "../../components/ExpandableText";
 const validStatuses = ["open", "closed", "archived"];
 
 function currentUserId() {
@@ -308,7 +309,7 @@ export default function Conversations() {
                     <span className="grid min-w-0">
                       <span className="flex min-w-0 items-center justify-between gap-[7px]"><strong className={`overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb] ${unread > 0 ? "font-extrabold" : ""}`}>{visitor}</strong><time className="shrink-0 text-[10px] text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">{shortDate(item.modifiedAt || item.createdAt)}</time></span>
                       <span className="mt-px overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">{item.subject || "General enquiry"}</span>
-                      <span className="mt-[5px] line-clamp-1 overflow-hidden text-[11px] leading-[1.45] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">{item.lastMessage || "No messages"}</span>
+                      <span className="mt-[5px] block min-w-0 [overflow-wrap:anywhere] text-[11px] leading-[1.45] text-[#566b84] line-clamp-2 [[data-theme=dark]_&]:text-[#b7c7db]">{item.lastMessage || "No messages"}</span>
                       <span className="mt-[7px] flex items-center justify-between gap-[7px]"><StatusPill status={item.status}/>{unread > 0 && <span className="h-2 w-2 shrink-0 rounded-full bg-[#1875d1] [[data-theme=dark]_&]:bg-[#4aa8ee]" aria-label={`${unread} unread messages`}/>}</span>
                     </span>
                   </button>
@@ -356,7 +357,7 @@ export default function Conversations() {
                           ? "rounded-[13px_13px_4px_13px] border-[#1875d1] bg-[#1875d1] text-white [[data-theme=dark]_&]:border-[#4aa8ee] [[data-theme=dark]_&]:bg-[#4aa8ee] [[data-theme=dark]_&]:text-[#101b2b]"
                           : "border-[#dfe9f3] bg-white text-[#172b46] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a] [[data-theme=dark]_&]:text-[#e8f0fb]"
                       }`}>
-                        <p className="m-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-[13px] leading-relaxed text-inherit">{message.content}</p>
+                        <ExpandableText lines={5} className="m-0 text-[13px] leading-relaxed text-inherit" preserveWhitespace>{message.content}</ExpandableText>
                         <span className={`mt-[7px] block text-[10px] ${
                           tutorMessage
                             ? "text-white/80 [[data-theme=dark]_&]:text-[#101b2b]/75"
