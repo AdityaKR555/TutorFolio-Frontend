@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
+import ExpandableText from "../../components/ExpandableText";
 
 const blankFilters = {
   city: "",
@@ -409,12 +410,12 @@ export default function DiscoverTutors() {
                       {tutor.qualification && <p className="m-0">{tutor.qualification}</p>}
                       {tutor.teachingYOE !== null && tutor.teachingYOE !== undefined && <p className="m-0">{tutor.teachingYOE} yrs experience</p>}
                       {tutor.establishedYear && <p className="m-0">Established {tutor.establishedYear}</p>}
-                      {tutor.about && <p className="m-0 basis-full line-clamp-2 whitespace-pre-line">{tutor.about}</p>}
+                      {tutor.about && <ExpandableText lines={2} containerClassName="basis-full" className="m-0 whitespace-pre-line">{tutor.about}</ExpandableText>}
                     </div>
                   ) : (
                     <>
                       {tutor.tuitionName && <p className="mb-[5px] mt-[15px] text-xs font-semibold text-[#0c5fb7] [[data-theme=dark]_&]:text-[#8bcdf7]">{tutor.tuitionName}</p>}
-                      {tutor.about && <p className="mb-3 line-clamp-2 overflow-hidden text-xs leading-[1.55] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">{tutor.about}</p>}
+                      {tutor.about && <ExpandableText lines={2} className="mb-3 text-xs leading-[1.55] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">{tutor.about}</ExpandableText>}
                       <div className="mb-[11px] flex flex-wrap gap-[6px]"><InfoChip>{tutor.qualification}</InfoChip><InfoChip>{tutor.teachingYOE !== null && tutor.teachingYOE !== undefined ? `${tutor.teachingYOE} yrs experience` : ""}</InfoChip>{tutor.establishedYear && <InfoChip>Established {tutor.establishedYear}</InfoChip>}</div>
                       {subjects && <p className="mb-[15px] overflow-hidden text-ellipsis whitespace-nowrap text-[11px] leading-[1.5] text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]"><strong className="text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">Subjects:</strong> {subjects}</p>}
                     </>
@@ -455,8 +456,8 @@ export default function DiscoverTutors() {
                 <div className="mt-[14px] grid grid-cols-2 gap-[9px]">
                   {[["Qualification", selectedTutor.qualification], ["Experience", selectedTutor.teachingYOE != null ? `${selectedTutor.teachingYOE} years` : "Not provided"], ["Rating", selectedTutor.averageRating != null ? `★ ${Number(selectedTutor.averageRating).toFixed(1)}` : "Not rated"], ["Reviews", selectedTutor.totalReviews ?? "—"], ["Languages", selectedTutor.languages]].map(([label, value]) => <div key={label} className="grid gap-1 rounded-[10px] border border-[#dfe9f3] bg-white p-[11px] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a]"><span className="text-[11px] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">{label}</span><strong className="break-words text-[13px] text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">{value || "Not provided"}</strong></div>)}
                 </div>
-                {selectedTutor.about && <section className="mt-4"><h3 className="mb-[5px] mt-0 text-[13px]">About</h3><p className="m-0 whitespace-pre-line text-[13px] leading-[1.6] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">{selectedTutor.about}</p></section>}
-                {selectedTutor.teachingSubjects && <section className="mt-4"><h3 className="mb-[5px] mt-0 text-[13px]">Teaching subjects</h3><p className="m-0 whitespace-pre-line text-[13px] leading-[1.6] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">{selectedTutor.teachingSubjects}</p></section>}
+                {selectedTutor.about && <section className="mt-4"><h3 className="mb-[5px] mt-0 text-[13px]">About</h3><ExpandableText lines={5} className="m-0 text-[13px] leading-[1.6] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]" preserveWhitespace>{selectedTutor.about}</ExpandableText></section>}
+                {selectedTutor.teachingSubjects && <section className="mt-4"><h3 className="mb-[5px] mt-0 text-[13px]">Teaching subjects</h3><ExpandableText lines={3} className="m-0 text-[13px] leading-[1.6] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]" preserveWhitespace>{selectedTutor.teachingSubjects}</ExpandableText></section>}
               </>
             )}
             {detailError && <p role="alert" className="mt-[14px] rounded-[9px] border border-[#dfe9f3] bg-[#fff2f3] px-3 py-[10px] text-xs text-[#b93849] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#45232d] [[data-theme=dark]_&]:text-[#ff9aa4]">{detailError}</p>}

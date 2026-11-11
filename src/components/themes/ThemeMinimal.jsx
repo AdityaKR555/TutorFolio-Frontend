@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import ExpandableText from "../ExpandableText";
 
 // ── Inline helpers ──────────────────────────────────────────────
 
@@ -65,9 +66,7 @@ function Detail({ label, value }) {
       <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-stone-400">
         {label}
       </p>
-      <p className="mt-2 whitespace-pre-line break-words text-sm leading-6 text-stone-800">
-        {String(value)}
-      </p>
+      <ExpandableText lines={2} className="mt-2 text-sm leading-6 text-stone-800" preserveWhitespace>{String(value)}</ExpandableText>
     </div>
   );
 }
@@ -126,13 +125,9 @@ function OverviewSection({
             title="A little about me"
             description="My background, experience and approach to teaching."
           />
-          <p className="whitespace-pre-line text-sm leading-8 text-stone-600">
-            {fd(
-              profile,
-              ["about", "description"],
-              "This tutor hasn't added an introduction yet."
-            )}
-          </p>
+          <ExpandableText lines={5} className="text-sm leading-8 text-stone-600" preserveWhitespace>
+            {fd(profile, ["about", "description"], "This tutor hasn't added an introduction yet.")}
+          </ExpandableText>
 
           {fd(profile, ["webURL", "webUrl", "website"]) && (
             <a
@@ -222,12 +217,12 @@ function OverviewSection({
                 key={item.achievementId ?? item.id ?? i}
                 className="py-5"
               >
-                <h3 className="font-serif text-lg text-stone-800">
+                <h3 className="[overflow-wrap:anywhere] font-serif text-lg text-stone-800">
                   {fd(item, ["title"], "Achievement")}
                 </h3>
-                <p className="mt-2 text-sm leading-7 text-stone-500">
+                <ExpandableText lines={3} className="mt-2 text-sm leading-7 text-stone-500">
                   {fd(item, ["description", "studentReview"], "")}
-                </p>
+                </ExpandableText>
               </article>
             ))}
             <button
@@ -259,7 +254,7 @@ function OverviewSection({
                 key={batch.batchId ?? batch.id ?? i}
                 className="border-b border-stone-200 pb-5"
               >
-                <h3 className="font-serif text-lg text-stone-800">
+                <h3 className="[overflow-wrap:anywhere] font-serif text-lg text-stone-800">
                   {fd(batch, ["title", "batchName"], "Batch")}
                 </h3>
                 <p className="mt-2 text-xs uppercase tracking-widest text-stone-400">
@@ -327,9 +322,9 @@ function TuitionSection({ tuition }) {
           <h3 className="mb-3 font-serif text-xl text-stone-800">
             About this tuition
           </h3>
-          <p className="whitespace-pre-line text-sm leading-8 text-stone-600">
+          <ExpandableText lines={4} className="text-sm leading-8 text-stone-600" preserveWhitespace>
             {fd(tuition, ["description"])}
-          </p>
+          </ExpandableText>
         </div>
       )}
 
@@ -457,9 +452,9 @@ function AchievementsSection({ achievements }) {
             </div>
 
             {fd(item, ["description"]) && (
-              <p className="mt-4 whitespace-pre-line text-sm leading-8 text-stone-600">
+              <ExpandableText lines={4} className="mt-4 text-sm leading-8 text-stone-600" preserveWhitespace>
                 {fd(item, ["description"])}
-              </p>
+              </ExpandableText>
             )}
 
             {fd(item, ["studentReview"]) && (
@@ -693,7 +688,7 @@ export default function ThemeMinimal({
 
         {/* Footer */}
         <footer className="mt-20 border-t border-stone-200 pt-8 text-center">
-          <p className="font-serif text-lg text-stone-800">
+          <p className="[overflow-wrap:anywhere] font-serif text-lg text-stone-800">
             TutorFolio<span className="text-stone-400">.</span>
           </p>
           <p className="mt-2 text-[10px] uppercase tracking-[0.2em] text-stone-400">

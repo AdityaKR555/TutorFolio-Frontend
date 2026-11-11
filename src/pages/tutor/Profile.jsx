@@ -90,6 +90,9 @@ function Profile() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isDiscoverable, setIsDiscoverable] = useState(true);
+  const [discoverabilitySaving, setDiscoverabilitySaving] = useState(false);
+  const [discoverabilityError, setDiscoverabilityError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
   const [error, setError] = useState("");
@@ -257,6 +260,15 @@ function Profile() {
 
       try {
         setError("");
+
+        try {
+          const visibilityResponse = await api.get("/personalDetails/discoverability", { timeout: 15000 });
+          if (!cancelled && visibilityResponse.data?.status === 200) {
+            setIsDiscoverable(visibilityResponse.data?.data?.isVisible !== false);
+          }
+        } catch {
+          // Visibility control remains enabled with the legacy default until a profile is saved.
+        }
 
         const response = await api.get("/personalDetails", {
           params: { userId },
@@ -432,6 +444,27 @@ function Profile() {
       cancelled = true;
     };
   }, []);
+
+  const handleDiscoverabilityChange = async (event) => {
+    const nextValue = event.target.checked;
+    setDiscoverabilitySaving(true);
+    setDiscoverabilityError("");
+    try {
+      const response = await api.patch("/personalDetails/discoverability", {
+        isVisible: nextValue,
+      }, { timeout: 15000 });
+      if (response.data?.status !== 200) {
+        throw new Error(response.data?.message || "Could not update profile visibility.");
+      }
+      setIsDiscoverable(response.data.data?.isVisible !== false);
+    } catch (err) {
+      setDiscoverabilityError(
+        err.response?.data?.message || err.message || "Could not update profile visibility. Please try again."
+      );
+    } finally {
+      setDiscoverabilitySaving(false);
+    }
+  };
 
   // This handler only enables editing. It never saves anything.
   const handleEdit = (e) => {
@@ -724,6 +757,32 @@ function Profile() {
             {success}
           </div>
         )}
+
+        <section className="tf-card mb-5 flex items-center justify-between gap-5 p-5 shadow-sm max-[560px]:items-start max-[560px]:p-4">
+          <div className="min-w-0">
+            <h2 className="tf-section-title mt-0 mb-1">Discover Tutors visibility</h2>
+            <p className="m-0 max-w-[680px] text-xs leading-relaxed text-[var(--tf-copy)]">
+              {isDiscoverable
+                ? "Your profile can appear in tutor searches, suggestions, and discovery previews."
+                : "Your profile is hidden from tutor searches, suggestions, and discovery previews. Your public tutor website stays available."}
+            </p>
+            {discoverabilityError && <p className="mt-2 mb-0 text-xs text-[var(--tf-danger)]" role="alert">{discoverabilityError}</p>}
+          </div>
+          <label className="inline-flex shrink-0 cursor-pointer items-center gap-3 text-xs font-semibold text-[var(--tf-ink)]">
+            <span>{isDiscoverable ? "Visible" : "Hidden"}</span>
+            <input
+              type="checkbox"
+              role="switch"
+              aria-label="Show my profile in Discover Tutors"
+              checked={isDiscoverable}
+              disabled={discoverabilitySaving}
+              onChange={handleDiscoverabilityChange}
+              className="peer sr-only"
+            />
+            <span aria-hidden="true" className={`relative h-6 w-11 rounded-full transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--tf-blue)] ${isDiscoverable ? "bg-[var(--tf-blue)] after:translate-x-5" : "bg-slate-300"}`} />
+            {discoverabilitySaving && <span className="sr-only">Saving visibility setting</span>}
+          </label>
+        </section>
 
         {isEditing ? (
         <form

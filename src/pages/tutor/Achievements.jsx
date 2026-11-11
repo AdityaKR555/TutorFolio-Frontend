@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import api from "../../api/axios";
+import ExpandableText from "../../components/ExpandableText";
 import { UPLOAD_LIMITS } from "../../api/uploadLimits";
 
 const { maxSizeBytes: MAX_ACHIEVEMENT_IMAGE_SIZE, label: MAX_ACHIEVEMENT_IMAGE_LABEL } = UPLOAD_LIMITS["achievement-image"];
@@ -1336,7 +1337,7 @@ function Achievements() {
                       </h2>
 
                       {achievement.studentName && (
-                        <p className={pageStyles.studentName}>
+                        <p className={`${pageStyles.studentName} [overflow-wrap:anywhere]`}>
                           {achievement.studentName}
                         </p>
                       )}
@@ -1362,9 +1363,7 @@ function Achievements() {
                   {achievementPhoto && (
                     <img className={pageStyles.cardImage} src={achievementPhoto} alt={`Achievement: ${achievement.title}`} />
                   )}
-                  <p className={pageStyles.description}>
-                    {achievement.description || "No description added."}
-                  </p>
+                  <ExpandableText lines={3} className={`${pageStyles.description} mt-0`} preserveWhitespace>{achievement.description || "No description added."}</ExpandableText>
 
                   {/* Batch */}
                   {achievement.batchId !== null &&
@@ -1376,9 +1375,7 @@ function Achievements() {
 
                   {/* Review */}
                   {achievement.studentReview && (
-                    <blockquote className={pageStyles.review}>
-                      “{achievement.studentReview}”
-                    </blockquote>
+                    <blockquote className={pageStyles.review}><ExpandableText lines={2} className="m-0" preserveWhitespace>“{achievement.studentReview}”</ExpandableText></blockquote>
                   )}
 
                   {achievement.youtubeVideoLink && (

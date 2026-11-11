@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import api from "../api/axios";
+import ExpandableText from "./ExpandableText";
 
 const field = "w-full rounded-xl border border-tf-line bg-tf-bg px-3.5 py-3 text-sm text-tf-ink outline-none placeholder:text-tf-muted focus:border-tf-blue focus:ring-2 focus:ring-tf-blue/20";
 const button = "inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50";
@@ -126,7 +127,7 @@ export default function VisitorChatWidget({ tutorId, tutorName = "Tutor", open, 
         {visitorIdentifier && loadingThread && !thread && <p className="py-8 text-center text-sm text-tf-copy">Loading your conversation…</p>}
         {visitorIdentifier && thread && <><div className="mb-2 flex items-center justify-between gap-2"><p className="text-xs text-tf-muted">{thread.subject || "Conversation"}</p><span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ${isClosed ? "bg-slate-200 text-slate-700 dark:bg-slate-500/15 dark:text-slate-300" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300"}`}>{thread.status || "open"}</span></div>{messages.map((item, index) => {
           const tutorMessage = String(item.senderType || "").toLowerCase() === "tutor";
-          return <div key={item.messageId ?? item.id ?? index} className={`flex ${tutorMessage ? "justify-start" : "justify-end"}`}><div className={`max-w-[88%] rounded-2xl px-3.5 py-3 ${tutorMessage ? "rounded-bl-md border border-tf-line bg-tf-surface text-tf-ink" : "rounded-br-md bg-blue-600 text-white"}`}><p className="whitespace-pre-wrap break-words text-sm leading-6">{item.content}</p><p className={`mt-1.5 text-[10px] ${tutorMessage ? "text-tf-muted" : "text-blue-100/70"}`}>{tutorMessage ? tutorName : "You"} · {timeLabel(item.createdAt)}</p></div></div>;
+          return <div key={item.messageId ?? item.id ?? index} className={`flex ${tutorMessage ? "justify-start" : "justify-end"}`}><div className={`max-w-[88%] rounded-2xl px-3.5 py-3 ${tutorMessage ? "rounded-bl-md border border-tf-line bg-tf-surface text-tf-ink" : "rounded-br-md bg-blue-600 text-white"}`}><ExpandableText lines={5} className="text-sm leading-6" preserveWhitespace>{item.content}</ExpandableText><p className={`mt-1.5 text-[10px] ${tutorMessage ? "text-tf-muted" : "text-blue-100/70"}`}>{tutorMessage ? tutorName : "You"} · {timeLabel(item.createdAt)}</p></div></div>;
         })}<div ref={endRef}/></>}
         {isClosed && <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-500/15 dark:bg-amber-500/5 dark:text-amber-100">This conversation is closed, so you cannot send another message in this thread.</div>}
       </div>
