@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import api from "../api/axios";
@@ -466,8 +466,55 @@ function TutorLayout() {
 
           {/* Profile */}
           <div className="relative flex shrink-0 gap-1 items-center sm:gap-2.5" ref={profileRef}>
-            <button type="button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} className="flex h-9 w-9 items-center justify-center rounded-full border border-tf-line bg-tf-surface-soft text-tf-copy sm:hidden" aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}>
-              {theme === "light" ? <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z" /></svg> : <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2"/></svg>}
+            {/* Mobile theme toggle */}
+            <button
+              type="button"
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              className={`flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-200 active:scale-95 sm:hidden shadow-xs ${
+                theme === "light"
+                  ? "border-tf-line bg-tf-surface-soft text-indigo-500 hover:bg-tf-surface hover:border-indigo-300"
+                  : "border-slate-700 bg-slate-800 text-amber-400 hover:bg-slate-700 hover:border-amber-500/40 shadow-[0_0_10px_rgba(251,191,36,0.15)]"
+              }`}
+              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+              title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+            >
+              {theme === "light" ? (
+                <svg
+                  className="h-5 w-5 transition-transform duration-300"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path
+                    d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"
+                    fill="currentColor"
+                    fillOpacity="0.18"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="h-5 w-5 transition-transform duration-300"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="4" fill="currentColor" fillOpacity="0.25" />
+                  <path d="M12 2v2.2" />
+                  <path d="M12 19.8v2.2" />
+                  <path d="m4.93 4.93 1.55 1.55" />
+                  <path d="m17.52 17.52 1.55 1.55" />
+                  <path d="M2 12h2.2" />
+                  <path d="M19.8 12h2.2" />
+                  <path d="m4.93 19.07 1.55-1.55" />
+                  <path d="m17.52 6.48 1.55-1.55" />
+                </svg>
+              )}
             </button>
             <div className="hidden h-10 items-center gap-1 rounded-full border border-tf-line bg-tf-surface-soft p-1 sm:inline-flex">
               <button
@@ -483,7 +530,7 @@ function TutorLayout() {
                 title="Light theme"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                  <circle cx="12" cy="12" r="4" />
+                  <circle cx="12" cy="12" r="4" fill="currentColor" fillOpacity="0.2" />
                   <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" />
                 </svg>
               </button>
@@ -501,7 +548,7 @@ function TutorLayout() {
                 title="Dark theme"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z" />
+                  <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z" fill="currentColor" fillOpacity="0.15" />
                 </svg>
               </button>
             </div>
