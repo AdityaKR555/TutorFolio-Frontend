@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
+import BatchSummaryArt from "./BatchSummaryArt";
+import { Search, Plus } from "lucide-react";
 import api from "../../api/axios";
 import ExpandableText from "../../components/ExpandableText";
 import { UPLOAD_LIMITS } from "../../api/uploadLimits";
@@ -8,31 +10,31 @@ const { maxSizeBytes: MAX_BATCH_IMAGE_SIZE, label: MAX_BATCH_IMAGE_LABEL } = UPL
 const pageStyles = {
   page: "min-h-full bg-tf-bg px-4 py-6 text-sm leading-relaxed text-tf-ink sm:px-6 lg:px-8",
   content: "mx-auto max-w-[1120px]",
-  heading: "mb-6 flex items-start justify-between gap-[18px] max-[520px]:flex-col",
-  headingTitle: "tf-page-title mb-2",
-  headingCopy: "m-0 text-[var(--tf-copy)]",
+  heading: "mb-8 flex items-start justify-between gap-5 max-[520px]:flex-col",
+  headingTitle: "mb-2 text-3xl font-bold tracking-tight text-tf-ink sm:text-4xl",
+  headingCopy: "m-0 text-sm leading-6 text-tf-copy sm:text-base",
   button: "tf-button-secondary cursor-pointer",
   buttonPrimary: "tf-button-primary cursor-pointer",
   buttonSmall: "inline-flex min-h-[31px] cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[9px] py-1.5 text-[11px] font-semibold text-[var(--tf-copy)] transition-colors duration-[160ms] hover:bg-[var(--tf-surface-soft)] hover:text-[var(--tf-blue)] disabled:cursor-not-allowed disabled:opacity-[.58] focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2 [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
   buttonDanger: "inline-flex min-h-[31px] cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[9px] py-1.5 text-[11px] font-semibold text-[var(--tf-danger)] transition-colors duration-[160ms] hover:bg-[var(--tf-surface-soft)] hover:text-[var(--tf-blue)] disabled:cursor-not-allowed disabled:opacity-[.58] focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2 [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
-  summary: "mb-[30px] grid grid-cols-5 gap-[13px] max-[900px]:grid-cols-3 max-[520px]:grid-cols-2 max-[520px]:gap-2",
-  stat: "relative overflow-hidden rounded-[7px] border border-[var(--tf-line)] bg-[var(--tf-surface)] bg-[radial-gradient(ellipse_at_100%_0%,rgb(117_202_245_/_20%),transparent_53%),radial-gradient(ellipse_at_0%_100%,rgb(121_176_255_/_12%),transparent_45%)] p-[15px_17px] [[data-theme=dark]_&]:bg-[var(--tf-surface)] max-[520px]:p-3",
-  statGreen: "bg-[radial-gradient(ellipse_at_100%_0%,rgb(112_220_186_/_20%),transparent_53%),radial-gradient(ellipse_at_0%_100%,rgb(117_202_245_/_12%),transparent_45%)]",
-  statGold: "bg-[radial-gradient(ellipse_at_100%_0%,rgb(247_198_121_/_20%),transparent_53%),radial-gradient(ellipse_at_0%_100%,rgb(193_160_246_/_12%),transparent_45%)]",
-  statLabel: "block text-[11px] text-[var(--tf-muted)]",
-  statValue: "mt-[3px] block text-xl tracking-[-0.3px] text-[var(--tf-ink)]",
-  statNote: "mt-0.5 block text-[10px] text-[var(--tf-muted)]",
+  summary: "mb-8 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5",
+  stat: "relative min-h-[174px] min-w-0 overflow-hidden rounded-2xl border bg-tf-surface p-4 shadow-[0_4px_15px_-10px_rgb(15_23_42_/_15%)] sm:p-5",
+  statGreen: "",
+  statGold: "",
+  statLabel: "relative z-10 block text-sm font-medium text-tf-copy",
+  statValue: "relative z-10 mt-3 block text-3xl font-bold tracking-tight text-tf-ink",
+  statNote: "relative z-10 mt-1 block text-[11px] text-tf-muted",
   alert: "mb-[14px] rounded-[9px] border border-[var(--tf-line)] px-[14px] py-[11px] text-xs",
   errorAlert: "border-red-200 bg-red-50 text-red-700 [[data-theme=dark]_&]:border-red-500/25 [[data-theme=dark]_&]:bg-red-500/10 [[data-theme=dark]_&]:text-red-300",
   successAlert: "border-green-200 bg-green-50 text-green-700 [[data-theme=dark]_&]:border-green-500/25 [[data-theme=dark]_&]:bg-green-500/10 [[data-theme=dark]_&]:text-green-300",
   toolbar: "mb-[17px] flex items-center justify-between gap-[14px] max-[760px]:items-stretch max-[760px]:flex-col",
-  tabs: "flex items-center gap-1 rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] p-1 [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)] max-[520px]:justify-between",
-  tab: "cursor-pointer rounded-md bg-transparent px-3 py-[7px] text-xs font-semibold text-[var(--tf-copy)] max-[520px]:px-[9px] max-[520px]:text-[11px]",
-  tabActive: "bg-white text-[var(--tf-blue-pressed)] shadow-[0_1px_4px_rgb(34_68_110_/_12%)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
+  tabs: "flex items-center gap-1 rounded-2xl border border-tf-line bg-tf-surface-soft p-1 max-[520px]:justify-between",
+  tab: "cursor-pointer rounded-xl bg-transparent px-4 py-2.5 text-sm font-medium text-tf-copy max-[520px]:px-2 max-[520px]:text-xs",
+  tabActive: "bg-tf-sky text-tf-blue shadow-sm",
   toolbarRight: "ml-auto flex items-center gap-[10px] max-[760px]:w-full max-[760px]:ml-0 max-[520px]:flex-wrap",
-  search: "min-h-[38px] w-[260px] rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[11px] py-[9px] text-[var(--tf-ink)] focus:border-[var(--tf-blue)] focus:shadow-[0_0_0_3px_rgb(24_117_209_/_10%)] focus-visible:outline-none max-[760px]:w-auto max-[760px]:flex-1 max-[520px]:basis-full [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
-  viewToggle: "flex items-center gap-1 rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] p-1 [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)]",
-  viewButton: "grid h-8 w-8 cursor-pointer place-items-center rounded-md text-[var(--tf-muted)] transition-colors hover:text-[var(--tf-ink)]",
+  search: "min-h-11 w-full rounded-xl border border-tf-line bg-tf-surface py-2.5 pr-3 pl-10 text-sm text-tf-ink focus:border-tf-blue focus:outline-2 focus:outline-[var(--tf-blue)]",
+  viewToggle: "flex shrink-0 items-center gap-1 rounded-2xl border border-tf-line bg-tf-surface-soft p-1",
+  viewButton: "grid h-10 w-10 cursor-pointer place-items-center rounded-xl text-tf-muted transition-colors hover:text-tf-ink",
   grid: "grid grid-cols-2 gap-[15px] max-[760px]:grid-cols-1",
   card: "tf-card min-w-0 p-5 shadow-sm",
   cardTop: "flex items-start justify-between gap-[10px] max-[520px]:flex-col",
@@ -946,18 +948,18 @@ function Batches() {
             <h1 className={pageStyles.headingTitle}>Batches</h1>
             <p className={pageStyles.headingCopy}>Organize your classes, track seats, and manage what students can see.</p>
           </div>
-          <button type="button" onClick={handleAdd} className={pageStyles.buttonPrimary}>
-            <span aria-hidden="true">＋</span> New batch
+          <button type="button" onClick={handleAdd} className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600">
+            <Plus size={21} aria-hidden="true"/> New batch
           </button>
         </header>
 
-        <div className={pageStyles.summary}>
-          <div className={pageStyles.stat}><span className={pageStyles.statLabel}>Total batches</span><strong className={pageStyles.statValue}>{batches.length}</strong></div>
-          <div className={`${pageStyles.stat} ${pageStyles.statGreen}`}><span className={pageStyles.statLabel}>Upcoming batches</span><strong className={pageStyles.statValue}>{upcomingCount}</strong></div>
-          <div className={`${pageStyles.stat} ${pageStyles.statGold}`}><span className={pageStyles.statLabel}>Running batches</span><strong className={pageStyles.statValue}>{currentCount}</strong></div>
-          <div className={pageStyles.stat}><span className={pageStyles.statLabel}>Seats available</span><strong className={pageStyles.statValue}>{availableSeats}</strong></div>
-          <div className={`${pageStyles.stat} ${pageStyles.statGold}`}><span className={pageStyles.statLabel}>Estimated revenue</span><strong className={pageStyles.statValue}>{formatCurrency(estimatedRevenue)}</strong><small className={pageStyles.statNote}>Based on enrolled seats</small></div>
-        </div>
+        <section aria-label="Batch statistics" className={pageStyles.summary}>
+          {[["Total batches", batches.length, "total", "#8b5cf6"], ["Upcoming batches", upcomingCount, "upcoming", "#f59e0b"], ["Running batches", currentCount, "running", "#14b8a6"], ["Seats available", availableSeats, "seats", "#38bdf8"], ["Estimated revenue", formatCurrency(estimatedRevenue), "revenue", "#fb7185"]].map(([label,value,type,color]) => <div key={type} className={pageStyles.stat} style={{ color, borderColor: `${color}45` }}>
+            <span className={pageStyles.statLabel}>{label}</span><strong className={`${pageStyles.statValue} ${type === "revenue" ? "text-[clamp(1.2rem,1.8vw,1.875rem)]!" : ""}`}>{value}</strong>
+            {type === "revenue" && <small className={pageStyles.statNote}>Based on enrolled seats</small>}
+            <BatchSummaryArt type={type}/>
+          </div>)}
+        </section>
 
         {/* Error */}
         {error && (
@@ -1301,14 +1303,14 @@ function Batches() {
           ))}
           </div>
           <div className={pageStyles.toolbarRight}>
-            <input
+            <div className="relative min-w-0 flex-1 sm:w-64"><Search size={19} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-tf-muted"/><input
               type="search"
               className={pageStyles.search}
               placeholder="Search batches"
               aria-label="Search batches"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-            />
+            /></div>
             <div className={pageStyles.viewToggle} aria-label="Batch layout">
               <button type="button" aria-label="List view" title="List view" aria-pressed={viewMode === "list"} className={`${pageStyles.viewButton} ${viewMode === "list" ? pageStyles.tabActive : ""}`} onClick={() => setViewMode("list")}><svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M2 3h2v2H2zM6 3h12v2H6zM2 9h2v2H2zM6 9h12v2H6zM2 15h2v2H2zM6 15h12v2H6z"/></svg></button>
               <button type="button" aria-label="Grid view" title="Grid view" aria-pressed={viewMode === "grid"} className={`${pageStyles.viewButton} ${viewMode === "grid" ? pageStyles.tabActive : ""}`} onClick={() => setViewMode("grid")}><svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M2 2h7v7H2zM11 2h7v7h-7zM2 11h7v7H2zM11 11h7v7h-7z"/></svg></button>

@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Route, Routes } from "react-router-dom";
 
 import Home from "./Home";
@@ -15,6 +15,8 @@ import Dashboard from "./pages/tutor/Dashboard";
 import Profile from "./pages/tutor/Profile";
 import TuitionDetails from "./pages/tutor/TuitionDetails";
 import Achievements from "./pages/tutor/Achievements";
+import Experience from "./pages/tutor/Experience";
+import Gallery from "./pages/tutor/Gallery";
 import Batches from "./pages/tutor/Batches";
 
 import Settings from "./pages/tutor/Settings";
@@ -88,6 +90,8 @@ function App() {
               <Route path="/achievements" element={<Achievements />} />
 
               <Route path="/batches" element={<Batches />} />
+              <Route path="/gallery" element={<Gallery />} />
+              <Route path="/experience" element={<Experience />} />
 
               <Route path="discover-tutors" element={<DiscoverTutors />} />
 

@@ -1,0 +1,7 @@
+export default function GalleryArt({ type, className = "absolute bottom-0 right-0 h-28 w-36" }) {
+  return <svg aria-hidden="true" viewBox="0 0 180 125" className={className} fill="none">
+    <path d="M0 125c40-39 67-8 97-40s57-30 83-13v53Z" fill="#67e8f9" opacity=".18"/>
+    {type === "storage" ? <><path d="M62 63a20 20 0 0 1 5-39 27 27 0 0 1 48-6 22 22 0 0 1 26 40Z" fill="#bae6fd"/><path d="m41 73 55-22 51 21v32l-54 19-52-22V73Z" fill="#38bdf8"/><path d="m41 73 55 22 51-23-51-21-55 22Z" fill="#e0f2fe"/><path d="M41 88 94 109l53-22" stroke="#cffafe" strokeWidth="3"/><path d="m53 85 3 1m8 3 3 1m-14 7 3 1m8 3 3 1" stroke="white" strokeWidth="3" strokeLinecap="round"/><path d="M82 72a7 7 0 0 1 1-13 10 10 0 0 1 18-1 8 8 0 0 1 4 15H82Z" stroke="#0ea5e9" strokeWidth="2"/></> : <>{[[96,14,16],[61,35,10],[29,58,-10]].map(([x,y,angle],i) => <g key={x} transform={`rotate(${angle} ${x+29} ${y+27})`}><rect x={x} y={y} width="59" height="53" rx="4" fill="white" stroke="#bae6fd" strokeWidth="2"/><path d={`M${x+5} ${y+5}h49v38h-49Z`} fill={i===2 ? "#a5f3fc" : "#bae6fd"}/><path d={`m${x+5} ${y+40} 15-17 10 9 9-13 15 21H${x+5}Z`} fill="#06b6d4"/><circle cx={x+37} cy={y+15} r="5" fill="white"/></g>)}</>}
+    {type === "upload" && <><circle cx="139" cy="96" r="24" fill="#0099ff" stroke="white" strokeWidth="3"/><path d="M139 109V83m-10 10 10-10 10 10" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></>}
+  </svg>;
+}

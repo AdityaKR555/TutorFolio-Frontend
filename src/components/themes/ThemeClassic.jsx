@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import "./classic-visuals.css";
+import ClassicGallery from "./ClassicGallery";
 import ExpandableText from "../ExpandableText";
 import { Link } from "react-router-dom";
 
@@ -150,16 +152,16 @@ function HomeSectionHeading({ title, to, label = "More" }) {
   return <div className="mb-7 flex items-end justify-between gap-4"><div><h2 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl lg:text-5xl">{title}</h2></div><Link to={to} aria-label={`${label}: ${title}`} className="inline-flex shrink-0 items-center gap-2 rounded-lg px-2 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-100 focus-visible:outline-2 focus-visible:outline-sky-600 dark:text-sky-300 dark:hover:bg-sky-900">{label}<Icon name="arrow" className="h-5 w-5"/></Link></div>;
 }
 
-function GalleryPreviewImage({ image, index, single }) {
+function GalleryPreviewImage({ image, index }) {
   const [failed, setFailed] = useState(false);
-  return <figure className="group overflow-hidden rounded-2xl border border-sky-100 bg-white dark:border-slate-700 dark:bg-slate-900">
-    <div className={`overflow-hidden bg-sky-50 dark:bg-slate-800 ${single ? "h-72 sm:h-96" : "h-64 sm:h-72"}`}>
+  return <figure className="group h-full min-h-0 overflow-hidden rounded-2xl border border-sky-100 bg-white dark:border-slate-700 dark:bg-slate-900">
+    <div className="h-full min-h-64 overflow-hidden bg-sky-50 dark:bg-slate-800">
       {failed ? <div className="flex h-full flex-col items-center justify-center gap-3 text-sky-700 dark:text-sky-300"><Icon name="book" className="h-10 w-10"/><span className="sr-only">Photo unavailable</span></div> : <img src={fd(image, ["fileUrl", "url", "imageUrl", "src"])} alt={fd(image, ["title", "originalFilename"], `Tuition gallery image ${index + 1}`)} onError={() => setFailed(true)} loading="lazy" className="h-full w-full object-cover transition duration-500 motion-safe:group-hover:scale-105"/>}
     </div>
   </figure>;
 }
 
-function ClassicAchievementCard({ item, imageRight = false }) {
+function ClassicAchievementCard({ item, imageRight = false, previewTo = "" }) {
   const studentSrc = fd(item, ["studentImageUrl", "student_image_url", "studentImage", "student_image", "studentimage", "studentPhoto"]);
   const achievementSrc = fd(item, ["achievementImageUrl", "achievement_image_url", "imageUrl", "image_url", "achievementImage", "achievement_image", "image"]);
   const [failedAchievement, setFailedAchievement] = useState("");
@@ -169,7 +171,27 @@ function ClassicAchievementCard({ item, imageRight = false }) {
   const studentName = fd(item, ["studentName"], "Student");
   const title = fd(item, ["title"], "Student achievement");
   const rating = Number(fd(item, ["studentRating", "rating"], 0));
-  return <article className="grid items-center gap-6 overflow-hidden rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50/80 to-slate-50 p-6 dark:border-slate-700 dark:from-sky-950/40 dark:to-slate-950 sm:p-8 md:grid-cols-[minmax(180px,.8fr)_minmax(0,2fr)] md:gap-10">
+  const achievementId = `achievement-${item.achievementId ?? item.id ?? "story"}`;
+  if (previewTo) return <article className="grid items-stretch gap-6 rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-[0_5px_16px_-8px_rgb(15_23_42_/_16%)] dark:border-slate-700 dark:bg-slate-900 sm:p-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-8">
+    <div className="relative min-w-0 self-stretch">
+      <div className="flex h-full min-h-56 items-center justify-center overflow-hidden rounded-[1.2rem] bg-sky-50 dark:bg-sky-950/50">
+        {hasAchievement ? <img src={achievementSrc} alt={title} onError={() => setFailedAchievement(achievementSrc)} loading="lazy" className="h-full max-h-[440px] min-h-56 w-full object-cover"/> : hasStudent ? <img src={studentSrc} alt={studentName} onError={() => setFailedStudent(studentSrc)} loading="lazy" className="h-full max-h-[440px] min-h-56 w-full object-cover"/> : <KpiIllustration type="trophy"/>}
+      </div>
+      {item.studentReview && <span aria-hidden="true" className="absolute -bottom-3 right-5 grid h-16 w-16 place-items-center rounded-full border-4 border-white bg-teal-100 text-teal-700 shadow-sm dark:border-slate-900 dark:bg-teal-950 dark:text-teal-300"><svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M7 3h10v5c0 5-2 7-5 7s-5-2-5-7V3ZM7 5H3v3c0 3 2 5 5 5m9-8h4v3c0 3-2 5-5 5m-4 2v5m-4 1h8"/></svg></span>}
+    </div>
+    <div className="flex min-w-0 flex-col py-1 [overflow-wrap:anywhere]">
+      <span className={`self-start rounded-full border px-4 py-1.5 text-sm font-medium ${item.studentReview ? "border-teal-300 bg-teal-50 text-teal-800 dark:border-teal-800 dark:bg-teal-950 dark:text-teal-200" : "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200"}`}>{item.studentReview ? "Student success" : "Academic milestone"}</span>
+      <h3 className="mt-3 text-2xl font-bold leading-tight tracking-tight text-slate-950 dark:text-white sm:text-3xl">{title}</h3>
+      {item.description && <ExpandableText lines={2} className="mt-3 text-base leading-7 text-slate-600 dark:text-slate-300" preserveWhitespace>{item.description}</ExpandableText>}
+      {rating > 0 && <p className="mt-3 text-sm font-medium text-sky-700 dark:text-sky-300" aria-label={`Student rating: ${rating} out of 5`}>{rating} / 5 <span aria-hidden="true" className="ml-2 tracking-widest">{Array.from({length: 5}, (_, i) => <span key={i} className={i < Math.round(rating) ? "" : "text-slate-300 dark:text-slate-600"}>★</span>)}</span></p>}
+      {item.studentReview && <blockquote className="mt-5 flex gap-4 rounded-2xl bg-sky-50 px-5 py-4 dark:bg-sky-950/60"><span aria-hidden="true" className="font-serif text-5xl font-bold leading-none text-sky-600">“</span><ExpandableText lines={2} className="min-w-0 text-lg italic leading-8 text-slate-900 dark:text-sky-100">{item.studentReview}</ExpandableText></blockquote>}
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-5 pt-5">
+        <div className="min-w-0">{item.studentName && <div className="flex items-center gap-3">{hasStudent && <img src={studentSrc} alt="" onError={() => setFailedStudent(studentSrc)} loading="lazy" className="h-14 w-14 shrink-0 rounded-full object-cover"/>}<div><p className="font-semibold text-slate-950 dark:text-white">{studentName}</p><p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Student</p></div></div>}{list(item.tags).length > 0 && <div className={`flex flex-wrap gap-2 ${item.studentName ? "mt-3" : ""}`}>{list(item.tags).map((tag, i) => <Chip key={i}>{tag}</Chip>)}</div>}</div>
+        <Link to={`${previewTo}#${achievementId}`} aria-label={`View achievement: ${title}`} className="inline-flex shrink-0 items-center gap-3 rounded-lg py-2 text-base font-semibold text-sky-600 hover:text-sky-800 focus-visible:outline-2 focus-visible:outline-sky-600 dark:text-sky-300">View achievement<Icon name="arrow" className="h-6 w-6"/></Link>
+      </div>
+    </div>
+  </article>;
+  return <article id={achievementId} className="scroll-mt-28 grid items-center gap-6 overflow-hidden rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50/80 to-slate-50 p-6 dark:border-slate-700 dark:from-sky-950/40 dark:to-slate-950 sm:p-8 md:grid-cols-[minmax(180px,.8fr)_minmax(0,2fr)] md:gap-10">
     <div className={`flex min-h-48 items-center justify-center self-stretch overflow-hidden rounded-2xl bg-sky-100/70 p-4 dark:bg-sky-900/30 ${imageRight ? "md:order-2" : ""}`}>
       {hasAchievement ? <img src={achievementSrc} alt={title} onError={() => setFailedAchievement(achievementSrc)} loading="lazy" className="max-h-80 w-full rounded-xl object-contain"/> : hasStudent ? <img src={studentSrc} alt={studentName} onError={() => setFailedStudent(studentSrc)} loading="lazy" className="h-44 w-44 rounded-full object-cover ring-4 ring-white dark:ring-slate-800"/> : <div aria-hidden="true">            <svg viewBox="0 0 240 240" className="h-48 w-48 sm:h-56 sm:w-56" fill="none">
               <circle cx="120" cy="118" r="93" fill="currentColor" className="text-white/80 dark:text-sky-950/70"/>
@@ -194,34 +216,93 @@ function ClassicAchievementCard({ item, imageRight = false }) {
   </article>;
 }
 
-function HomePage({ name, profile, tuition, subjects, batches, achievements, gallery, location, onContactClick, basePath }) {
+function KpiIllustration({ type }) {
+  return <svg aria-hidden="true" viewBox="0 0 140 110" className="h-24 w-28 shrink-0" fill="none">
+    <ellipse cx="70" cy="95" rx="56" ry="7" fill="#bae6fd"/>
+    {type === "books" ? <><rect x="26" y="70" width="88" height="22" rx="5" fill="#0d9488"/><path d="M39 75h69v11H39z" fill="#f0fdfa"/><rect x="20" y="44" width="87" height="23" rx="5" fill="#fb7185"/><path d="M34 49h66v12H34z" fill="#fff1f2"/><path d="m31 27 75-10 3 22-75 10z" fill="#0284c7"/><path d="m44 30 59-8 1 11-59 8z" fill="#e0f2fe"/><path d="m48 20 5 23 8-6 8 4-5-23" fill="#fbbf24"/></> : type === "journey" ? <><path d="M22 87c42 0 0-31 40-31s7-31 47-31" stroke="#0284c7" strokeWidth="3" strokeDasharray="5 5"/><path d="M24 83V58m0 0 23 6-23 8M65 53V29m0 0 22 6-22 8" stroke="#0d9488" strokeWidth="3" fill="#5eead4"/><g transform="rotate(32 105 64)"><rect x="100" y="34" width="12" height="51" rx="2" fill="#fbbf24"/><path d="m100 85 6 13 6-13" fill="#fda4af"/><path d="m104 94 2 4 2-4" fill="#334155"/><rect x="100" y="27" width="12" height="9" rx="3" fill="#fef3c7"/></g></> : <><path d="M48 29H31v14c0 17 11 24 24 24m37-38h17v14c0 17-11 24-24 24" stroke="#f59e0b" strokeWidth="7"/><path d="M45 22h50v26c0 19-10 29-25 29S45 67 45 48z" fill="#fbbf24"/><path d="M70 22h25v26c0 19-10 29-25 29" fill="#f59e0b"/><path d="M65 75h10v13H65z" fill="#f59e0b"/><rect x="51" y="86" width="38" height="8" rx="3" fill="#0284c7"/><path d="m70 34 4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z" fill="white"/></>}
+    <path d="M18 25v10m-5-5h10m96 38v10m-5-5h10" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round"/><circle cx="118" cy="15" r="3" fill="#2dd4bf"/>
+  </svg>;
+}
+
+const socialDesign = {
+  youtube: ["YouTube", "#ef4444", "▶", "Watch & learn"],
+  instagram: ["Instagram", "#db2777", "◎", "Moments & inspiration"],
+  facebook: ["Facebook", "#2563eb", "f", "Join the community"],
+  linkedin: ["LinkedIn", "#0284c7", "in", "Connect professionally"],
+  telegram: ["Telegram", "#0891b2", "➤", "Stay in the loop"],
+  whatsapp: ["WhatsApp", "#059669", "◉", "Keep in touch"],
+  x: ["X", "#475569", "𝕏", "Follow the conversation"],
+  twitter: ["X / Twitter", "#475569", "𝕏", "Follow the conversation"],
+};
+function SocialSection({ links }) {
+  if (!links.length) return null;
+  return <section aria-labelledby="classic-social-heading" className="mt-10 rounded-3xl border border-sky-100 bg-white p-6 dark:border-slate-800 dark:bg-slate-900 sm:p-9">
+    <h2 id="classic-social-heading" className="mb-6 text-3xl font-semibold tracking-tight">Let’s stay connected.</h2>
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{links.map(([key, url]) => {
+      const [label, color, mark, description] = socialDesign[key.toLowerCase()] || [key, "#0284c7", "↗", "Explore my channel"];
+      return <a key={key} href={url} target="_blank" rel="noopener noreferrer" style={{ "--social-color": color }} className="classic-social-card group relative flex min-w-0 items-center gap-4 overflow-hidden rounded-2xl border border-slate-200 p-5 transition hover:-translate-y-1 hover:shadow-md focus-visible:outline-2 focus-visible:outline-sky-600 dark:border-slate-700"><span aria-hidden="true" className="classic-social-orbit"/><span aria-hidden="true" className="relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-3xl font-bold text-white shadow-sm" style={{ background: color }}>{mark}</span><div className="relative min-w-0 flex-1"><h3 className="truncate text-lg font-semibold capitalize">{label}</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{description}</p></div><span className="relative text-slate-400"><Icon name="arrow" className="h-5 w-5 -rotate-45"/><span className="sr-only">Opens in a new tab</span></span></a>;
+    })}</div>
+  </section>;
+}
+
+function FloatingContact({ profile, socialLinks }) {
+  const phone = String(fd(profile, ["mobileNo", "mobile_no"])).trim().replace(/[^+\d]/g, "");
+  const whatsappNumber = String(fd(profile, ["whatsappNo", "whatsapp_no"])).replace(/\D/g, "");
+  const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber}` : socialLinks.find(([key]) => key.toLowerCase() === "whatsapp")?.[1];
+  if (!phone && !whatsappUrl) return null;
+  const buttonClass = "flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-600";
+  return <aside aria-label="Contact tutor" className="fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 flex flex-col gap-3 sm:right-6">
+    {whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="Contact tutor on WhatsApp (opens in a new tab)" title="WhatsApp tutor" className={`${buttonClass} bg-emerald-600 hover:bg-emerald-700`}><svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.4-.2-3 .8.8-2.9-.3-.5A8 8 0 1 1 12 20Zm4.4-5.8c-.2-.1-1.4-.7-1.6-.7s-.4-.1-.5.1l-.8 1c-.1.1-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.2-.3.2-.5.6-1 .1-.2.1-.3 0-.5L9.7 8.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.6.6-.9 1.3-.8 2.1 0 1.2.9 2.4 1 2.6.2.2 1.8 2.8 4.3 3.8 1.6.6 2.3.7 3.1.5.5-.1 1.4-.6 1.6-1.2.2-.6.2-1.1.1-1.2-.1-.2-.3-.3-.8-.5Z"/></svg></a>}
+    {phone && <a href={`tel:${phone}`} aria-label="Call tutor" title="Call tutor" className={`${buttonClass} bg-sky-700 hover:bg-sky-800`}><Icon name="phone" className="h-6 w-6"/></a>}
+  </aside>;
+}
+
+function HomePage({ socialLinks, name, profile, tuition, subjects, batches, achievements, gallery, location, onContactClick, basePath }) {
   const intro = fd(profile, ["about", "description"], "Personal guidance and focused classes to help learners build confidence and make steady progress.");
   const experience = fd(profile, ["teachingYOE", "teaching_yoe"]);
   const previewImages = gallery.filter((image) => fd(image, ["fileUrl", "url", "imageUrl", "src"])).slice(0, 3);
   return <>
-    <section className="overflow-hidden rounded-[2rem] bg-sky-800 text-white dark:bg-sky-950"><div className="grid items-center gap-10 px-6 py-10 sm:px-10 sm:py-14 lg:grid-cols-[1.15fr_.85fr] lg:px-14 lg:py-16"><div><h1 className="mt-5 max-w-2xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">Strong foundations for the goals ahead.</h1><ExpandableText lines={3} className="mt-5 max-w-xl text-base leading-7 text-sky-50/85">{intro}</ExpandableText><p className="mt-4 text-sm font-medium text-sky-100">{fd(profile, ["qualification"], "Educator")} {location ? ` · ${location}` : ""}</p><div className="mt-7 flex flex-wrap gap-3"><Link to={`${basePath}/classes`} className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-sky-950 hover:bg-sky-50">Explore classes <Icon name="arrow" className="h-4 w-4"/></Link><button type="button" onClick={onContactClick} className="inline-flex items-center gap-2 rounded-xl border border-white/35 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10"><Icon name="message" className="h-4 w-4"/>Message tutor</button></div></div><div className="relative mx-auto w-full max-w-sm"><div className="absolute -inset-3 rounded-[1.8rem] border border-white/20"/><div className="relative overflow-hidden rounded-[1.5rem] border border-white/20 bg-white/10 p-2 shadow-2xl"><Avatar src={fd(profile, ["profilePicture", "profile_picture", "profilePhoto", "avatar"])} name={name} className="aspect-[4/4] w-full rounded-[1.1rem] bg-sky-100 text-6xl text-sky-800 dark:bg-sky-900 dark:text-sky-200"/><div className="absolute inset-x-2 bottom-2 rounded-b-[1.1rem] bg-gradient-to-t from-slate-950/90 to-transparent px-5 pb-5 pt-16"><p className="text-xl font-semibold">{name}</p><p className="mt-1 text-sm text-sky-100">{fd(profile, ["qualification"], "Tutor")}</p></div></div></div></div></section>
-    <section className="mt-6 grid gap-4 sm:grid-cols-3"><div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900"><p className="text-2xl font-semibold text-sky-800 dark:text-sky-200">{subjects.length || "Personal"}</p><p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Subjects offered</p></div><div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900"><p className="text-2xl font-semibold text-sky-800 dark:text-sky-200">{experience ? `${experience} years` : batches.length}</p><p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{experience ? "Teaching experience" : "Published batches"}</p></div><div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900"><p className="text-2xl font-semibold text-sky-800 dark:text-sky-200">{achievements.length}</p><p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Student stories</p></div></section>
+    <section className="classic-hero relative isolate overflow-hidden rounded-[2rem] bg-sky-800 text-white dark:bg-sky-950"><div aria-hidden="true" className="classic-hero-grid pointer-events-none absolute inset-0 -z-10"/><div className="grid items-center gap-10 px-6 py-10 sm:px-10 sm:py-14 lg:grid-cols-[1.15fr_.85fr] lg:px-14 lg:py-16"><div><h1 className="mt-5 max-w-2xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">Strong foundations for the goals ahead.</h1><ExpandableText lines={3} className="mt-5 max-w-xl text-base leading-7 text-sky-50/85">{intro}</ExpandableText><p className="mt-4 text-sm font-medium text-sky-100">{fd(profile, ["qualification"], "Educator")} {location ? ` · ${location}` : ""}</p><div className="mt-7 flex flex-wrap gap-3"><Link to={`${basePath}/classes`} className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-sky-950 hover:bg-sky-50">Explore classes <Icon name="arrow" className="h-4 w-4"/></Link><button type="button" onClick={onContactClick} className="inline-flex items-center gap-2 rounded-xl border border-white/35 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10"><Icon name="message" className="h-4 w-4"/>Message tutor</button></div></div><div className="relative mx-auto w-full max-w-sm"><div aria-hidden="true" className="classic-portrait-frame absolute inset-3 rounded-[2rem] border border-cyan-200/30 bg-cyan-200/10"/><div aria-hidden="true" className="absolute -inset-3 rounded-[1.8rem] border border-white/20"/><div className="relative overflow-hidden rounded-[1.5rem] border border-white/20 bg-white/10 p-2 shadow-2xl"><Avatar src={fd(profile, ["profilePicture", "profile_picture", "profilePhoto", "avatar"])} name={name} className="aspect-[4/4] w-full rounded-[1.1rem] bg-sky-100 text-6xl text-sky-800 dark:bg-sky-900 dark:text-sky-200"/><div className="absolute inset-x-2 bottom-2 rounded-b-[1.1rem] bg-gradient-to-t from-slate-950/90 to-transparent px-5 pb-5 pt-16"><p className="text-xl font-semibold">{name}</p><p className="mt-1 text-sm text-sky-100">{fd(profile, ["qualification"], "Tutor")}</p></div></div></div></div></section>
+    <section aria-label="Teaching at a glance" className="mt-6 grid gap-4 sm:grid-cols-3">
+      {[[subjects.length || "Personal", "Subjects offered", "books"], [experience ? `${experience} years` : batches.length, experience ? "Teaching experience" : "Published batches", "journey"], [achievements.length, "Student stories", "trophy"]].map(([value, label, type]) => <div key={type} className="flex items-center justify-between gap-2 overflow-hidden rounded-2xl border border-sky-100 bg-gradient-to-br from-white to-sky-50/70 p-5 dark:border-slate-700 dark:from-slate-900 dark:to-sky-950/40"><div><p className="text-2xl font-semibold text-sky-800 dark:text-sky-200">{value}</p><p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{label}</p></div><KpiIllustration type={type}/></div>)}
+    </section>
+    <SocialSection links={socialLinks}/>
+    <FloatingContact profile={profile} socialLinks={socialLinks}/>
+
     <div className="relative left-1/2 mt-12 w-[calc(100vw-2rem)] -translate-x-1/2 space-y-8 sm:w-[calc(100vw-3rem)] lg:w-[calc(100vw-4rem)]">
       <section className="rounded-3xl border border-sky-100 bg-white px-5 py-8 dark:border-slate-800 dark:bg-slate-900 sm:p-10 lg:p-12">
-        <HomeSectionHeading title="Achievements" to={`${basePath}/achievements`}/>
-        {achievements.length ? <div className="grid gap-8">{achievements.slice(0, 2).map((item, index) => <ClassicAchievementCard key={item.achievementId ?? item.id ?? index} item={item} imageRight={index % 2 === 1}/>)}</div> : <p className="rounded-2xl border border-dashed border-sky-200 bg-sky-50/50 p-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">Published achievements and student reviews will appear here.</p>}
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4"><div><h2 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl lg:text-5xl">Achievements</h2><p className="mt-2 text-base text-slate-600 dark:text-slate-300">Small steps. Remarkable progress.</p></div><Link to={`${basePath}/achievements`} className="inline-flex items-center gap-3 rounded-lg py-2 text-base font-semibold text-sky-600 hover:text-sky-800 focus-visible:outline-2 focus-visible:outline-sky-600 dark:text-sky-300">View all achievements<Icon name="arrow" className="h-6 w-6"/></Link></div>
+        {achievements.length ? <div className="grid gap-8">{achievements.slice(0, 2).map((item, index) => <ClassicAchievementCard key={item.achievementId ?? item.id ?? index} item={item} previewTo={`${basePath}/achievements`}/>)}</div> : <p className="rounded-2xl border border-dashed border-sky-200 bg-sky-50/50 p-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">Published achievements and student reviews will appear here.</p>}
       </section>
-      <section className="rounded-3xl border border-sky-100 bg-gradient-to-br from-sky-50 to-cyan-50/50 px-5 py-8 dark:border-slate-800 dark:from-sky-950/50 dark:to-slate-900 sm:p-10 lg:p-12">
-        <HomeSectionHeading title="Batches" to={`${basePath}/batches`}/>
-        <div className="grid gap-8">{batches.length ? batches.slice(0, 2).map((batch, index) => <article key={batch.batchId ?? batch.id ?? index} className="flex flex-col gap-6 rounded-2xl border border-sky-200 bg-white/90 p-6 dark:border-slate-700 dark:bg-slate-900 sm:p-8 lg:flex-row lg:items-center">
-          <BatchImage batch={batch} className={`h-44 w-full shrink-0 rounded-2xl lg:w-48 ${index % 2 === 1 ? "lg:order-3" : "lg:order-1"}`}/>
-          <div className={`min-w-0 flex-1 [overflow-wrap:anywhere] lg:border-l lg:border-sky-100 lg:pl-7 dark:lg:border-slate-700 ${index % 2 === 1 ? "lg:order-1" : "lg:order-2"}`}><div className="flex flex-wrap items-center gap-3"><h3 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{fd(batch, ["title", "batchName"], "Learning group")}</h3><span className="rounded-full bg-teal-100 px-3 py-1 text-xs font-semibold capitalize text-teal-900 dark:bg-teal-950 dark:text-teal-200">{fd(batch, ["batchType", "type", "session"], "Class")}</span></div>{batch.description && <ExpandableText lines={3} className="mt-3 max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300" preserveWhitespace>{batch.description}</ExpandableText>}<div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-500 dark:text-slate-400">{fd(batch, ["eligibleClasses", "eligible_classes"]) && <span className="inline-flex items-center gap-2"><Icon name="book" className="h-4 w-4"/>{fd(batch, ["eligibleClasses", "eligible_classes"])}</span>}{batch.startOn && <span>Starts {dateLabel(batch.startOn)}</span>}</div></div>
-          <Link to={`${basePath}/batches`} aria-label={`View batches: ${fd(batch, ["title", "batchName"], "Learning group")}`} className={`inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-xl bg-sky-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800 lg:self-center ${index % 2 === 1 ? "lg:order-2" : "lg:order-3"}`}>View batches<Icon name="arrow" className="h-4 w-4"/></Link>
-        </article>) : <p className="rounded-2xl border border-dashed border-sky-200 bg-white/70 p-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">Published batches will appear here when available.</p>}</div>
+      <section aria-labelledby="home-batches-heading" className="relative left-1/2 w-screen -translate-x-1/2 bg-[#082b52] px-5 py-14 text-white sm:px-10 sm:py-16 lg:px-12 lg:py-20">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4"><div><h2 id="home-batches-heading" className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">Batches</h2><p className="mt-2 text-base text-sky-100/85">Find a batch that fits your learning goals.</p></div><Link to={`${basePath}/batches`} className="inline-flex items-center gap-3 rounded-lg py-2 text-base font-semibold text-sky-200 hover:text-white focus-visible:outline-2 focus-visible:outline-sky-600 dark:text-sky-200">View all batches<Icon name="arrow" className="h-6 w-6"/></Link></div>
+        <div className="grid gap-6 md:grid-cols-2">{batches.length ? batches.slice(0, 2).map((batch, index) => {
+          const status = String(fd(batch, ["batchType", "type"], "Class"));
+          const isCurrent = /current|running/i.test(status);
+          const classes = fd(batch, ["eligibleClasses", "eligible_classes"]);
+          const languages = fd(batch, ["languages"], fd(tuition, ["languages"]));
+          return <article key={batch.batchId ?? batch.id ?? index} className="grid gap-6 rounded-[1.4rem] border border-slate-200 bg-white p-5 shadow-[0_4px_12px_-5px_rgb(15_23_42_/_15%)] dark:border-slate-200 dark:bg-white sm:p-6">
+            <BatchImage batch={batch} className="h-64 w-full rounded-[1.2rem] object-cover sm:h-72"/>
+            <div className="flex min-w-0 flex-col [overflow-wrap:anywhere] border-t border-slate-200 pt-6">
+              <span className={`inline-flex self-start rounded-full px-4 py-1.5 text-sm font-semibold capitalize ${isCurrent ? "bg-sky-100 text-blue-800 dark:bg-sky-100 dark:text-blue-800" : "bg-teal-100 text-teal-800 dark:bg-teal-100 dark:text-teal-800"}`}>{status}</span>
+              <h3 className="mt-3 text-2xl font-bold leading-tight tracking-tight text-slate-950 sm:text-3xl">{fd(batch, ["title", "batchName"], "Learning group")}</h3>
+              {batch.description && <ExpandableText buttonClassName="text-sky-700! dark:text-sky-700!" lines={2} className="mt-3 text-base leading-7 text-slate-600" preserveWhitespace>{batch.description}</ExpandableText>}
+              <div className="mt-auto flex flex-wrap items-end justify-between gap-5 pt-6"><div className="flex flex-wrap gap-3">
+                {classes && <span className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-600"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-5 w-5 shrink-0"><path d="m2 9 10-5 10 5-10 5L2 9Zm4 2v6c4 3 8 3 12 0v-6m4-2v7"/></svg>{classes}</span>}
+                {languages && <span className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-600"><Icon name="book" className="h-5 w-5 shrink-0"/>{languages}</span>}
+              </div><Link to={`${basePath}/batches`} aria-label={`View batch: ${fd(batch, ["title", "batchName"], "Learning group")}`} className="ml-auto inline-flex shrink-0 items-center justify-center gap-4 rounded-xl bg-sky-500 px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-sky-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-600">View batch<Icon name="arrow" className="h-6 w-6"/></Link></div>
+            </div>
+          </article>;
+        }) : <p className="rounded-2xl border border-dashed border-white/25 bg-white/5 p-12 text-center text-sm text-sky-100 dark:border-white/25 dark:bg-white/5 dark:text-sky-100">Published batches will appear here when available.</p>}</div>
       </section>
-      <section className="rounded-3xl border border-sky-100 bg-white px-5 py-8 dark:border-slate-800 dark:bg-slate-900 sm:p-10 lg:p-12">
+      <section className="flex min-h-[80svh] flex-col rounded-3xl border border-sky-100 bg-white px-5 py-8 dark:border-slate-800 dark:bg-slate-900 sm:p-10 lg:p-12">
         <HomeSectionHeading title="Gallery" to={`${basePath}/gallery`} label="View all"/>
-        {previewImages.length ? <div className={`grid gap-5 ${previewImages.length === 2 ? "sm:grid-cols-2" : previewImages.length === 3 ? "sm:grid-cols-2 lg:grid-cols-3" : ""}`}>{previewImages.map((image, index) => <GalleryPreviewImage key={image.fileId ?? image.id ?? index} image={image} index={index} single={previewImages.length === 1}/>)}</div> : <p className="rounded-2xl border border-dashed border-sky-200 bg-sky-50/50 p-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">Gallery photos will appear here when the tutor adds them.</p>}
+        {previewImages.length ? <div className={`grid min-h-[55svh] flex-1 auto-rows-fr gap-5 ${previewImages.length === 2 ? "sm:grid-cols-2" : previewImages.length === 3 ? "sm:grid-cols-2 lg:grid-cols-3" : ""}`}>{previewImages.map((image, index) => <GalleryPreviewImage key={image.fileId ?? image.id ?? index} image={image} index={index}/>)}</div> : <p className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-sky-200 bg-sky-50/50 p-12 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">Gallery photos will appear here when the tutor adds them.</p>}
       </section>
     </div>
-    <section className="mt-8 grid items-center gap-6 overflow-hidden rounded-3xl border border-sky-100 bg-gradient-to-br from-sky-50 to-white p-6 dark:border-sky-950 dark:from-sky-950 dark:to-slate-900 sm:grid-cols-[180px_1fr] sm:p-8 lg:grid-cols-[220px_1fr]">
-      <div aria-hidden="true" className="flex justify-center"><img src="/illustrations/learning-amico.png" alt="" width="600" height="600" loading="lazy" className="h-44 w-44 object-contain sm:h-48 sm:w-48"/></div>
-      <div><h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">Find your next learning chapter.</h2><p className="mt-3 max-w-lg text-sm leading-7 text-slate-600 dark:text-slate-300">Browse subjects and published batches to find a good fit.</p><Link to={`${basePath}/batches`} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-sky-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-800">Explore batches <Icon name="arrow" className="h-4 w-4"/></Link></div>
+    <section aria-labelledby="learning-chapter-heading" className="classic-learning-banner relative isolate mt-8 grid items-center gap-4 overflow-hidden rounded-[2rem] border-2 border-sky-200 bg-gradient-to-br from-sky-50 via-sky-50/70 to-cyan-50 px-6 pt-9 dark:border-sky-800 dark:from-sky-950 dark:via-slate-900 dark:to-sky-950 sm:px-10 sm:pt-12 lg:min-h-[420px] lg:grid-cols-[1fr_1.05fr] lg:gap-0 lg:px-12 lg:py-10">
+      <div className="relative z-10 pb-4 lg:-mr-8 lg:py-5"><h2 id="learning-chapter-heading" className="max-w-xl text-4xl font-bold leading-[1.12] tracking-tight text-sky-950 dark:text-white sm:text-5xl lg:text-[3.4rem]">Find your next<br className="hidden sm:block"/> learning chapter.</h2><p className="mt-5 max-w-md text-base leading-7 text-slate-600 dark:text-sky-100/80">Browse subjects and published batches to find a good fit.</p><Link to={`${basePath}/batches`} className="mt-7 inline-flex items-center gap-4 rounded-2xl bg-sky-600 px-6 py-4 text-base font-semibold text-white shadow-sm transition hover:bg-sky-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-600 sm:px-7">Explore batches <Icon name="arrow" className="h-6 w-6"/></Link></div>
+      <div aria-hidden="true" className="classic-learning-art relative flex min-w-0 items-center justify-center self-stretch"><div className="classic-learning-rings pointer-events-none absolute inset-0 -z-10"/><img src="/illustrations/learning-chapter.webp" alt="" width="900" height="600" loading="lazy" className="relative w-full max-w-xl object-contain lg:scale-110"/></div>
     </section>
   </>;
 }
@@ -283,7 +364,7 @@ function BatchesPage({ batches }) {
 }
 
 function GalleryPage({ gallery }) {
-  return <><PageHeading title="A look inside the learning space." description="Photos shared by the tutor from classes and the tuition centre."/>{gallery.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{gallery.map((image, i) => { const src = fd(image, ["fileUrl", "url", "imageUrl", "src"]); return src ? <figure key={image.fileId ?? image.id ?? src} className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"><img src={src} alt={fd(image, ["originalFilename", "title"], `Tuition gallery image ${i + 1}`)} loading="lazy" className="aspect-[4/3] w-full object-cover"/></figure> : null; })}</div> : <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-sm leading-6 text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">Gallery photos will appear here when the tutor adds them.</p>}</>;
+  return <><PageHeading title="A look inside the learning space." description="Photos shared by the tutor from classes and the tuition centre."/><ClassicGallery gallery={gallery}/></>;
 }
 
 function AchievementsPage({ achievements }) {
@@ -314,7 +395,7 @@ export default function ThemeClassic({ profile = {}, tuition = {}, achievements 
   const subjects = list(fd(tuition, ["teachingSubjects", "teaching_subjects"]));
   const services = list(fd(tuition, ["services"]));
   const social = fd(profile, ["socialMedia"], {});
-  const socialLinks = useMemo(() => Object.entries(social || {}).map(([label, value]) => [label, asUrl(value)]).filter(([, url]) => url), [social]);
+  const socialLinks = useMemo(() => Object.entries(social || {}).filter(([, value]) => typeof value === "string" && value.trim()).map(([label, value]) => [label, asUrl(value.trim())]).filter(([, url]) => { try { const parsed = new URL(url); return ["http:", "https:"].includes(parsed.protocol) && parsed.hostname.includes("."); } catch { return false; } }), [social]);
   const basePath = `/tutor/${encodeURIComponent(username)}`;
   const isDark = mode === "dark";
 
@@ -325,7 +406,7 @@ export default function ThemeClassic({ profile = {}, tuition = {}, achievements 
   else if (currentPage === "gallery") content = <GalleryPage gallery={gallery}/>;
   else if (currentPage === "achievements") content = <AchievementsPage achievements={achievements}/>;
   else if (currentPage === "experience") content = <ExperiencePage experience={experience}/>;
-  else content = <HomePage name={name} profile={profile} tuition={tuition} subjects={subjects} batches={batches} achievements={achievements} gallery={gallery} location={location} onContactClick={onContactClick} basePath={basePath}/>;
+  else content = <HomePage socialLinks={socialLinks} name={name} profile={profile} tuition={tuition} subjects={subjects} batches={batches} achievements={achievements} gallery={gallery} location={location} onContactClick={onContactClick} basePath={basePath}/>;
 
   return <div data-theme={mode}>
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
