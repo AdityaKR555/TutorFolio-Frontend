@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
+import FaqSummaryArt from "./FaqSummaryArt";
+import { Plus, Search, Pencil, Trash2, MessageCircleQuestion, Globe, CheckCircle2, X } from "lucide-react";
 import api from "../../api/axios";
 import ExpandableText from "../../components/ExpandableText";
 import { getStoredUser } from "../../utils/auth";
@@ -294,234 +296,24 @@ const FAQ = () => {
   const hiddenCount = faqs.length - visibleCount;
 
   return (
-    <div className="min-h-full bg-[#f4f8fd] px-5 pt-[30px] pb-[60px] text-[#172b46] transition-colors duration-200 sm:px-8 sm:pt-9 sm:pb-[72px] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#101b2b] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
-      <div className="mx-auto max-w-[1100px]">
-        {/* ================= PAGE HEADING ================= */}
-        <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="tf-page-title mb-2">Frequently Asked Questions</h1>
-            <p className="text-[13px] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
-              Manage questions and answers shown on your public tutoring website.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={openCreateModal}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1875d1] px-[18px] py-2.5 text-[13px] font-semibold text-white shadow-[0_4px_12px_rgba(24,117,209,0.25)] transition-colors hover:bg-[#0c5fb7] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <span className="text-base leading-none">+</span>
-            <span>Add FAQ</span>
-          </button>
-        </header>
-
-        {/* ================= FEEDBACK NOTICES ================= */}
-        {error && !isModalOpen && (
-          <div role="alert" className="mb-5 flex items-start justify-between gap-3 rounded-xl border border-red-500/25 bg-red-50 px-4 py-3 text-[13px] text-red-700 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#45232d] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#ff9aa4]">
-            <span>{error}</span>
-            <button
-              type="button"
-              onClick={() => setError("")}
-              className="cursor-pointer border-0 bg-transparent text-lg leading-none opacity-70 hover:opacity-100"
-              aria-label="Dismiss error"
-            >
-              &times;
-            </button>
-          </div>
-       )}
-
-        {success && (
-          <div role="status" className="mb-5 flex items-start justify-between gap-3 rounded-xl border border-emerald-700/25 bg-emerald-50 px-4 py-3 text-[13px] text-emerald-800 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#183d37] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#69d4a8]">
-            <span>{success}</span>
-            <button
-              type="button"
-              onClick={() => setSuccess("")}
-              className="cursor-pointer border-0 bg-transparent text-lg leading-none opacity-70 hover:opacity-100"
-              aria-label="Dismiss message"
-            >
-              &times;
-            </button>
-          </div>
-       )}
-
-        {/* ================= STATS CARDS ================= */}
-        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-[18px] border border-[#dfe9f3] bg-white px-[22px] py-5 shadow-[var(--tf-shadow)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
-            <p className="mb-1.5 text-[13px] font-medium text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Total FAQs</p>
-            <p className="m-0 text-[30px] font-extrabold tracking-[-0.5px] text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">{faqs.length}</p>
-          </div>
-
-          <div className="rounded-[18px] border border-[#dfe9f3] bg-white px-[22px] py-5 shadow-[var(--tf-shadow)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
-            <p className="mb-1.5 text-[13px] font-medium text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Visible on website</p>
-            <p className="m-0 text-[30px] font-extrabold tracking-[-0.5px] text-[#147d5a] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#69d4a8]">
-              {visibleCount}
-            </p>
-          </div>
-
-          <div className="rounded-[18px] border border-[#dfe9f3] bg-white px-[22px] py-5 shadow-[var(--tf-shadow)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
-            <p className="mb-1.5 text-[13px] font-medium text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">Hidden FAQs</p>
-            <p className="m-0 text-[30px] font-extrabold tracking-[-0.5px] text-[#8394a9]">
-              {hiddenCount}
-            </p>
-          </div>
-        </div>
-
-        {/* ================= FAQ LIST CONTAINER ================= */}
-        <section className="overflow-hidden rounded-[20px] border border-[#dfe9f3] bg-white shadow-[var(--tf-shadow)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#17263a]">
-          <div className="flex flex-col gap-4 border-b border-[#dfe9f3] p-5 lg:flex-row lg:items-center lg:justify-between lg:px-6 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f]">
-            <div>
-              <h2 className="tf-section-title mb-1">All Questions</h2>
-              <p className="text-[13px] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
-                Add, edit, or control which FAQs appear on your tutor website.
-              </p>
-            </div>
-
-            {/* Search & Filter Controls */}
-            <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row">
-              <div className="relative w-full sm:min-w-[250px]">
-                <svg
-                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8394a9]"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  aria-hidden="true"
-                >
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="m20 20-4-4" />
-                </svg>
-                <input
-                  type="search"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search questions..."
-                  className="w-full rounded-xl border border-[#dfe9f3] bg-[#f8fbff] py-[9px] pl-9 pr-3.5 text-[13px] text-[#172b46] outline-none transition focus:border-[#1875d1] focus:ring-[3px] focus:ring-blue-500/15 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]"
-                  aria-label="Search FAQs"
-                />
-              </div>
-
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                className="cursor-pointer rounded-xl border border-[#dfe9f3] bg-[#f8fbff] px-3.5 py-[9px] text-[13px] text-[#172b46] outline-none focus:border-[#1875d1] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]"
-                aria-label="Filter FAQs"
-              >
-                <option value="all">All FAQs</option>
-                <option value="visible">Visible only</option>
-                <option value="hidden">Hidden only</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Loading State */}
-          {loading ? (
-            <div className="px-5 py-14 text-center">
-              <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent text-blue-500" />
-              <p className="text-sm text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
-                Loading FAQs...
-              </p>
-            </div>
-         ) : filteredFaqs.length === 0 ? (
-            /* Empty State */
-            <div className="px-5 py-14 text-center">
-              <div className="mb-3 text-4xl">💡</div>
-              <h3 className="mb-1.5 text-base font-bold text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">
-                {search || filter !== "all"
-                  ? "No matching FAQs found"
-                  : "No FAQs added yet"}
-              </h3>
-              <p className="mx-auto mb-[18px] max-w-[400px] text-[13px] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]">
-                {search || filter !== "all"
-                  ? "Try adjusting your search query or visibility filter."
-                  : "Answer common questions about tuition fees, timings, subjects, and demo classes so students can enroll faster."}
-              </p>
-
-              {!search && filter === "all" && (
-                <button
-                  type="button"
-                  onClick={openCreateModal}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1875d1] px-[18px] py-2.5 text-[13px] font-semibold text-white shadow-[0_4px_12px_rgba(24,117,209,0.25)] transition-colors hover:bg-[#0c5fb7] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  + Add your first FAQ
-                </button>
-             )}
-            </div>
-         ) : (
-            /* FAQ Items List */
-            <div>
-              {filteredFaqs.map((faq, index) => {
-                const faqId = faq.faqId ?? faq.faq_id ?? faq.id;
-                const isBusy = actionId === faqId;
-
-                return (
-                  <article key={faqId ?? index} className="border-b border-[#dfe9f3] px-6 py-[22px] transition-colors last:border-b-0 hover:bg-[#f8fbff] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:hover:bg-[#1b2d44]">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-2 flex items-center gap-2">
-                          <span className="text-[11px] font-semibold text-[#8394a9]">
-                            Q{index + 1}
-                          </span>
-                          <span
-                            className={`inline-flex items-center gap-[5px] rounded-full border px-[9px] py-0.5 text-[11px] font-bold uppercase tracking-[0.4px] ${
-                              faq.visibleOnWebsite
-                                ? "border-emerald-700/25 bg-[#eaf8f1] text-[#147d5a] [&:where([data-theme=dark],[data-theme=dark])]:bg-[#183d37] [&:where([data-theme=dark],[data-theme=dark])]:text-[#69d4a8]"
-                                : "border-[#dfe9f3] bg-[#f8fbff] text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark])]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark])]:bg-[#1b2d44]"
-                            }`}
-                          >
-                            {faq.visibleOnWebsite ? "● Visible" : "○ Hidden"}
-                          </span>
-                        </div>
-
-                        <h3 className="mb-2 [overflow-wrap:anywhere] text-base font-bold leading-[1.4] text-[#172b46] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]">{faq.title}</h3>
-                        <ExpandableText lines={3} className="m-0 text-[13.5px] leading-[1.6] text-[#566b84] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#b7c7db]" preserveWhitespace>{faq.description}</ExpandableText>
-                      </div>
-
-                      {/* Action buttons */}
-                      <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
-                        <button
-                          type="button"
-                          onClick={() => openEditModal(faq)}
-                          disabled={isBusy}
-                          className="inline-flex items-center justify-center rounded-[10px] border border-[#dfe9f3] bg-[#f8fbff] px-3.5 py-[7px] text-xs font-semibold text-[#172b46] transition-all hover:border-[#1875d1] hover:text-[#1875d1] disabled:cursor-not-allowed disabled:opacity-50 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]"
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => toggleVisibility(faq)}
-                          disabled={isBusy}
-                          className="inline-flex items-center justify-center rounded-[10px] border border-[#dfe9f3] bg-[#f8fbff] px-3.5 py-[7px] text-xs font-semibold text-[#172b46] transition-all hover:border-[#1875d1] hover:text-[#1875d1] disabled:cursor-not-allowed disabled:opacity-50 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#e8f0fb]"
-                        >
-                          {isBusy
-                            ? "Updating..."
-                            : faq.visibleOnWebsite
-                              ? "Hide"
-                              : "Show"}
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => deleteFaq(faq)}
-                          disabled={isBusy}
-                          className="inline-flex items-center justify-center rounded-[10px] border border-red-700/25 bg-[#fff2f3] px-3.5 py-[7px] text-xs font-semibold text-[#b93849] transition-all hover:bg-[#b93849] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#45232d] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#ff9aa4]"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </article>
-               );
-              })}
-            </div>
-         )}
-
-          {/* Footer showing count */}
-          {!loading && filteredFaqs.length > 0 && (
-            <div className="border-t border-[#dfe9f3] bg-[#f8fbff] px-6 py-3 text-xs text-[#8394a9] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[#30465f] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#1b2d44]">
-              Showing {filteredFaqs.length} of {faqs.length} FAQs
-            </div>
-         )}
+    <div className="min-h-full bg-tf-bg p-5 text-tf-ink sm:p-8">
+      <div className="mx-auto max-w-7xl">
+        <header className="mb-7 flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Frequently asked questions</h1><p className="mt-2 text-sm text-tf-copy sm:text-base">Help students find answers and manage what appears on your website.</p></div><button type="button" onClick={openCreateModal} className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-base font-semibold text-white transition hover:bg-blue-700"><Plus size={20}/>Add FAQ</button></header>
+        {error && !isModalOpen && <div role="alert" className="mb-5 flex items-start justify-between gap-3 rounded-xl bg-red-50 p-4 text-sm text-red-800"><span>{error}</span><button aria-label="Dismiss error" onClick={() => setError("")}><X size={18}/></button></div>}
+        {success && <div role="status" className="mb-5 flex items-center gap-2 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-800"><CheckCircle2 size={18}/><span>{success}</span><button aria-label="Dismiss message" className="ml-auto" onClick={() => setSuccess("")}><X size={18}/></button></div>}
+        <section aria-label="FAQ statistics" className="mb-8 grid gap-4 sm:grid-cols-3">{[["Total FAQs",faqs.length,"total","#38bdf8"],["Visible on website",visibleCount,"visible","#10b981"],["Hidden FAQs",hiddenCount,"hidden","#8b5cf6"]].map(([label,value,type,color]) => <div key={type} style={{color,borderColor:`${color}40`}} className="relative min-h-36 overflow-hidden rounded-2xl border bg-tf-surface p-5 shadow-[0_4px_14px_-10px_rgb(15_23_42_/_20%)]"><p className="relative z-10 text-sm text-tf-copy">{label}</p><p className="relative z-10 mt-3 text-4xl font-bold tracking-tight text-tf-ink">{loading ? "—" : value}</p><FaqSummaryArt type={type}/></div>)}</section>
+        <section aria-labelledby="faq-list-heading">
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><h2 id="faq-list-heading" className="flex items-center gap-3 text-2xl font-bold tracking-tight">Your FAQs<span className="rounded-xl bg-tf-sky px-3 py-1 text-base font-semibold text-tf-blue">{faqs.length}</span></h2><p className="mt-1 text-sm text-tf-copy">Clear answers to common questions about your classes.</p></div><div className="flex w-full flex-wrap gap-3 sm:w-auto"><label className="relative min-w-0 flex-1 sm:w-64"><Search size={19} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-tf-muted"/><input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Search questions or answers" aria-label="Search FAQs" className="w-full rounded-xl border border-tf-line bg-tf-surface py-3 pr-3 pl-10 text-sm outline-none focus:ring-2 focus:ring-[var(--tf-blue)]"/></label><select value={filter} onChange={event => setFilter(event.target.value)} aria-label="Filter FAQs" className="rounded-xl border border-tf-line bg-tf-surface px-3 py-3 text-sm text-tf-copy"><option value="all">All FAQs</option><option value="visible">Visible only</option><option value="hidden">Hidden only</option></select></div></div>
+          {loading ? <p role="status" className="py-14 text-center text-tf-copy">Loading FAQs…</p> : filteredFaqs.length ? <div className="grid gap-5 lg:grid-cols-2">{filteredFaqs.map((faq,index) => {
+            const faqId = faq.faqId ?? faq.faq_id ?? faq.id;
+            const isBusy = actionId === faqId;
+            return <article key={faqId ?? index} className="flex min-w-0 flex-col rounded-2xl border border-tf-line bg-tf-surface p-5 shadow-[0_5px_16px_-10px_rgb(15_23_42_/_20%)] sm:p-6">
+              <div className="mb-4 flex items-center justify-between gap-3"><span className="inline-flex items-center gap-2 rounded-xl bg-tf-sky px-3 py-2 text-sm font-semibold text-tf-blue"><MessageCircleQuestion size={19}/>Question {index+1}</span><span className={`rounded-xl px-3 py-1.5 text-xs font-semibold ${faq.visibleOnWebsite ? "bg-emerald-100 text-emerald-800" : "bg-tf-surface-soft text-tf-muted"}`}>{faq.visibleOnWebsite ? "Published" : "Hidden"}</span></div>
+              <h3 className="break-words text-lg font-bold leading-7">{faq.title}</h3><div className="mb-5 mt-4 rounded-xl bg-tf-surface-soft p-4"><p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-tf-muted">Answer</p><ExpandableText lines={4} preserveWhitespace className="text-sm leading-7 text-tf-copy">{faq.description}</ExpandableText></div>
+              <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-tf-line pt-4"><div className="flex items-center gap-2"><button type="button" role="switch" aria-checked={Boolean(faq.visibleOnWebsite)} aria-label={`Visible on website: ${faq.title}`} disabled={isBusy} onClick={() => toggleVisibility(faq)} className={`relative inline-flex h-6 w-10 items-center rounded-full p-[3px] transition disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--tf-blue)] ${faq.visibleOnWebsite ? "bg-[var(--tf-blue)]" : "bg-slate-300 dark:bg-slate-600"}`}><span className={`h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-transform ${faq.visibleOnWebsite ? "translate-x-4" : "translate-x-0"}`}/></button><span className="text-xs text-tf-copy">{isBusy ? "Updating…" : faq.visibleOnWebsite ? "Visible on website" : "Hidden from website"}</span></div><div className="flex gap-2"><button type="button" disabled={isBusy} onClick={() => openEditModal(faq)} className="inline-flex items-center gap-2 rounded-xl border border-tf-line px-3 py-2 text-sm text-tf-copy hover:bg-tf-surface-soft disabled:opacity-50"><Pencil size={16}/>Edit</button><button type="button" disabled={isBusy} onClick={() => deleteFaq(faq)} className="inline-flex items-center gap-2 rounded-xl border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-900 dark:hover:bg-red-950"><Trash2 size={16}/>Delete</button></div></div>
+            </article>;
+          })}</div> : <div className="rounded-2xl border border-dashed border-tf-line bg-tf-surface p-10 text-center"><MessageCircleQuestion size={40} className="mx-auto mb-4 text-tf-blue"/><h3 className="text-lg font-semibold">{search || filter !== "all" ? "No matching FAQs" : "Answer their first questions"}</h3><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-tf-copy">{search || filter !== "all" ? "Try another search or visibility filter." : "Share helpful answers about fees, schedules, subjects, and demo classes."}</p>{!search && filter === "all" && <button onClick={openCreateModal} className="mt-5 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white">Add your first FAQ</button>}</div>}
+          {!loading && filteredFaqs.length > 0 && <p className="mt-5 flex items-center gap-2 text-xs text-tf-muted"><Globe size={14}/>Showing {filteredFaqs.length} of {faqs.length} FAQs</p>}
         </section>
       </div>
 

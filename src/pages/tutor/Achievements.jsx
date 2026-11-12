@@ -1,4 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
+import AchievementSummaryArt from "./AchievementSummaryArt";
+import AchievementDetails from "./AchievementDetails";
+import { Plus, Search, Pencil, Trash2, Trophy, ArrowRight } from "lucide-react";
 import api from "../../api/axios";
 import ExpandableText from "../../components/ExpandableText";
 import { UPLOAD_LIMITS } from "../../api/uploadLimits";
@@ -14,49 +17,49 @@ const pageStyles = {
   spinner: "h-[38px] w-[38px] animate-spin rounded-full border-4 border-[var(--tf-line)] border-t-[var(--tf-blue)]",
   smallSpinner: "h-4 w-4 animate-spin rounded-full border-2 border-white/35 border-t-[var(--tf-on-primary)]",
   heading: "mb-6 flex items-start justify-between gap-[18px] max-[520px]:flex-col max-[520px]:items-stretch",
-  headingTitle: "tf-page-title mb-2",
-  headingCopy: "m-0 text-[var(--tf-copy)]",
+  headingTitle: "mb-2 text-3xl font-bold tracking-tight sm:text-4xl",
+  headingCopy: "m-0 text-sm text-tf-copy sm:text-base",
   headingButton: "max-[520px]:self-end",
   button: "tf-button-secondary cursor-pointer whitespace-nowrap",
   buttonPrimary: "tf-button-primary cursor-pointer whitespace-nowrap",
-  buttonSmall: "inline-flex min-h-[31px] cursor-pointer items-center justify-center gap-[7px] whitespace-nowrap rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[9px] py-1.5 text-[11px] font-semibold text-[var(--tf-copy)] transition-colors duration-[140ms] hover:border-[var(--tf-blue)] hover:text-[var(--tf-blue)] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2 [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
-  buttonDanger: "inline-flex min-h-[31px] cursor-pointer items-center justify-center gap-[7px] whitespace-nowrap rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[9px] py-1.5 text-[11px] font-semibold text-[var(--tf-danger)] transition-colors duration-[140ms] hover:border-[var(--tf-blue)] hover:text-[var(--tf-blue)] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2 [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
-  summary: "mb-[30px] grid grid-cols-3 gap-[13px] max-[520px]:grid-cols-2 max-[520px]:gap-2",
-  stat: "relative overflow-hidden rounded-[11px] border border-[var(--tf-line)] bg-[var(--tf-surface)] bg-[radial-gradient(ellipse_at_100%_0%,rgb(117_202_245_/_20%),transparent_53%),radial-gradient(ellipse_at_0%_100%,rgb(121_176_255_/_12%),transparent_45%)] p-[15px_17px] [[data-theme=dark]_&]:bg-[var(--tf-surface)] max-[520px]:p-3",
+  buttonSmall: "inline-flex items-center justify-center gap-2 rounded-xl border border-tf-line px-3 py-2 text-sm font-medium text-tf-copy hover:bg-tf-surface-soft",
+  buttonDanger: "inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-900 dark:hover:bg-red-950",
+  summary: "mb-8 grid gap-4 sm:grid-cols-3",
+  stat: "relative min-h-36 overflow-hidden rounded-2xl border bg-tf-surface p-5 shadow-[0_4px_14px_-10px_rgb(15_23_42_/_20%)]",
   statGreen: "bg-[radial-gradient(ellipse_at_100%_0%,rgb(112_220_186_/_20%),transparent_53%),radial-gradient(ellipse_at_0%_100%,rgb(117_202_245_/_12%),transparent_45%)]",
   statGold: "bg-[radial-gradient(ellipse_at_100%_0%,rgb(247_198_121_/_20%),transparent_53%),radial-gradient(ellipse_at_0%_100%,rgb(193_160_246_/_12%),transparent_45%)]",
-  statLabel: "mb-1 block text-[11px] text-[var(--tf-muted)]",
-  statValue: "text-xl tracking-[-0.3px]",
+  statLabel: "relative z-10 mb-2 block text-sm text-tf-copy",
+  statValue: "relative z-10 text-4xl font-bold tracking-tight text-tf-ink",
   hiddenStat: "max-[520px]:hidden",
   alert: "mb-4 rounded-[10px] border border-[var(--tf-line)] px-[14px] py-3 text-[13px]",
   errorAlert: "bg-[var(--tf-danger-soft)] text-[var(--tf-danger)] [[data-theme=dark]_&]:bg-[var(--tf-danger-soft)]",
   successAlert: "bg-[var(--tf-success-soft)] text-[var(--tf-success)] [[data-theme=dark]_&]:bg-[var(--tf-success-soft)]",
   listHeading: "mb-[14px] flex items-center justify-between gap-[18px] max-[760px]:items-start max-[760px]:flex-col",
-  listTitle: "tf-section-title m-0",
-  listCopy: "mt-[3px] text-xs text-[var(--tf-muted)]",
+  listTitle: "m-0 flex items-center gap-3 text-2xl font-bold tracking-tight",
+  listCopy: "mt-1 text-sm text-tf-copy",
   search: "flex items-center gap-2 max-[760px]:w-full max-[760px]:max-w-[430px]",
-  searchInput: "min-h-[38px] w-[275px] rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[11px] py-2 font-[inherit] text-[var(--tf-ink)] focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2 max-[760px]:w-auto max-[760px]:flex-1 [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
-  cards: "grid grid-cols-2 items-start gap-[15px] max-[760px]:grid-cols-1",
-  card: "tf-card min-w-0 p-5 shadow-sm",
-  cardTop: "flex items-start justify-between gap-3",
+  searchInput: "min-h-11 w-full rounded-xl border border-tf-line bg-tf-surface py-2.5 pr-3 pl-10 text-sm text-tf-ink focus-visible:outline-2 focus-visible:outline-[var(--tf-blue)]",
+  cards: "grid gap-5 md:grid-cols-2",
+  card: "flex min-w-0 flex-col rounded-2xl border border-tf-line bg-tf-surface p-5 shadow-[0_5px_16px_-10px_rgb(15_23_42_/_20%)]",
+  cardTop: "flex items-center justify-between gap-3",
   person: "flex min-w-0 items-center gap-[10px]",
   avatar: "grid h-[46px] w-[46px] flex-none place-items-center overflow-hidden rounded-full border border-[var(--tf-line)] bg-[var(--tf-sky)] text-[var(--tf-blue-pressed)]",
   personCopy: "min-w-0",
-  cardTitle: "mb-1 break-words text-[15px] font-bold leading-[1.35]",
+  cardTitle: "mt-4 mb-2 break-words text-xl font-bold leading-tight tracking-tight",
   studentName: "m-0 text-xs text-[var(--tf-copy)]",
   stars: "text-xs tracking-[1px] text-[var(--tf-warning)]",
-  visibility: "flex-none rounded-[20px] border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] px-2 py-1 text-[10px] font-semibold text-[var(--tf-muted)] [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)]",
-  visible: "border-[var(--tf-line)] bg-[var(--tf-success-soft)] text-[var(--tf-success)] [[data-theme=dark]_&]:bg-[var(--tf-success-soft)]",
-  cardImage: "mt-[14px] max-h-[220px] w-full rounded-[9px] bg-[var(--tf-surface-soft)] object-cover [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)]",
-  description: "my-[14px] mb-3 whitespace-pre-line text-xs text-[var(--tf-copy)]",
+  visibility: "shrink-0 rounded-xl bg-tf-surface-soft px-3 py-1.5 text-xs font-semibold text-tf-muted",
+  visible: "bg-emerald-100 text-emerald-800",
+  cardImage: "mt-4 aspect-[3/1] w-full rounded-xl bg-tf-surface-soft object-cover",
+  description: "mb-3 whitespace-pre-line text-sm leading-6 text-tf-copy",
   batch: "inline-flex rounded-[7px] border border-[var(--tf-line)] px-[9px] py-1 text-[10px] text-[var(--tf-copy)]",
-  review: "mt-3 mb-0 border-l-2 border-[var(--tf-line)] py-[7px] pl-[11px] text-[11px] italic whitespace-pre-line text-[var(--tf-copy)]",
+  review: "mt-3 mb-0 rounded-xl bg-tf-sky px-4 py-3 text-sm italic leading-6 text-tf-ink",
   video: "mt-3 inline-block text-[11px] font-semibold text-[var(--tf-blue)] no-underline hover:underline",
   tags: "mt-3 flex flex-wrap gap-[6px]",
-  tag: "rounded-[20px] border border-[var(--tf-line)] bg-[var(--tf-sky)] px-2 py-[3px] text-[10px] text-[var(--tf-blue)] [[data-theme=dark]_&]:bg-[var(--tf-sky)]",
-  cardFooter: "mt-[15px] flex items-center gap-[7px] border-t border-[var(--tf-line)] pt-3",
-  visibilityToggle: "relative mr-auto inline-flex min-h-[31px] cursor-pointer items-center rounded-[7px] bg-transparent py-1 pr-2 pl-11 text-[11px] text-[var(--tf-copy)] before:absolute before:top-[7px] before:left-2 before:block before:h-[17px] before:w-[30px] before:rounded-[20px] before:bg-slate-300 before:content-[''] after:absolute after:top-[10px] after:left-[11px] after:h-[11px] after:w-[11px] after:rounded-full after:bg-[var(--tf-surface)] after:transition-transform after:content-[''] focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2",
-  visibilityToggleOn: "before:bg-sky-400 after:translate-x-[13px] [[data-theme=dark]_&]:before:bg-sky-300",
+  tag: "rounded-full bg-tf-sky px-3 py-1.5 text-xs font-medium text-tf-blue",
+  cardFooter: "mt-auto flex flex-wrap items-center gap-2 border-t border-tf-line pt-4",
+  visibilityToggle: "relative mr-auto inline-flex min-h-10 items-center py-1 pl-12 pr-2 text-xs text-tf-copy before:absolute before:left-0 before:h-6 before:w-10 before:rounded-full before:bg-slate-300 before:content-[''] after:absolute after:left-[3px] after:h-[18px] after:w-[18px] after:rounded-full after:bg-white after:transition-transform after:content-[''] focus-visible:outline-2 focus-visible:outline-[var(--tf-blue)] disabled:opacity-50",
+  visibilityToggleOn: "before:bg-[var(--tf-blue)] after:translate-x-4",
   empty: "rounded-[13px] border border-dashed border-[var(--tf-line)] bg-[var(--tf-surface)] px-5 py-[42px] text-center text-[var(--tf-copy)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
   emptyIcon: "mx-auto grid h-[58px] w-[58px] place-items-center rounded-2xl bg-[var(--tf-sky)] text-[var(--tf-blue)] [[data-theme=dark]_&]:bg-[var(--tf-sky)]",
   emptyTitle: "tf-section-title mt-3 mb-1",
@@ -91,7 +94,7 @@ const pageStyles = {
 
 const initialForm = {
   title: "",
-  description: "",
+  description: "mb-3 whitespace-pre-line text-sm leading-6 text-tf-copy",
   studentName: "",
   studentReview: "",
   studentRating: "",
@@ -134,7 +137,7 @@ const normalizeBatch = (batch) => ({
   title: batch?.title ?? "",
   batchType:
     batch?.batchType ?? batch?.batchtype ?? batch?.type ?? "upcoming",
-  description: batch?.description ?? "",
+  description: "mb-3 whitespace-pre-line text-sm leading-6 text-tf-copy",
   fee:
     batch?.fee !== null && batch?.fee !== undefined
       ? String(batch.fee)
@@ -149,6 +152,7 @@ const normalizeBatch = (batch) => ({
 });
 
 function Achievements() {
+  const [viewing, setViewing] = useState(null);
   const [achievements, setAchievements] = useState([]);
   const [batches, setBatches] = useState([]);
 
@@ -904,17 +908,15 @@ function Achievements() {
             <p className={pageStyles.headingCopy}>Celebrate student progress and manage what appears on your website.</p>
           </div>
           {!isFormOpen && (
-            <button type="button" onClick={handleAdd} className={`${pageStyles.buttonPrimary} ${pageStyles.headingButton}`}>
-              <span aria-hidden="true">＋</span> Add achievement
+            <button type="button" onClick={handleAdd} className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-base font-semibold text-white hover:bg-blue-700">
+              <Plus size={20} aria-hidden="true"/> Add achievement
             </button>
           )}
         </header>
 
-        <div className={pageStyles.summary}>
-          <div className={pageStyles.stat}><span className={pageStyles.statLabel}>Total achievements</span><strong className={pageStyles.statValue}>{achievements.length}</strong></div>
-          <div className={`${pageStyles.stat} ${pageStyles.statGreen}`}><span className={pageStyles.statLabel}>Visible on website</span><strong className={pageStyles.statValue}>{visibleCount}</strong></div>
-          <div className={`${pageStyles.stat} ${pageStyles.statGold} ${pageStyles.hiddenStat}`}><span className={pageStyles.statLabel}>Hidden</span><strong className={pageStyles.statValue}>{hiddenCount}</strong></div>
-        </div>
+        <section aria-label="Achievement statistics" className={pageStyles.summary}>
+          {[["Total achievements", achievements.length, "total", "#f59e0b"], ["Visible on website", visibleCount, "visible", "#10b981"], ["Hidden", hiddenCount, "hidden", "#8b5cf6"]].map(([label,value,type,color]) => <div key={type} className={pageStyles.stat} style={{color, borderColor:`${color}40`}}><span className={pageStyles.statLabel}>{label}</span><strong className={pageStyles.statValue}>{value}</strong><AchievementSummaryArt type={type}/></div>)}
+        </section>
 
         {/* Error */}
         {error && (
@@ -932,18 +934,18 @@ function Achievements() {
 
         <div className={pageStyles.listHeading}>
           <div>
-            <h2 className={pageStyles.listTitle}>Your achievements</h2>
-            <p className={pageStyles.listCopy}>Turn website visibility on or off for each item.</p>
+            <h2 className={pageStyles.listTitle}>Your achievements <span className="rounded-xl bg-tf-sky px-3 py-1 text-base font-semibold text-tf-blue">{achievements.length}</span></h2>
+            <p className={pageStyles.listCopy}>Manage the stories shown on your website.</p>
           </div>
           <div className={pageStyles.search}>
-            <input
+            <div className="relative min-w-0 flex-1 sm:w-72"><Search size={19} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-tf-muted"/><input
               type="search"
               className={pageStyles.searchInput}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search achievements"
               aria-label="Search achievements"
-            />
+            /></div>
             <button type="button" className={pageStyles.button} onClick={() => setSearch(search.trim())}>Search</button>
           </div>
         </div>
@@ -1328,19 +1330,11 @@ function Achievements() {
                         {studentPhoto ? (
                           <img className="h-full w-full object-cover" src={studentPhoto} alt={achievement.studentName || "Student"} />
                         ) : (
-                          <StudentIcon />
+                          <Trophy size={27} className="text-amber-500"/>
                         )}
                       </span>
                       <div className={pageStyles.personCopy}>
-                      <h2 className={pageStyles.cardTitle}>
-                        {achievement.title}
-                      </h2>
-
-                      {achievement.studentName && (
-                        <p className={`${pageStyles.studentName} [overflow-wrap:anywhere]`}>
-                          {achievement.studentName}
-                        </p>
-                      )}
+                      <p className="break-words text-base font-bold">{achievement.studentName || "Academic milestone"}</p>
                       {rating > 0 && (
                         <span className={pageStyles.stars} aria-label={`${rating} out of 5 stars`}>
                           {"★".repeat(Math.min(rating, 5))}{"☆".repeat(Math.max(0, 5 - rating))}
@@ -1363,7 +1357,8 @@ function Achievements() {
                   {achievementPhoto && (
                     <img className={pageStyles.cardImage} src={achievementPhoto} alt={`Achievement: ${achievement.title}`} />
                   )}
-                  <ExpandableText lines={3} className={`${pageStyles.description} mt-0`} preserveWhitespace>{achievement.description || "No description added."}</ExpandableText>
+                  <h2 className={pageStyles.cardTitle}>{achievement.title}</h2>
+                  <ExpandableText lines={2} className={pageStyles.description} preserveWhitespace>{achievement.description || "No description added."}</ExpandableText>
 
                   {/* Batch */}
                   {achievement.batchId !== null &&
@@ -1375,7 +1370,7 @@ function Achievements() {
 
                   {/* Review */}
                   {achievement.studentReview && (
-                    <blockquote className={pageStyles.review}><ExpandableText lines={2} className="m-0" preserveWhitespace>“{achievement.studentReview}”</ExpandableText></blockquote>
+                    <blockquote className={pageStyles.review}><span aria-hidden="true" className="mr-2 font-serif text-2xl font-bold not-italic text-tf-blue">“</span><ExpandableText lines={2} className="m-0" preserveWhitespace>“{achievement.studentReview}”</ExpandableText></blockquote>
                   )}
 
                   {achievement.youtubeVideoLink && (
@@ -1402,6 +1397,7 @@ function Achievements() {
                     </div>
                   )}
 
+                  <button type="button" onClick={() => setViewing(achievement)} className="mb-5 mt-4 inline-flex items-center gap-2 self-start text-sm font-medium text-tf-blue hover:underline">View achievement<ArrowRight size={18}/></button>
                   {/* Actions */}
                   <div className={pageStyles.cardFooter}>
 
@@ -1416,6 +1412,9 @@ function Achievements() {
                         visibilityId ===
                         achievement.achievementId
                       }
+                      role="switch"
+                      aria-checked={visible}
+                      aria-label={`Visible on website: ${achievement.title}`}
                       className={`${pageStyles.visibilityToggle} ${visible ? pageStyles.visibilityToggleOn : ""}`}
                     >
                       {visibilityId ===
@@ -1433,7 +1432,7 @@ function Achievements() {
                       }
                       className={pageStyles.buttonSmall}
                     >
-                      Edit
+                      <Pencil size={16}/>Edit
                     </button>
 
                     <button
@@ -1449,7 +1448,7 @@ function Achievements() {
                       }
                       className={pageStyles.buttonDanger}
                     >
-                      {deletingId ===
+                      <Trash2 size={16}/>{deletingId ===
                       achievement.achievementId
                         ? "Deleting..."
                         : "Delete"}
@@ -1463,6 +1462,7 @@ function Achievements() {
           </div>
         )}
 
+        {viewing && <AchievementDetails item={viewing} onClose={() => setViewing(null)}/>}
         <div className="pb-6" />
       </div>
     </div>

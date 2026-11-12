@@ -169,6 +169,16 @@ function TutorLayout() {
       ),
     },
     {
+      name: "Experience",
+      path: "/experience",
+      icon: <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4h8v3M3 12c6 4 12 4 18 0m-9 0v4"/></svg>,
+    },
+    {
+      name: "Gallery",
+      path: "/gallery",
+      icon: <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 6-6 4 4 3-3 5 5"/></svg>,
+    },
+    {
       name: "Achievements",
       path: "/achievements",
       icon: (
@@ -394,7 +404,9 @@ function TutorLayout() {
     "Conversations",
     "Tuition Details",
     "Batches",
+    "Gallery",
     "Achievements",
+    "Experience",
     "Themes",
     "FAQs",
   ];
