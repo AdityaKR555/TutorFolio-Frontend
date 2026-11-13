@@ -1,3 +1,4 @@
+import KpiState from "../../components/KpiState";
 import React, { useCallback, useEffect, useState } from "react";
 import AchievementSummaryArt from "./AchievementSummaryArt";
 import AchievementDetails from "./AchievementDetails";
@@ -10,13 +11,13 @@ const { maxSizeBytes: MAX_ACHIEVEMENT_IMAGE_SIZE, label: MAX_ACHIEVEMENT_IMAGE_L
 const { maxSizeBytes: MAX_STUDENT_IMAGE_SIZE, label: MAX_STUDENT_IMAGE_LABEL } = UPLOAD_LIMITS["student-image"];
 
 const pageStyles = {
-  page: "min-h-[calc(100vh-72px)] bg-tf-bg px-4 py-6 text-sm leading-relaxed text-tf-ink sm:px-6 lg:px-8",
+  page: "mobile-page mobile-achievements min-h-[calc(100vh-72px)] bg-tf-bg px-4 py-6 text-sm leading-relaxed text-tf-ink sm:px-6 lg:px-8",
   content: "mx-auto w-full max-w-[1120px]",
   loading: "flex min-h-[400px] flex-col items-center justify-center text-[var(--tf-copy)]",
   loadingCopy: "mt-[14px] text-[13px]",
   spinner: "h-[38px] w-[38px] animate-spin rounded-full border-4 border-[var(--tf-line)] border-t-[var(--tf-blue)]",
   smallSpinner: "h-4 w-4 animate-spin rounded-full border-2 border-white/35 border-t-[var(--tf-on-primary)]",
-  heading: "mb-6 flex items-start justify-between gap-[18px] max-[520px]:flex-col max-[520px]:items-stretch",
+  heading: "mobile-heading mb-6 flex items-start justify-between gap-[18px] max-[520px]:flex-col max-[520px]:items-stretch",
   headingTitle: "mb-2 text-3xl font-bold tracking-tight sm:text-4xl",
   headingCopy: "m-0 text-sm text-tf-copy sm:text-base",
   headingButton: "max-[520px]:self-end",
@@ -24,7 +25,7 @@ const pageStyles = {
   buttonPrimary: "tf-button-primary cursor-pointer whitespace-nowrap",
   buttonSmall: "inline-flex items-center justify-center gap-2 rounded-xl border border-tf-line px-3 py-2 text-sm font-medium text-tf-copy hover:bg-tf-surface-soft",
   buttonDanger: "inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-900 dark:hover:bg-red-950",
-  summary: "mb-8 grid gap-4 sm:grid-cols-3",
+  summary: "mobile-summary mobile-summary-three mb-8 grid gap-4 sm:grid-cols-3",
   stat: "relative min-h-36 overflow-hidden rounded-2xl border bg-tf-surface p-5 shadow-[0_4px_14px_-10px_rgb(15_23_42_/_20%)]",
   statGreen: "bg-[radial-gradient(ellipse_at_100%_0%,rgb(112_220_186_/_20%),transparent_53%),radial-gradient(ellipse_at_0%_100%,rgb(117_202_245_/_12%),transparent_45%)]",
   statGold: "bg-[radial-gradient(ellipse_at_100%_0%,rgb(247_198_121_/_20%),transparent_53%),radial-gradient(ellipse_at_0%_100%,rgb(193_160_246_/_12%),transparent_45%)]",
@@ -40,7 +41,7 @@ const pageStyles = {
   search: "flex items-center gap-2 max-[760px]:w-full max-[760px]:max-w-[430px]",
   searchInput: "min-h-11 w-full rounded-xl border border-tf-line bg-tf-surface py-2.5 pr-3 pl-10 text-sm text-tf-ink focus-visible:outline-2 focus-visible:outline-[var(--tf-blue)]",
   cards: "grid gap-5 md:grid-cols-2",
-  card: "flex min-w-0 flex-col rounded-2xl border border-tf-line bg-tf-surface p-5 shadow-[0_5px_16px_-10px_rgb(15_23_42_/_20%)]",
+  card: "mobile-content-card flex min-w-0 flex-col rounded-2xl border border-tf-line bg-tf-surface p-5 shadow-[0_5px_16px_-10px_rgb(15_23_42_/_20%)]",
   cardTop: "flex items-center justify-between gap-3",
   person: "flex min-w-0 items-center gap-[10px]",
   avatar: "grid h-[46px] w-[46px] flex-none place-items-center overflow-hidden rounded-full border border-[var(--tf-line)] bg-[var(--tf-sky)] text-[var(--tf-blue-pressed)]",
@@ -57,21 +58,21 @@ const pageStyles = {
   video: "mt-3 inline-block text-[11px] font-semibold text-[var(--tf-blue)] no-underline hover:underline",
   tags: "mt-3 flex flex-wrap gap-[6px]",
   tag: "rounded-full bg-tf-sky px-3 py-1.5 text-xs font-medium text-tf-blue",
-  cardFooter: "mt-auto flex flex-wrap items-center gap-2 border-t border-tf-line pt-4",
+  cardFooter: "mobile-card-footer mt-auto flex flex-wrap items-center gap-2 border-t border-tf-line pt-4",
   visibilityToggle: "relative mr-auto inline-flex min-h-10 items-center py-1 pl-12 pr-2 text-xs text-tf-copy before:absolute before:left-0 before:h-6 before:w-10 before:rounded-full before:bg-slate-300 before:content-[''] after:absolute after:left-[3px] after:h-[18px] after:w-[18px] after:rounded-full after:bg-white after:transition-transform after:content-[''] focus-visible:outline-2 focus-visible:outline-[var(--tf-blue)] disabled:opacity-50",
   visibilityToggleOn: "before:bg-[var(--tf-blue)] after:translate-x-4",
   empty: "rounded-[13px] border border-dashed border-[var(--tf-line)] bg-[var(--tf-surface)] px-5 py-[42px] text-center text-[var(--tf-copy)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
   emptyIcon: "mx-auto grid h-[58px] w-[58px] place-items-center rounded-2xl bg-[var(--tf-sky)] text-[var(--tf-blue)] [[data-theme=dark]_&]:bg-[var(--tf-sky)]",
   emptyTitle: "tf-section-title mt-3 mb-1",
   emptyCopy: "mb-4 text-xs text-[var(--tf-muted)]",
-  backdrop: "fixed inset-0 z-[70] flex items-center justify-center bg-[rgb(10_25_45_/_48%)] p-5 max-[520px]:p-[10px]",
-  modal: "max-h-[min(92vh,900px)] w-full max-w-[690px] overflow-auto rounded-[15px] border border-[var(--tf-line)] bg-[var(--tf-surface)] text-[var(--tf-ink)] shadow-[0_12px_32px_rgb(26_67_112_/_15%)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
-  modalHeading: "sticky top-0 z-[2] flex items-start justify-between gap-[15px] border-b border-[var(--tf-line)] bg-[var(--tf-surface)] px-[22px] py-[18px] max-[520px]:px-4 max-[520px]:py-[15px] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
+  backdrop: "tf-modal-backdrop mobile-sheet-backdrop fixed inset-0 z-[70] flex items-center justify-center bg-[rgb(10_25_45_/_48%)] p-5 max-[520px]:p-[10px]",
+  modal: "tf-modal-panel mobile-sheet max-h-[min(92vh,900px)] w-full max-w-[690px] overflow-auto rounded-[15px] border border-[var(--tf-line)] bg-[var(--tf-surface)] text-[var(--tf-ink)] shadow-[0_12px_32px_rgb(26_67_112_/_15%)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
+  modalHeading: "tf-modal-heading tf-modal-heading-padded sticky top-0 z-[2] flex items-start justify-between gap-[15px] border-b border-[var(--tf-line)] bg-[var(--tf-surface)] px-[22px] py-[18px] max-[520px]:px-4 max-[520px]:py-[15px] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
   modalTitle: "m-0 text-[17px] font-semibold",
   modalCopy: "mt-1 text-xs text-[var(--tf-muted)]",
   modalError: "mt-[14px] mx-[22px] rounded-lg border border-[var(--tf-line)] bg-[var(--tf-danger-soft)] px-3 py-[10px] text-xs text-[var(--tf-danger)] [[data-theme=dark]_&]:bg-[var(--tf-danger-soft)]",
   close: "cursor-pointer border-0 bg-transparent px-1 text-[25px] leading-none text-[var(--tf-muted)] focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2",
-  form: "grid gap-4 px-[22px] py-5 max-[520px]:p-4",
+  form: "tf-modal-body grid gap-4 px-[22px] py-5 max-[520px]:p-4",
   formGrid: "grid grid-cols-2 items-start gap-[13px] max-[520px]:grid-cols-1",
   field: "grid min-w-0 content-start gap-[6px]",
   fieldFull: "col-span-full max-[520px]:col-auto",
@@ -915,7 +916,7 @@ function Achievements() {
         </header>
 
         <section aria-label="Achievement statistics" className={pageStyles.summary}>
-          {[["Total achievements", achievements.length, "total", "#f59e0b"], ["Visible on website", visibleCount, "visible", "#10b981"], ["Hidden", hiddenCount, "hidden", "#8b5cf6"]].map(([label,value,type,color]) => <div key={type} className={pageStyles.stat} style={{color, borderColor:`${color}40`}}><span className={pageStyles.statLabel}>{label}</span><strong className={pageStyles.statValue}>{value}</strong><AchievementSummaryArt type={type}/></div>)}
+          {[["Total achievements", achievements.length, "total", "#f59e0b"], ["Visible on website", visibleCount, "visible", "#10b981"], ["Hidden", hiddenCount, "hidden", "#8b5cf6"]].map(([label,value,type,color]) => <div key={type} className={pageStyles.stat} style={{color, borderColor:`${color}40`}}><KpiState unavailable={Boolean(error) && achievements.length === 0} empty={value === 0} label={label} message={type === "hidden" ? "No hidden achievements" : type === "visible" ? "No achievements published yet" : "Your next success story belongs here"} kind="rating"><span className={pageStyles.statLabel}>{label}</span><strong className={pageStyles.statValue}>{value}</strong><AchievementSummaryArt type={type}/></KpiState></div>)}
         </section>
 
         {/* Error */}
@@ -1430,10 +1431,10 @@ function Achievements() {
                       onClick={() =>
                         handleEdit(achievement)
                       }
-                      className={pageStyles.buttonSmall}
-                    >
-                      <Pencil size={16}/>Edit
-                    </button>
+                      className={`mobile-icon-action ${pageStyles.buttonSmall}`}
+                     aria-label="Edit achievement">
+                      <Pencil size={16}/><span className="mobile-action-label">Edit
+                    </span></button>
 
                     <button
                       type="button"
@@ -1446,12 +1447,12 @@ function Achievements() {
                         deletingId ===
                         achievement.achievementId
                       }
-                      className={pageStyles.buttonDanger}
-                    >
-                      <Trash2 size={16}/>{deletingId ===
+                      className={`mobile-icon-action ${pageStyles.buttonDanger}`}
+                     aria-label="Delete achievement">
+                      <Trash2 size={16}/><span className="mobile-action-label">{deletingId ===
                       achievement.achievementId
                         ? "Deleting..."
-                        : "Delete"}
+                        : "Delete"}</span>
                     </button>
 
                   </div>

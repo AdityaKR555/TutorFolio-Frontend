@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import FeaturedTutors from "./components/FeaturedTutors";
 
 /* ---------- styles (fonts, hero entrance, reveal, reduced motion) ---------- */
 const CSS = `
@@ -116,7 +117,7 @@ const BtnPrimary = ({ to, children }) => (
   </Link>
 );
 const BtnGhost = ({ href, children }) => (
-  <a href={href} className="inline-flex items-center justify-center rounded-lg border border-blue-400/25 px-6 py-3.5 font-semibold text-[#dce8ff] transition hover:border-blue-400/60 hover:bg-white/[.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400">
+  <a href={href} className="inline-flex items-center justify-center rounded-lg border border-blue-400/25 px-6 py-3.5 font-semibold text-tf-copy transition hover:border-blue-400/60 hover:bg-tf-surface-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400">
     {children}
   </a>
 );
@@ -124,14 +125,14 @@ const BtnGhost = ({ href, children }) => (
 /* ---------- illustrative teacher website ---------- */
 function Frame({ children, className = "" }) {
   return (
-    <div className={`overflow-hidden rounded-xl border border-white/10 bg-[#0f1f36] shadow-[0_40px_80px_-30px_rgba(0,0,0,.8)] ${className}`}>
-      <div className="flex items-center gap-3 border-b border-white/10 px-4 py-2.5">
+    <div className={`overflow-hidden rounded-xl border border-tf-line bg-[var(--tf-surface)] shadow-[0_40px_80px_-30px_rgba(0,0,0,.8)] ${className}`}>
+      <div className="flex items-center gap-3 border-b border-tf-line px-4 py-2.5">
         <div className="flex gap-1.5">
           {[0, 1, 2].map((i) => (
             <span key={i} className="h-2.5 w-2.5 rounded-full bg-white/15" />
           ))}
         </div>
-        <div className="mx-auto truncate rounded-md bg-[#0a1628] px-4 py-1 text-xs text-[#94a8c7]">Ananya Sharma · TutorFolio</div>
+        <div className="mx-auto truncate rounded-md bg-[var(--tf-bg)] px-4 py-1 text-xs text-tf-copy">Ananya Sharma · TutorFolio</div>
         <span className="w-10" />
       </div>
       {children}
@@ -161,7 +162,7 @@ function TeacherSite({ a = null }) {
               <p className="tf-s text-lg leading-tight">Ananya Sharma</p>
               <p className="text-xs text-slate-500">Mathematics Educator</p>
             </div>
-            <span className="rounded-md bg-[#0f1f36] px-3 py-1.5 text-xs font-medium text-white">Message</span>
+            <span className="rounded-md bg-[var(--tf-surface)] px-3 py-1.5 text-xs font-medium text-tf-ink">Message</span>
           </div>
           <p className="mt-2.5 text-[13px] leading-relaxed text-slate-600">I help school students build strong foundations and confidence in maths and physics, one concept at a time.</p>
         </Blk>
@@ -239,38 +240,38 @@ function Nav() {
   }, [open]);
   return (
     <>
-      <header className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300 ${solid || open ? "border-white/10 bg-[#0a1628]/90 backdrop-blur-md" : "border-transparent"}`}>
+      <header className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300 ${solid || open ? "border-tf-line bg-[var(--tf-bg)]/90 backdrop-blur-md" : "border-transparent"}`}>
         <div className="mx-auto grid h-18 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-6 px-5 sm:px-8 md:grid-cols-[1fr_auto_1fr]">
-          <a href="#top" onClick={() => setOpen(false)} className="justify-self-start" aria-label="TutorFolio home">
-            <img src="/tf-logo.png" alt="TutorFolio" className="w-14 sm:w-22" />
+          <a href="#top" onClick={() => setOpen(false)} className="mobile-home-brand justify-self-start" aria-label="TutorFolio home">
+            <img src="/tf-logo.png" alt="TutorFolio" className="w-14 sm:w-22" /><span className="mobile-brand-label">Tutorfolio</span>
           </a>
-          <nav className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/[.03] p-1 md:flex" aria-label="Primary">
+          <nav className="hidden items-center gap-1 rounded-full border border-tf-line bg-tf-surface-soft p-1 md:flex" aria-label="Primary">
             {LINKS.map(([h, t]) => (
-              <a key={h} href={`#${h}`} aria-current={cur === h ? "true" : undefined} className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${cur === h ? "bg-white/10 text-white" : "text-[#9cb2d2] hover:text-white"}`}>{t}</a>
+              <a key={h} href={`#${h}`} aria-current={cur === h ? "true" : undefined} className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${cur === h ? "bg-tf-surface-soft text-tf-ink" : "text-tf-copy hover:text-tf-ink"}`}>{t}</a>
             ))}
           </nav>
           <div className="flex items-center gap-2 justify-self-end sm:gap-3">
-            <Link to="/login" className="hidden rounded-md px-3 py-2 text-sm font-medium text-[#c7d8f5] transition hover:text-white sm:block">Log in</Link>
+            <Link to="/login" className="hidden rounded-md px-3 py-2 text-sm font-medium text-tf-copy transition hover:text-tf-ink sm:block">Log in</Link>
             <Link to="/signup" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500">Sign up</Link>
-            <button onClick={() => setOpen(!open)} className="rounded-lg border border-white/10 p-2 text-[#c7d8f5] md:hidden" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open}>
+            <button onClick={() => setOpen(!open)} className="rounded-lg border border-tf-line p-2 text-tf-copy md:hidden" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open}>
               <Ic n={open ? "x" : "menu"} c="w-5 h-5" />
             </button>
           </div>
         </div>
       </header>
       {open && (
-        <div className="fixed inset-x-0 bottom-0 top-16 z-40 flex flex-col bg-[#0a1628] px-5 pb-8 pt-2 md:hidden">
+        <div className="fixed inset-x-0 bottom-0 top-16 z-40 flex flex-col bg-[var(--tf-bg)] px-5 pb-8 pt-2 md:hidden">
           <nav aria-label="Mobile" className="flex-1">
             {LINKS.map(([h, t]) => (
-              <a key={h} href={`#${h}`} onClick={() => setOpen(false)} className="tf-d flex items-center justify-between border-b border-white/10 py-5 text-2xl font-semibold text-white">
+              <a key={h} href={`#${h}`} onClick={() => setOpen(false)} className="tf-d flex items-center justify-between border-b border-tf-line py-5 text-2xl font-semibold text-tf-ink">
                 {t}
-                <Ic n="arrow" c="w-5 h-5 text-[#5f7aa0]" />
+                <Ic n="arrow" c="w-5 h-5 text-tf-copy" />
               </a>
             ))}
           </nav>
           <div className="grid gap-3">
             <BtnPrimary to="/signup">Get Started Free</BtnPrimary>
-            <Link to="/login" className="rounded-lg border border-white/15 py-3.5 text-center font-semibold text-[#dce8ff]">Log in</Link>
+            <Link to="/login" className="rounded-lg border border-tf-line py-3.5 text-center font-semibold text-tf-copy">Log in</Link>
           </div>
         </div>
       )}
@@ -290,10 +291,10 @@ function Hero() {
       <Grid />
       <div className="relative mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1fr_1.05fr]">
         <div>
-          <h1 className="tf-d hero-in text-[2.6rem] font-bold leading-[1.04] text-white sm:text-6xl" style={{ "--i": 0 }}>
+          <h1 className="tf-d hero-in text-[2.6rem] font-bold leading-[1.04] text-tf-ink sm:text-6xl" style={{ "--i": 0 }}>
             Your teaching deserves a website of its own.
           </h1>
-          <p className="hero-in mt-6 max-w-lg text-lg leading-relaxed text-[#94a8c7]" style={{ "--i": 1 }}>
+          <p className="hero-in mt-6 max-w-lg text-lg leading-relaxed text-tf-copy" style={{ "--i": 1 }}>
             TutorFolio gives you a professional page for your subjects, qualifications, batches and contact details, so students can find you and write to you in one place.
           </p>
           <div className="hero-in mt-9 flex flex-col gap-3 sm:flex-row" style={{ "--i": 2 }}>
@@ -308,9 +309,9 @@ function Hero() {
               <TeacherSite />
             </div>
             <div className="hero-win absolute -bottom-8 right-3 w-56 sm:-right-4 sm:bottom-8 sm:w-60" style={{ animationDelay: ".7s" }}>
-              <div style={{ transform: "translateY(calc(var(--sy) * -0.1px))" }} className="rounded-xl border border-white/10 bg-[#11213c]/95 p-3.5 shadow-2xl backdrop-blur">
-                <div className="flex items-center gap-2 text-xs text-[#9cb2d2]"><Ic n="mail" c="w-4 h-4 text-blue-400" />New enquiry</div>
-                <p className="mt-1.5 text-[13px] leading-snug text-white">“Do you have a seat in the Class 10 maths batch?”</p>
+              <div style={{ transform: "translateY(calc(var(--sy) * -0.1px))" }} className="rounded-xl border border-tf-line bg-[var(--tf-surface)]/95 p-3.5 shadow-2xl backdrop-blur">
+                <div className="flex items-center gap-2 text-xs text-tf-copy"><Ic n="mail" c="w-4 h-4 text-blue-400" />New enquiry</div>
+                <p className="mt-1.5 text-[13px] leading-snug text-tf-ink">“Do you have a seat in the Class 10 maths batch?”</p>
               </div>
             </div>
           </div>
@@ -334,8 +335,8 @@ function Problem() {
     <section id="problem" className="border-t border-blue-500/10 px-5 py-24 sm:px-8 lg:py-32">
       <div className="mx-auto grid max-w-6xl gap-14 lg:grid-cols-[1fr_1.1fr]">
         <Rv>
-          <h2 className="tf-d text-4xl font-bold leading-[1.08] text-white sm:text-5xl">Good teachers are hard to find online.</h2>
-          <p className="mt-5 max-w-md text-lg leading-relaxed text-[#94a8c7]">Not because they aren’t good. Because there’s nowhere for a student to see what they offer.</p>
+          <h2 className="tf-d text-4xl font-bold leading-[1.08] text-tf-ink sm:text-5xl">Good teachers are hard to find online.</h2>
+          <p className="mt-5 max-w-md text-lg leading-relaxed text-tf-copy">Not because they aren’t good. Because there’s nowhere for a student to see what they offer.</p>
         </Rv>
         <div>
           {PROBLEMS.map(([ic, t, d], i) => (
@@ -343,8 +344,8 @@ function Problem() {
               <div className="flex gap-5 border-t border-blue-500/15 py-6">
                 <span className="mt-1 text-blue-400"><Ic n={ic} c="w-6 h-6" /></span>
                 <div>
-                  <h3 className="tf-d text-xl font-semibold text-white">{t}</h3>
-                  <p className="mt-1.5 max-w-md leading-relaxed text-[#94a8c7]">{d}</p>
+                  <h3 className="tf-d text-xl font-semibold text-tf-ink">{t}</h3>
+                  <p className="mt-1.5 max-w-md leading-relaxed text-tf-copy">{d}</p>
                 </div>
               </div>
             </Rv>
@@ -360,29 +361,29 @@ function Transformation() {
   const scattered = ["Qualifications, in a drawer", "Contact details, in a chat", "Experience, by word of mouth", "Achievements, in a folder"];
   const together = ["Profile and introduction", "Subjects and classes", "Experience and qualifications", "Achievements", "Tuition and batches", "Contact and enquiries"];
   return (
-    <section className="relative overflow-hidden bg-[#0f1f36] px-5 py-24 sm:px-8 lg:py-32">
+    <section className="relative overflow-hidden bg-[var(--tf-surface)] px-5 py-24 sm:px-8 lg:py-32">
       <Grid />
       <div className="relative mx-auto max-w-6xl">
         <Rv>
-          <h2 className="tf-d max-w-2xl text-4xl font-bold leading-[1.08] text-white sm:text-5xl">Everything a student wants to know, in one place.</h2>
+          <h2 className="tf-d max-w-2xl text-4xl font-bold leading-[1.08] text-tf-ink sm:text-5xl">Everything a student wants to know, in one place.</h2>
         </Rv>
         <div className="mt-14 grid items-stretch gap-6 lg:grid-cols-[1fr_auto_1.1fr]">
           <Rv className="rounded-2xl border border-dashed border-blue-400/20 p-7">
-            <p className="text-sm font-semibold text-[#94a8c7]">Today</p>
+            <p className="text-sm font-semibold text-tf-copy">Today</p>
             <ul className="mt-5 space-y-3">
               {scattered.map((s, i) => (
-                <li key={s} className="rounded-lg border border-white/5 bg-[#0a1628] px-4 py-3 text-[#9cb2d2]" style={{ marginLeft: `${(i % 2) * 20}px` }}>{s}</li>
+                <li key={s} className="rounded-lg border border-white/5 bg-[var(--tf-bg)] px-4 py-3 text-tf-copy" style={{ marginLeft: `${(i % 2) * 20}px` }}>{s}</li>
               ))}
             </ul>
           </Rv>
           <div className="flex items-center justify-center text-blue-500" aria-hidden="true">
             <Ic n="arrow" c="w-8 h-8 rotate-90 lg:rotate-0" />
           </div>
-          <Rv d={150} className="rounded-2xl border border-blue-500/40 bg-[#11213c] p-7">
+          <Rv d={150} className="rounded-2xl border border-blue-500/40 bg-[var(--tf-surface)] p-7">
             <p className="text-sm font-semibold text-blue-300">With TutorFolio</p>
             <ul className="mt-5 grid gap-x-6 gap-y-3 sm:grid-cols-2">
               {together.map((s) => (
-                <li key={s} className="flex items-start gap-2.5 text-white"><Ic n="check" c="mt-0.5 h-5 w-5 shrink-0 text-blue-400" />{s}</li>
+                <li key={s} className="flex items-start gap-2.5 text-tf-ink"><Ic n="check" c="mt-0.5 h-5 w-5 shrink-0 text-blue-400" />{s}</li>
               ))}
             </ul>
           </Rv>
@@ -416,7 +417,7 @@ function Showcase() {
       <div className="px-5 py-24 sm:px-8 lg:sticky lg:top-0 lg:flex lg:h-screen lg:items-center lg:py-0">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-12 lg:grid-cols-[.85fr_1.15fr] lg:pt-12">
           <div>
-            <h2 className="tf-d text-4xl font-bold leading-[1.08] text-white sm:text-5xl">A website that is unmistakably yours.</h2>
+            <h2 className="tf-d text-4xl font-bold leading-[1.08] text-tf-ink sm:text-5xl">A website that is unmistakably yours.</h2>
             <ul className="mt-9" role="list">
               {FEATS.map(([k, ic, t, d], n) => (
                 <li key={k}>
@@ -425,11 +426,11 @@ function Showcase() {
                     aria-pressed={i === n}
                     className={`flex w-full gap-4 border-l-2 py-3 pl-5 text-left transition-all duration-300 ${i === n ? "border-blue-500" : "border-blue-500/10 hover:border-blue-500/40"}`}
                   >
-                    <span className={`mt-0.5 transition-colors ${i === n ? "text-blue-400" : "text-[#5f7aa0]"}`}><Ic n={ic} /></span>
+                    <span className={`mt-0.5 transition-colors ${i === n ? "text-blue-400" : "text-tf-copy"}`}><Ic n={ic} /></span>
                     <span>
-                      <span className={`block font-semibold transition-colors ${i === n ? "text-white" : "text-[#7f97bb]"}`}>{t}</span>
+                      <span className={`block font-semibold transition-colors ${i === n ? "text-tf-ink" : "text-tf-copy"}`}>{t}</span>
                       <span className={`grid transition-all duration-300 ${i === n ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 lg:opacity-0"}`}>
-                        <span className="overflow-hidden"><span className="mt-1 block text-[15px] leading-relaxed text-[#94a8c7]">{d}</span></span>
+                        <span className="overflow-hidden"><span className="mt-1 block text-[15px] leading-relaxed text-tf-copy">{d}</span></span>
                       </span>
                     </span>
                   </button>
@@ -450,35 +451,35 @@ function Showcase() {
 /* ---------- discovery ---------- */
 function Discovery() {
   return (
-    <section id="discover" className="border-t border-blue-500/10 bg-[#0f1f36] px-5 py-24 sm:px-8 lg:py-32">
+    <section id="discover" className="border-t border-blue-500/10 bg-[var(--tf-surface)] px-5 py-24 sm:px-8 lg:py-32">
       <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-[1fr_1.1fr]">
         <Rv>
-          <h2 className="tf-d text-4xl font-bold leading-[1.08] text-white sm:text-5xl">Be where students are looking.</h2>
-          <p className="mt-5 max-w-md text-lg leading-relaxed text-[#94a8c7]">Students browse tutors by what they need, then open full profiles before getting in touch. A complete page gives you more chances to be found and a stronger first impression when you are.</p>
+          <h2 className="tf-d text-4xl font-bold leading-[1.08] text-tf-ink sm:text-5xl">Be where students are looking.</h2>
+          <p className="mt-5 max-w-md text-lg leading-relaxed text-tf-copy">Students browse tutors by what they need, then open full profiles before getting in touch. A complete page gives you more chances to be found and a stronger first impression when you are.</p>
         </Rv>
         <Rv d={120}>
-          <div className="rounded-2xl border border-white/10 bg-[#0a1628] p-5 sm:p-6">
-            <div className="flex items-center gap-3 rounded-lg border border-white/10 px-4 py-3 text-[#94a8c7]">
+          <div className="rounded-2xl border border-tf-line bg-[var(--tf-bg)] p-5 sm:p-6">
+            <div className="flex items-center gap-3 rounded-lg border border-tf-line px-4 py-3 text-tf-copy">
               <Ic n="search" c="w-4 h-4" /> Class 10 Mathematics
             </div>
             <div className="mt-3 flex flex-wrap gap-2 text-xs">
               {["Subject", "City", "Online or in person"].map((f) => (
-                <span key={f} className="rounded-full border border-blue-400/25 px-3 py-1 text-[#9cb2d2]">{f}</span>
+                <span key={f} className="rounded-full border border-blue-400/25 px-3 py-1 text-tf-copy">{f}</span>
               ))}
             </div>
             <div className="mt-5 space-y-3">
               <div className="flex items-center gap-4 rounded-xl border border-blue-500/40 bg-blue-600/10 p-4">
                 <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">AS</div>
                 <div className="flex-1">
-                  <p className="font-semibold text-white">Ananya Sharma</p>
-                  <p className="text-sm text-[#94a8c7]">Mathematics Educator · Classes 9–12</p>
+                  <p className="font-semibold text-tf-ink">Ananya Sharma</p>
+                  <p className="text-sm text-tf-copy">Mathematics Educator · Classes 9–12</p>
                 </div>
                 <span className="hidden text-sm font-medium text-blue-300 sm:block">View profile</span>
               </div>
               {[0, 1].map((n) => (
                 <div key={n} className="flex items-center gap-4 rounded-xl border border-white/5 p-4 opacity-60" aria-hidden="true">
-                  <div className="h-11 w-11 rounded-full bg-white/10" />
-                  <div className="flex-1 space-y-2"><div className="h-3 w-1/2 rounded bg-white/10" /><div className="h-2.5 w-3/4 rounded bg-white/5" /></div>
+                  <div className="h-11 w-11 rounded-full bg-tf-surface-soft" />
+                  <div className="flex-1 space-y-2"><div className="h-3 w-1/2 rounded bg-tf-surface-soft" /><div className="h-2.5 w-3/4 rounded bg-white/5" /></div>
                 </div>
               ))}
             </div>
@@ -507,8 +508,8 @@ function Enquiries() {
           <p className="mt-3 max-w-md text-xs text-[#6d86aa] lg:ml-auto">Illustrative example.</p>
         </Rv>
         <Rv d={120} className="order-1 lg:order-2">
-          <h2 className="tf-d text-4xl font-bold leading-[1.08] text-white sm:text-5xl">Students write to you directly.</h2>
-          <p className="mt-5 max-w-md text-lg leading-relaxed text-[#94a8c7]">When someone likes what they see, they can send you an enquiry from your page. You see their message and take the conversation from there.</p>
+          <h2 className="tf-d text-4xl font-bold leading-[1.08] text-tf-ink sm:text-5xl">Students write to you directly.</h2>
+          <p className="mt-5 max-w-md text-lg leading-relaxed text-tf-copy">When someone likes what they see, they can send you an enquiry from your page. You see their message and take the conversation from there.</p>
         </Rv>
       </div>
     </section>
@@ -525,18 +526,18 @@ const STEPS = [
 function How() {
   const ref = useReveal();
   return (
-    <section id="how-it-works" className="relative overflow-hidden border-t border-blue-500/10 bg-[#0f1f36] px-5 py-24 sm:px-8 lg:py-32">
+    <section id="how-it-works" className="relative overflow-hidden border-t border-blue-500/10 bg-[var(--tf-surface)] px-5 py-24 sm:px-8 lg:py-32">
       <Grid />
       <div className="relative mx-auto max-w-6xl">
-        <Rv><h2 className="tf-d max-w-xl text-4xl font-bold leading-[1.08] text-white sm:text-5xl">From account to enquiries in three steps.</h2></Rv>
+        <Rv><h2 className="tf-d max-w-xl text-4xl font-bold leading-[1.08] text-tf-ink sm:text-5xl">From account to enquiries in three steps.</h2></Rv>
         <div ref={ref} className="rv relative mt-16 grid gap-10 lg:grid-cols-3 lg:gap-8">
           <div aria-hidden="true" className="line-x absolute left-0 right-0 top-[19px] hidden h-px bg-blue-500/30 lg:block" />
           {STEPS.map(([t, d], n) => (
             <div key={t} className="relative flex gap-5 lg:block" style={{ transitionDelay: `${n * 150}ms` }}>
-              <div className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold ${n === 0 ? "bg-blue-600 text-white" : "border border-blue-500/40 bg-[#0f1f36] text-blue-300"}`}>{n + 1}</div>
+              <div className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold ${n === 0 ? "bg-blue-600 text-white" : "border border-blue-500/40 bg-[var(--tf-surface)] text-blue-300"}`}>{n + 1}</div>
               <div className="lg:mt-6">
-                <h3 className="tf-d text-xl font-semibold text-white">{t}</h3>
-                <p className="mt-2 max-w-xs leading-relaxed text-[#94a8c7]">{d}</p>
+                <h3 className="tf-d text-xl font-semibold text-tf-ink">{t}</h3>
+                <p className="mt-2 max-w-xs leading-relaxed text-tf-copy">{d}</p>
               </div>
             </div>
           ))}
@@ -552,11 +553,11 @@ function Final() {
     <section className="relative overflow-hidden px-5 py-28 sm:px-8 lg:py-40">
       <Grid />
       <Rv className="relative mx-auto max-w-3xl text-center">
-        <h2 className="tf-d text-4xl font-bold leading-[1.06] text-white sm:text-6xl">Your teaching journey deserves more visibility.</h2>
-        <p className="mx-auto mt-6 max-w-lg text-lg text-[#94a8c7]">Create your professional presence today.</p>
+        <h2 className="tf-d text-4xl font-bold leading-[1.06] text-tf-ink sm:text-6xl">Your teaching journey deserves more visibility.</h2>
+        <p className="mx-auto mt-6 max-w-lg text-lg text-tf-copy">Create your professional presence today.</p>
         <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <BtnPrimary to="/signup">Get Started Free</BtnPrimary>
-          <Link to="/login" className="text-[#9cb2d2] underline-offset-4 transition hover:text-white hover:underline">Already have an account? Log in</Link>
+          <Link to="/login" className="text-tf-copy underline-offset-4 transition hover:text-tf-ink hover:underline">Already have an account? Log in</Link>
         </div>
       </Rv>
     </section>
@@ -567,12 +568,12 @@ function Final() {
 function Footer() {
   const col = (title, items) => (
     <div className="flex flex-col gap-2.5 text-sm">
-      <span className="mb-1 font-semibold text-[#e2eaf7]">{title}</span>
+      <span className="mb-1 font-semibold text-tf-ink">{title}</span>
       {items.map(([to, t, internal]) =>
         internal ? (
-          <Link key={t} to={to} className="text-[#94a8c7] transition-colors hover:text-white">{t}</Link>
+          <Link key={t} to={to} className="text-tf-copy transition-colors hover:text-tf-ink">{t}</Link>
         ) : (
-          <a key={t} href={to} className="text-[#94a8c7] transition-colors hover:text-white">{t}</a>
+          <a key={t} href={to} className="text-tf-copy transition-colors hover:text-tf-ink">{t}</a>
         )
       )}
     </div>
@@ -582,14 +583,14 @@ function Footer() {
       <div className="mx-auto flex max-w-6xl flex-col justify-between gap-10 sm:flex-row">
         <div>
           <img src="/tf-logo.png" alt="TutorFolio" className="w-40" />
-          <p className="mt-3 max-w-xs text-sm leading-relaxed text-[#94a8c7]">A professional online presence for every teacher in India.</p>
+          <p className="mt-3 max-w-xs text-sm leading-relaxed text-tf-copy">A professional online presence for every teacher in India.</p>
         </div>
         <div className="grid grid-cols-2 gap-10 sm:flex sm:gap-16">
           {col("Product", [["#website", "Your website"], ["#discover", "Discovery"], ["#how-it-works", "How it works"]])}
           {col("Account", [["/login", "Log in", true], ["/signup", "Sign up", true], ["/signup?role=tutor", "Join as a tutor", true]])}
         </div>
       </div>
-      <div className="mx-auto mt-10 max-w-6xl border-t border-blue-500/10 pt-6 text-xs text-[#5f7aa0]">© {new Date().getFullYear()} TutorFolio. Made in India.</div>
+      <div className="mx-auto mt-10 max-w-6xl border-t border-blue-500/10 pt-6 text-xs text-tf-copy">© {new Date().getFullYear()} TutorFolio. Made in India.</div>
     </footer>
   );
 }
@@ -597,7 +598,7 @@ function Footer() {
 /* ---------- page ---------- */
 export default function Home() {
   return (
-    <div className="tf min-h-screen overflow-x-clip bg-[#0a1628] text-white antialiased">
+    <div className="mobile-home tf min-h-screen overflow-x-clip bg-[var(--tf-bg)] text-tf-ink antialiased">
       <style>{CSS}</style>
       <Nav />
       <main>
@@ -606,6 +607,7 @@ export default function Home() {
         <Transformation />
         <Showcase />
         <Discovery />
+        <FeaturedTutors />
         <Enquiries />
         <How />
         <Final />

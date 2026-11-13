@@ -363,7 +363,7 @@ export default function Themes() {
     null;
 
   return (
-    <div className="min-h-full bg-tf-bg px-4 py-6 text-tf-ink sm:px-6 lg:px-8">
+    <div className="mobile-page mobile-themes min-h-full bg-tf-bg px-4 py-6 text-tf-ink sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-7">
           <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">

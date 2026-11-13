@@ -244,14 +244,14 @@ export default function Website() {
   };
 
   return (
-    <div className="min-h-full bg-tf-bg px-3 py-4 text-tf-ink sm:px-6 sm:py-6 lg:px-8">
+    <div className="mobile-page mobile-website min-h-full bg-tf-bg px-3 py-4 text-tf-ink sm:px-6 sm:py-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         {/* ── Page header ── */}
         <div className="mb-5 sm:mb-8">
           <p className="text-xs sm:text-sm font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
             Your Public Website
           </p>
-          <div className="mt-1.5 sm:mt-2 flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mobile-website-heading mt-1.5 sm:mt-2 flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-tf-ink">
                 Website Settings

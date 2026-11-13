@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./components/modal-theme.css";
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
@@ -21,13 +22,13 @@
 
 :root {
   color-scheme: light;
-  --tf-bg: #f8fafc;
+  --tf-bg: #fbf9f6;
   --tf-surface: #ffffff;
-  --tf-surface-soft: #f1f5f9;
+  --tf-surface-soft: #f9f7f4;
   --tf-ink: #172b46;
   --tf-copy: #566b84;
   --tf-muted: #8394a9;
-  --tf-line: #dfe9f3;
+  --tf-line: #eeece6;
   --tf-blue: #1875d1;
   --tf-blue-pressed: #0c5fb7;
   --tf-on-primary: #ffffff;
@@ -36,15 +37,60 @@
   --tf-danger: #b93849;
 }
 
+/* Background preferences apply only to light mode; cards remain white. */
+:root[data-background="lavender"]:not([data-theme="dark"]) {
+  --tf-bg: #eaeafb;
+  --tf-surface-soft: #f5f5fd;
+  --tf-line: #e0e0f0;
+}
+
+:root[data-background="white"]:not([data-theme="dark"]) {
+  --tf-bg: #ffffff;
+  --tf-surface-soft: #f7f8fa;
+  --tf-line: #e5e7eb;
+}
+
+:root[data-background="custom"]:not([data-theme="dark"]) {
+  --tf-bg: var(--tf-custom-bg, #eaeafb);
+  --tf-surface-soft: #f7f8fa;
+  --tf-line: #e5e7eb;
+}
+
+/* Keep the selected hue while separating navigation from the page canvas. */
+.tf-sidebar {
+  background-color: color-mix(in srgb, var(--tf-bg) 50%, white);
+}
+
+:root:not([data-theme="dark"]) .tf-sidebar {
+  --tf-ink: #172b46;
+  --tf-copy: #566b84;
+  --tf-muted: #8394a9;
+}
+
+:root[data-theme="dark"] .tf-sidebar {
+  background-color: var(--tf-surface);
+}
+
+/* Give pointer hover and keyboard focus a visible navigation highlight. */
+.tf-sidebar nav a:not([aria-current="page"]):is(:hover, :focus-visible) {
+  background-color: color-mix(in srgb, var(--tf-blue) 12%, var(--tf-surface));
+  border-left-color: color-mix(in srgb, var(--tf-blue) 55%, transparent);
+  color: var(--tf-blue-pressed);
+}
+
+.tf-sidebar nav a[aria-current="page"]:hover {
+  background-color: color-mix(in srgb, var(--tf-blue) 15%, var(--tf-sky));
+}
+
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --tf-bg: #101b2b;
-  --tf-surface: #17263a;
-  --tf-surface-soft: #1b2d44;
-  --tf-ink: #e8f0fb;
-  --tf-copy: #b7c7db;
-  --tf-muted: #91a5bf;
-  --tf-line: #30465f;
+  --tf-bg: #000000;
+  --tf-surface: #141414;
+  --tf-surface-soft: #202020;
+  --tf-ink: #f5f5f5;
+  --tf-copy: #c2c2c2;
+  --tf-muted: #999999;
+  --tf-line: #333333;
   --tf-blue: #4aa8ee;
   --tf-blue-pressed: #8bcdf7;
   --tf-on-primary: #101b2b;
@@ -152,3 +198,96 @@ canvas {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Empty metric illustrations stay centered at compact screen sizes too. */
+.tf-mobile-platform .kpi-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 112px;
+  font-size: 12px;
+}
+
+.tf-mobile-platform .kpi-empty-state > svg {
+  width: 112px;
+  height: 64px;
+  opacity: 1;
+}
+
+.tf-mobile-platform .kpi-empty-state > p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.tf-mobile-platform div:has(> .kpi-empty-state) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Public marketing and authentication pages always use the light palette. */
+:root[data-public-page="true"][data-theme="light"] {
+  color-scheme: light;
+  --tf-bg: #fbf9f6;
+  --tf-surface: #ffffff;
+  --tf-surface-soft: #f9f7f4;
+  --tf-ink: #172b46;
+  --tf-copy: #566b84;
+  --tf-muted: #8394a9;
+  --tf-line: #eeece6;
+  --tf-blue: #1875d1;
+  --tf-blue-pressed: #0c5fb7;
+  --tf-on-primary: #ffffff;
+  --tf-sky: #eaf6ff;
+  --tf-success: #147d5a;
+  --tf-danger: #b93849;
+}
+
+@keyframes featured-tutor-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.featured-tutor { animation: featured-tutor-enter .5s ease-out backwards; }
+@media (prefers-reduced-motion: reduce) {
+  .featured-tutor { animation: none; }
+}
+
+.tf-back-to-top {
+  position: fixed;
+  right: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 45;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 50%;
+  color: #fff;
+  background: #1875d1;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 18%);
+  cursor: pointer;
+  transition: background-color 150ms, transform 150ms;
+}
+
+.tf-back-to-top:hover { background: #0c5fb7; transform: translateY(-2px); }
+.tf-back-to-top:focus-visible { outline: 3px solid #1875d1; outline-offset: 4px; }
+
+/* Stack above public-profile contact shortcuts rather than covering them. */
+body:has(aside[aria-label="Contact tutor"]) .tf-back-to-top {
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 136px);
+}
+body:has(aside[aria-label="Contact tutor"] > a:only-child) .tf-back-to-top {
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 68px);
+}
+body:has([aria-modal="true"], dialog[open]) .tf-back-to-top {
+  visibility: hidden;
+  pointer-events: none;
+}
+@media (min-width: 640px) { .tf-back-to-top { right: 24px; } }
+@media (prefers-reduced-motion: reduce) { .tf-back-to-top { transition: none; } }

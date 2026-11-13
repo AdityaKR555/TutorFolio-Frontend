@@ -26,7 +26,7 @@ const Icon = ({ n, c = "w-5 h-5" }) => (
 );
 
 const inputCls =
-  "w-full rounded-lg border border-white/10 bg-[#0a1628] px-4 py-3 text-white placeholder:text-[#5f7aa0] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25";
+  "w-full rounded-lg border border-tf-line bg-[var(--tf-bg)] px-4 py-3 text-tf-ink placeholder:text-tf-copy outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25";
 
 function Login() {
   const navigate = useNavigate();
@@ -147,17 +147,17 @@ function Login() {
   ];
 
   return (
-    <div className="tf relative min-h-screen overflow-x-clip bg-[#0a1628] text-white antialiased">
+    <div className="mobile-auth tf relative min-h-screen overflow-x-clip bg-[var(--tf-bg)] text-tf-ink antialiased">
       <style>{CSS}</style>
       <div aria-hidden="true" className="tf-grid pointer-events-none absolute inset-0" />
 
       <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-5 py-6 sm:px-8 lg:justify-center lg:py-10">
         {/* Top bar: mobile / tablet */}
         <div className="mb-8 flex items-center justify-between lg:hidden">
-          <Link to="/" aria-label="TutorFolio home">
-            <img src="/tf-logo.png" alt="TutorFolio" className="w-14 sm:w-22" />
+          <Link to="/" aria-label="TutorFolio home" className="mobile-auth-brand">
+            <img src="/tf-logo.png" alt="TutorFolio" className="w-14 sm:w-22" /><span className="mobile-brand-label">Tutorfolio</span>
           </Link>
-          <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium text-[#9cb2d2] transition-colors hover:text-white rounded-full border border-white/10 bg-white/[.03] p-1.5 pr-2">
+          <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium text-tf-copy transition-colors hover:text-tf-ink rounded-full border border-tf-line bg-tf-surface-soft p-1.5 pr-2">
             <Icon n="back" c="w-4 h-4" /> Back to home
           </Link>
         </div>
@@ -165,7 +165,7 @@ function Login() {
         <div className="grid items-center gap-12 lg:grid-cols-[1fr_minmax(0,28rem)] lg:gap-20">
           {/* Left side */}
           <div className="hidden lg:block">
-            <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium text-[#9cb2d2] transition-colors hover:text-white rounded-full border border-white/10 bg-white/[.03] p-2">
+            <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium text-tf-copy transition-colors hover:text-tf-ink rounded-full border border-tf-line bg-tf-surface-soft p-2">
               <Icon n="back" c="w-4 h-4" /> Back to home
             </Link>
 
@@ -173,17 +173,17 @@ function Login() {
               <img src="/tf-logo.png" alt="TutorFolio" className="w-24" />
             </Link>
 
-            <h1 className="tf-d mt-8 max-w-md text-5xl font-bold leading-[1.06] text-white">
+            <h1 className="tf-d mt-8 max-w-md text-5xl font-bold leading-[1.06] text-tf-ink">
               Welcome back.
             </h1>
 
-            <p className="mt-5 max-w-md text-lg leading-relaxed text-[#94a8c7]">
+            <p className="mt-5 max-w-md text-lg leading-relaxed text-tf-copy">
               Log in to your TutorFolio account and keep building your teaching presence online.
             </p>
 
             <ul className="mt-9 max-w-md space-y-4">
               {benefits.map((b) => (
-                <li key={b} className="flex items-start gap-3 text-[#c7d8f5]">
+                <li key={b} className="flex items-start gap-3 text-tf-copy">
                   <Icon n="check" c="mt-0.5 h-5 w-5 shrink-0 text-blue-400" />
                   {b}
                 </li>
@@ -193,9 +193,9 @@ function Login() {
 
           {/* Form */}
           <div className="w-full">
-            <div className="rounded-2xl border border-white/10 bg-[#0f1f36] p-6 shadow-2xl shadow-black/30 sm:p-8">
-              <h2 className="tf-d text-3xl font-bold text-white">Log in</h2>
-              <p className="mt-2 text-[#94a8c7]">Sign in to your account.</p>
+            <div className="rounded-2xl border border-tf-line bg-[var(--tf-surface)] p-6 shadow-2xl shadow-black/30 sm:p-8">
+              <h2 className="tf-d text-3xl font-bold text-tf-ink">Log in</h2>
+              <p className="mt-2 text-tf-copy">Sign in to your account.</p>
 
               {/* Google Login Button */}
               <button
@@ -228,14 +228,14 @@ function Login() {
               </button>
 
               <div className="my-6 flex items-center gap-4">
-                <div className="h-px flex-1 bg-white/10" />
+                <div className="h-px flex-1 bg-tf-surface-soft" />
                 <span className="text-sm text-[#6d86aa]">or continue with email</span>
-                <div className="h-px flex-1 bg-white/10" />
+                <div className="h-px flex-1 bg-tf-surface-soft" />
               </div>
 
               <form className="space-y-5" onSubmit={handleSubmit}>
                 <div>
-                  <label htmlFor="email" className="mb-2 block text-sm font-medium text-[#c7d8f5]">Email</label>
+                  <label htmlFor="email" className="mb-2 block text-sm font-medium text-tf-copy">Email</label>
                   <input
                     id="email"
                     type="email"
@@ -249,7 +249,7 @@ function Login() {
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="mb-2 block text-sm font-medium text-[#c7d8f5]">Password</label>
+                  <label htmlFor="password" className="mb-2 block text-sm font-medium text-tf-copy">Password</label>
                   <div className="relative">
                     <input
                       id="password"
@@ -264,7 +264,7 @@ function Login() {
                     <button
                       type="button"
                       onClick={() => setShowPassword((prev) => !prev)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-2 text-[#94a8c7] transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-2 text-tf-copy transition-colors hover:text-tf-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400"
                       aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       <Icon n={showPassword ? "eyeOff" : "eye"} c="w-5 h-5" />
@@ -281,7 +281,7 @@ function Login() {
                 </button>
               </form>
 
-              <p className="mt-6 text-center text-[#94a8c7]">
+              <p className="mt-6 text-center text-tf-copy">
                 Don’t have an account?{" "}
                 <Link to="/signup" className="font-medium text-blue-400 underline-offset-4 transition-colors hover:text-blue-300 hover:underline">
                   Sign up

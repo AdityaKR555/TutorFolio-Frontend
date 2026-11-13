@@ -55,10 +55,10 @@ function Avatar({ src, name, size = "h-14 w-14" }) {
       src={src}
       alt={name || "Tutor"}
       onError={() => setFailed(true)}
-      className={`${size} shrink-0 rounded-2xl border border-[#dfe9f3] bg-[#eaf6ff] object-cover [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#193852]`}
+      className={`${size} shrink-0 rounded-2xl border border-[var(--tf-line)] bg-[#eaf6ff] object-cover [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[#193852]`}
     />
   ) : (
-    <div className={`${size} flex shrink-0 items-center justify-center rounded-2xl border border-[#dfe9f3] bg-[#eaf6ff] text-lg font-bold text-[#1875d1] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#193852] [[data-theme=dark]_&]:text-[#4aa8ee]`}>
+    <div className={`${size} flex shrink-0 items-center justify-center rounded-2xl border border-[var(--tf-line)] bg-[#eaf6ff] text-lg font-bold text-[#1875d1] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[#193852] [[data-theme=dark]_&]:text-[#4aa8ee]`}>
       {initial}
     </div>
   );
@@ -67,7 +67,7 @@ function Avatar({ src, name, size = "h-14 w-14" }) {
 function InfoChip({ children }) {
   if (children === undefined || children === null || children === "") return null;
   return (
-    <span className="rounded-[7px] border border-[#dfe9f3] bg-[#f8fbff] px-2 py-1 text-[10px] text-[#566b84] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#1b2d44] [[data-theme=dark]_&]:text-[#b7c7db]">
+    <span className="rounded-[7px] border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] px-2 py-1 text-[10px] text-[var(--tf-copy)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)] [[data-theme=dark]_&]:text-[var(--tf-copy)]">
       {children}
     </span>
   );
@@ -289,21 +289,21 @@ export default function DiscoverTutors() {
   };
 
   return (
-    <div className="min-h-full bg-[#f4f8fd] text-[#172b46] [[data-theme=dark]_&]:bg-[#101b2b] [[data-theme=dark]_&]:text-[#e8f0fb]">
+    <div className="mobile-page mobile-discovertutors min-h-full bg-[var(--tf-bg)] text-[var(--tf-ink)] [[data-theme=dark]_&]:bg-[var(--tf-bg)] [[data-theme=dark]_&]:text-[var(--tf-ink)]">
       <main className="mx-auto max-w-[1240px] px-[38px] pb-[58px] pt-9 max-[900px]:px-[22px] max-[900px]:pb-11 max-[900px]:pt-7 max-[680px]:px-[14px] max-[680px]:pb-9 max-[680px]:pt-[22px]">
-        <header className="mb-[25px] flex items-end justify-between gap-6 max-[680px]:flex-col max-[680px]:items-start">
+        <header className="mobile-heading mb-[25px] flex items-end justify-between gap-6 max-[680px]:flex-col max-[680px]:items-start">
           <div>
             <h1 className="tf-page-title mb-2">Find the right tutor</h1>
-            <p className="m-0 text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">
+            <p className="m-0 text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]">
               Explore tutor profiles by location, subjects, experience and teaching preferences.
             </p>
           </div>
         </header>
 
         <form onSubmit={submitSearch} className="relative m-0 border-0 bg-transparent p-0 shadow-none">
-          <div className="mb-[18px] rounded-[13px] border border-[#dfe9f3] bg-white p-[15px] shadow-[0_8px_26px_rgba(32,70,111,0.05)] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a]">
+          <div className="mb-[18px] rounded-[13px] border border-[var(--tf-line)] bg-white p-[15px] shadow-[0_8px_26px_rgba(32,70,111,0.05)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-[10px]">
-              <div className="relative flex h-12 min-w-0 items-center gap-[10px] rounded-[9px] border border-[#dfe9f3] bg-[#f8fbff] px-[14px] text-[#8394a9] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#1b2d44] [[data-theme=dark]_&]:text-[#91a5bf]">
+              <div className="relative flex h-12 min-w-0 items-center gap-[10px] rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] px-[14px] text-[var(--tf-muted)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">
                 <label htmlFor="tutor-search" className="sr-only">Search tutors</label>
                 <svg className="h-[19px] w-[19px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5" strokeLinecap="round"/></svg>
                 <input
@@ -314,28 +314,28 @@ export default function DiscoverTutors() {
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                   placeholder="Search by tutor, username, subject, tuition or city…"
                   autoComplete="off"
-                  className="w-full min-w-0 border-0 bg-transparent text-[#172b46] outline-none placeholder:text-[#8394a9] [[data-theme=dark]_&]:text-[#e8f0fb] [[data-theme=dark]_&]:placeholder:text-[#91a5bf]"
+                  className="w-full min-w-0 border-0 bg-transparent text-[var(--tf-ink)] outline-none placeholder:text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-ink)] [[data-theme=dark]_&]:placeholder:text-[var(--tf-muted)]"
                 />
                 {showSuggestions && (suggesting || suggestions.length > 0) && (
-                  <div className="absolute inset-x-0 top-[calc(100%+8px)] z-[3] overflow-hidden rounded-[10px] border border-[#dfe9f3] bg-white shadow-[0_12px_30px_rgba(32,70,111,0.13)] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a]">
-                    {suggesting && <p className="m-0 px-[14px] py-3 text-[13px] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">Finding suggestions…</p>}
+                  <div className="absolute inset-x-0 top-[calc(100%+8px)] z-[3] overflow-hidden rounded-[10px] border border-[var(--tf-line)] bg-white shadow-[0_12px_30px_rgba(32,70,111,0.13)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]">
+                    {suggesting && <p className="m-0 px-[14px] py-3 text-[13px] text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]">Finding suggestions…</p>}
                     {!suggesting && suggestions.map((item) => (
                       <button
                         key={item.userId ?? item.username}
                         type="button"
                         onMouseDown={(event) => event.preventDefault()}
                         onClick={() => chooseSuggestion(item)}
-                        className="flex w-full items-center gap-[10px] bg-white px-3 py-[10px] text-left text-[#172b46] hover:bg-[#f8fbff] [[data-theme=dark]_&]:bg-[#17263a] [[data-theme=dark]_&]:text-[#e8f0fb] [[data-theme=dark]_&]:hover:bg-[#1b2d44]"
+                        className="flex w-full items-center gap-[10px] bg-white px-3 py-[10px] text-left text-[var(--tf-ink)] hover:bg-[var(--tf-surface-soft)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-ink)] [[data-theme=dark]_&]:hover:bg-[var(--tf-surface-soft)]"
                       >
                         <Avatar src={item.profilePicture || item.profile_picture || item.profilepicture} name={getTutorName(item)} size="h-[38px] w-[38px] rounded-[9px]" />
                         <span className="grid min-w-0 flex-1">
                           <strong className="text-sm">{getTutorName(item)}</strong>
-                          <small className="overflow-hidden text-ellipsis whitespace-nowrap text-xs text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">@{item.username}{item.tuitionName ? ` · ${item.tuitionName}` : ""}</small>
+                          <small className="overflow-hidden text-ellipsis whitespace-nowrap text-xs text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">@{item.username}{item.tuitionName ? ` · ${item.tuitionName}` : ""}</small>
                         </span>
                         <b className="text-[11px] text-[#1875d1] [[data-theme=dark]_&]:text-[#4aa8ee]">Select</b>
                       </button>
                     ))}
-                    {!suggesting && !suggestions.length && <p className="m-0 px-[14px] py-3 text-[13px] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">No suggestions found.</p>}
+                    {!suggesting && !suggestions.length && <p className="m-0 px-[14px] py-3 text-[13px] text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]">No suggestions found.</p>}
                   </div>
                 )}
               </div>
@@ -343,10 +343,10 @@ export default function DiscoverTutors() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 items-start gap-[18px] min-[901px]:grid-cols-[258px_minmax(0,1fr)] max-[900px]:grid-cols-[220px_minmax(0,1fr)] max-[900px]:gap-[13px] max-[680px]:grid-cols-1">
-            <aside className="sticky top-[18px] rounded-[13px] border border-[#dfe9f3] bg-white p-[17px] shadow-[0_8px_26px_rgba(32,70,111,0.05)] max-[900px]:p-[14px] max-[680px]:static [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a]" aria-label="Tutor filters">
+          <div className="mobile-discovery-layout grid grid-cols-1 items-start gap-[18px] min-[901px]:grid-cols-[258px_minmax(0,1fr)] max-[900px]:grid-cols-[220px_minmax(0,1fr)] max-[900px]:gap-[13px] max-[680px]:grid-cols-1">
+            <aside className="sticky top-[18px] rounded-[13px] border border-[var(--tf-line)] bg-white p-[17px] shadow-[0_8px_26px_rgba(32,70,111,0.05)] max-[900px]:p-[14px] max-[680px]:static [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]" aria-label="Tutor filters">
               <div className="mb-[14px] flex items-start justify-between gap-2">
-                <div><h2 className="tf-section-title m-0">Filters</h2><p className="mt-[3px] text-[11px] text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">{filterCount ? `${filterCount} active` : "Refine your search"}</p></div>
+                <div><h2 className="tf-section-title m-0">Filters</h2><p className="mt-[3px] text-[11px] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">{filterCount ? `${filterCount} active` : "Refine your search"}</p></div>
                 {filterCount > 0 && <button type="button" className="cursor-pointer border-0 bg-transparent py-0.5 text-[11px] text-[#1875d1] [[data-theme=dark]_&]:text-[#4aa8ee]" onClick={resetFilters}>Clear all</button>}
               </div>
               <div className="grid grid-cols-1 gap-[11px] max-[680px]:grid-cols-2 max-[420px]:grid-cols-1">
@@ -373,24 +373,24 @@ export default function DiscoverTutors() {
 
             <section className="min-w-0" aria-label="Tutor search results">
               <div className="my-[1px] mb-[14px] flex items-center justify-between gap-4 max-[680px]:mt-1 max-[680px]:items-start max-[420px]:flex-col">
-                <p className="m-0 text-[13px] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">{loading ? "Searching tutors…" : <><strong>{pagination.total}</strong> {pagination.total === 1 ? "tutor found" : "tutors found"}</>}</p>
+                <p className="m-0 text-[13px] text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]">{loading ? "Searching tutors…" : <><strong>{pagination.total}</strong> {pagination.total === 1 ? "tutor found" : "tutors found"}</>}</p>
                 <div className="flex items-center gap-[9px] max-[680px]:flex-wrap max-[680px]:justify-end max-[420px]:self-end">
-                  <label className="flex items-center gap-[9px] text-xs text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">Sort:
-                    <select className="h-[39px] min-w-[130px] rounded-lg border border-[#dfe9f3] bg-white px-[10px] text-xs text-[#172b46] outline-none focus:border-[#1875d1] focus:ring-[3px] focus:ring-blue-500/10 [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a] [[data-theme=dark]_&]:text-[#e8f0fb]" value={sortBy} onChange={(e) => { const value = e.target.value; setSortBy(value); fetchTutors(1, { __sortBy: value }); }}>
+                  <label className="flex items-center gap-[9px] text-xs text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">Sort:
+                    <select className="h-[39px] min-w-[130px] rounded-lg border border-[var(--tf-line)] bg-white px-[10px] text-xs text-[var(--tf-ink)] outline-none focus:border-[#1875d1] focus:ring-[3px] focus:ring-blue-500/10 [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-ink)]" value={sortBy} onChange={(e) => { const value = e.target.value; setSortBy(value); fetchTutors(1, { __sortBy: value }); }}>
                       <option value="newest">Newest profiles</option><option value="relevance">Relevance</option><option value="name">Name</option><option value="experience">Experience</option><option value="rating">Rating</option>
                     </select>
                   </label>
-                  <div className="flex gap-0.5 rounded-[9px] border border-[#dfe9f3] bg-white p-[3px] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a]" role="group" aria-label="Result layout">
-                    <button type="button" className={`grid h-[31px] w-[33px] place-items-center rounded-md ${viewMode === "grid" ? "bg-[#eaf6ff] text-[#0c5fb7] [[data-theme=dark]_&]:bg-[#193852] [[data-theme=dark]_&]:text-[#8bcdf7]" : "text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]"}`} onClick={() => setViewMode("grid")} aria-label="Grid view" title="Grid view"><svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M2 2h7v7H2zM11 2h7v7h-7zM2 11h7v7H2zM11 11h7v7h-7z" /></svg></button>
-                    <button type="button" className={`grid h-[31px] w-[33px] place-items-center rounded-md ${viewMode === "list" ? "bg-[#eaf6ff] text-[#0c5fb7] [[data-theme=dark]_&]:bg-[#193852] [[data-theme=dark]_&]:text-[#8bcdf7]" : "text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]"}`} onClick={() => setViewMode("list")} aria-label="List view" title="List view"><svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3h2v2H2zM6 3h12v2H6zM2 9h2v2H2zM6 9h12v2H6zM2 15h2v2H2zM6 15h12v2H6z" /></svg></button>
+                  <div className="flex gap-0.5 rounded-[9px] border border-[var(--tf-line)] bg-white p-[3px] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]" role="group" aria-label="Result layout">
+                    <button type="button" className={`grid h-[31px] w-[33px] place-items-center rounded-md ${viewMode === "grid" ? "bg-[#eaf6ff] text-[#0c5fb7] [[data-theme=dark]_&]:bg-[#193852] [[data-theme=dark]_&]:text-[#8bcdf7]" : "text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]"}`} onClick={() => setViewMode("grid")} aria-label="Grid view" title="Grid view"><svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M2 2h7v7H2zM11 2h7v7h-7zM2 11h7v7H2zM11 11h7v7h-7z" /></svg></button>
+                    <button type="button" className={`grid h-[31px] w-[33px] place-items-center rounded-md ${viewMode === "list" ? "bg-[#eaf6ff] text-[#0c5fb7] [[data-theme=dark]_&]:bg-[#193852] [[data-theme=dark]_&]:text-[#8bcdf7]" : "text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]"}`} onClick={() => setViewMode("list")} aria-label="List view" title="List view"><svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3h2v2H2zM6 3h12v2H6zM2 9h2v2H2zM6 9h12v2H6zM2 15h2v2H2zM6 15h12v2H6z" /></svg></button>
                   </div>
                 </div>
               </div>
 
-        {error && <div role="alert" className="mb-[14px] flex items-center justify-between gap-3 rounded-[9px] border border-[#dfe9f3] bg-[#fff2f3] px-[14px] py-3 text-[13px] text-[#b93849] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#45232d] [[data-theme=dark]_&]:text-[#ff9aa4]"><span>{error}</span><button className="cursor-pointer border-0 bg-transparent font-semibold text-[#b93849] underline [[data-theme=dark]_&]:text-[#ff9aa4]" type="button" onClick={() => fetchTutors(pagination.page || 1)}>Try again</button></div>}
+        {error && <div role="alert" className="mb-[14px] flex items-center justify-between gap-3 rounded-[9px] border border-[var(--tf-line)] bg-[#fff2f3] px-[14px] py-3 text-[13px] text-[#b93849] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[#45232d] [[data-theme=dark]_&]:text-[#ff9aa4]"><span>{error}</span><button className="cursor-pointer border-0 bg-transparent font-semibold text-[#b93849] underline [[data-theme=dark]_&]:text-[#ff9aa4]" type="button" onClick={() => fetchTutors(pagination.page || 1)}>Try again</button></div>}
 
         {loading ? (
-          <div className={`grid grid-cols-1 ${viewMode === "grid" ? "gap-[15px] min-[901px]:grid-cols-2" : "gap-2"}`}>{[1, 2, 3, 4, 5, 6].map((key) => <div key={key} className={`${viewMode === "list" ? "min-h-[82px]" : "min-h-[250px]"} animate-pulse rounded-[13px] border border-[#dfe9f3] bg-gradient-to-r from-white via-[#f8fbff] to-white [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:from-[#17263a] [[data-theme=dark]_&]:via-[#1b2d44] [[data-theme=dark]_&]:to-[#17263a]`} />)}</div>
+          <div className={`grid grid-cols-1 ${viewMode === "grid" ? "gap-[15px] min-[901px]:grid-cols-2" : "gap-2"}`}>{[1, 2, 3, 4, 5, 6].map((key) => <div key={key} className={`${viewMode === "list" ? "min-h-[82px]" : "min-h-[250px]"} animate-pulse rounded-[13px] border border-[var(--tf-line)] bg-gradient-to-r from-white via-[var(--tf-surface-soft)] to-white [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:from-[var(--tf-surface)] [[data-theme=dark]_&]:via-[var(--tf-surface-soft)] [[data-theme=dark]_&]:to-[var(--tf-surface)]`} />)}</div>
         ) : tutors.length ? (
           <div className={`grid grid-cols-1 ${viewMode === "list" ? "gap-2" : "gap-[15px] min-[901px]:grid-cols-2"}`}>
             {tutors.map((tutor, index) => {
@@ -398,14 +398,14 @@ export default function DiscoverTutors() {
               const location = getLocation(tutor);
               const subjects = tutor.teachingSubjects || tutor.subjects;
               return (
-                <article key={tutor.userId ?? tutor.username ?? index} className={`min-w-0 rounded-[13px] border border-[#dfe9f3] bg-white p-4 shadow-[0_2px_9px_rgba(29,64,101,0.025)] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a] ${viewMode === "list" ? "grid min-h-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_auto] max-[520px]:grid-cols-1" : "flex min-h-[250px] flex-col"}`}>
+                <article key={tutor.userId ?? tutor.username ?? index} className={`min-w-0 rounded-[13px] border border-[var(--tf-line)] bg-white p-4 shadow-[0_2px_9px_rgba(29,64,101,0.025)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] ${viewMode === "list" ? "grid min-h-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_auto] max-[520px]:grid-cols-1" : "flex min-h-[250px] flex-col"}`}>
                   <div className={`flex min-w-0 items-start gap-[13px] ${viewMode === "list" ? "col-start-1 row-start-1" : ""}`}>
                     <Avatar src={tutor.profilePicture || tutor.profile_picture || tutor.profilepicture} name={name} size={viewMode === "list" ? "h-12 w-12 rounded-[14px]" : "h-[58px] w-[58px] rounded-[14px]"} />
-                    <div className="grid min-w-0"><h2 className={`my-[2px] mb-1 break-words text-base leading-[1.3] ${viewMode === "list" ? "text-sm" : ""}`}>{name}</h2><span className="overflow-hidden text-xs text-[#8394a9] text-ellipsis [[data-theme=dark]_&]:text-[#91a5bf]">@{tutor.username || "username unavailable"}</span>{location && <span className="mt-[6px] flex items-center gap-[5px] text-[11px] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]"><DetailIcon type="location" />{location}</span>}{tutor.averageRating != null && <span className="mt-[6px] text-[11px] text-[#93621a] [[data-theme=dark]_&]:text-[#f3c567]">★ {Number(tutor.averageRating).toFixed(1)} <small className="ml-1 text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">({Number(tutor.totalReviews || 0)} reviews)</small></span>}</div>
+                    <div className="grid min-w-0"><h2 className={`my-[2px] mb-1 break-words text-base leading-[1.3] ${viewMode === "list" ? "text-sm" : ""}`}>{name}</h2><span className="overflow-hidden text-xs text-[var(--tf-muted)] text-ellipsis [[data-theme=dark]_&]:text-[var(--tf-muted)]">@{tutor.username || "username unavailable"}</span>{location && <span className="mt-[6px] flex items-center gap-[5px] text-[11px] text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]"><DetailIcon type="location" />{location}</span>}{tutor.averageRating != null && <span className="mt-[6px] text-[11px] text-[#93621a] [[data-theme=dark]_&]:text-[#f3c567]">★ {Number(tutor.averageRating).toFixed(1)} <small className="ml-1 text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">({Number(tutor.totalReviews || 0)} reviews)</small></span>}</div>
                   </div>
                   {viewMode === "list" ? (
-                    <div className="col-span-full row-start-2 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] leading-relaxed text-[#8394a9] min-[1101px]:col-start-2 min-[1101px]:col-span-1 min-[1101px]:row-start-1 [[data-theme=dark]_&]:text-[#91a5bf]">
-                      {subjects && <p className="m-0 min-w-0 break-words"><strong className="text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">Subjects:</strong> {subjects}</p>}
+                    <div className="col-span-full row-start-2 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] leading-relaxed text-[var(--tf-muted)] min-[1101px]:col-start-2 min-[1101px]:col-span-1 min-[1101px]:row-start-1 [[data-theme=dark]_&]:text-[var(--tf-muted)]">
+                      {subjects && <p className="m-0 min-w-0 break-words"><strong className="text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]">Subjects:</strong> {subjects}</p>}
                       {tutor.tuitionName && <p className="m-0 font-semibold text-[#0c5fb7] [[data-theme=dark]_&]:text-[#8bcdf7]">{tutor.tuitionName}</p>}
                       {tutor.qualification && <p className="m-0">{tutor.qualification}</p>}
                       {tutor.teachingYOE !== null && tutor.teachingYOE !== undefined && <p className="m-0">{tutor.teachingYOE} yrs experience</p>}
@@ -415,9 +415,9 @@ export default function DiscoverTutors() {
                   ) : (
                     <>
                       {tutor.tuitionName && <p className="mb-[5px] mt-[15px] text-xs font-semibold text-[#0c5fb7] [[data-theme=dark]_&]:text-[#8bcdf7]">{tutor.tuitionName}</p>}
-                      {tutor.about && <ExpandableText lines={2} className="mb-3 text-xs leading-[1.55] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">{tutor.about}</ExpandableText>}
+                      {tutor.about && <ExpandableText lines={2} className="mb-3 text-xs leading-[1.55] text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]">{tutor.about}</ExpandableText>}
                       <div className="mb-[11px] flex flex-wrap gap-[6px]"><InfoChip>{tutor.qualification}</InfoChip><InfoChip>{tutor.teachingYOE !== null && tutor.teachingYOE !== undefined ? `${tutor.teachingYOE} yrs experience` : ""}</InfoChip>{tutor.establishedYear && <InfoChip>Established {tutor.establishedYear}</InfoChip>}</div>
-                      {subjects && <p className="mb-[15px] overflow-hidden text-ellipsis whitespace-nowrap text-[11px] leading-[1.5] text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]"><strong className="text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">Subjects:</strong> {subjects}</p>}
+                      {subjects && <p className="mb-[15px] overflow-hidden text-ellipsis whitespace-nowrap text-[11px] leading-[1.5] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]"><strong className="text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]">Subjects:</strong> {subjects}</p>}
                     </>
                   )}
                   <div className={`grid grid-cols-2 gap-[9px] ${viewMode === "list" ? "col-start-2 row-start-1 mt-0 self-center min-[1101px]:col-start-3 min-[1101px]:row-start-1 max-[520px]:col-start-1 max-[520px]:row-start-3 max-[520px]:w-full" : "mt-auto"}`}><button type="button" onClick={() => openTutorDetails(tutor)} className={secondaryButtonClass}>Quick view</button><button type="button" onClick={() => tutor.username && navigate(`/tutor/${encodeURIComponent(tutor.username)}`)} disabled={!tutor.username} className={buttonClass}>Portfolio <span aria-hidden="true">↗</span></button></div>
@@ -426,13 +426,13 @@ export default function DiscoverTutors() {
             })}
           </div>
         ) : (
-          <div className="col-span-full rounded-xl border border-dashed border-[#dfe9f3] bg-white p-[38px] text-center text-[#566b84] shadow-[0_8px_26px_rgba(32,70,111,0.05)] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a] [[data-theme=dark]_&]:text-[#b7c7db]"><span className="mb-[9px] block text-[30px] text-[#1875d1] [[data-theme=dark]_&]:text-[#4aa8ee]" aria-hidden="true">⌕</span><strong className="mb-[5px] block text-[15px] text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">No tutors found</strong><p className="mb-4">Try a broader search or remove some filters to see more tutor profiles.</p><button type="button" onClick={resetFilters} className={buttonClass}>Clear search and filters</button></div>
+          <div className="col-span-full rounded-xl border border-dashed border-[var(--tf-line)] bg-white p-[38px] text-center text-[var(--tf-copy)] shadow-[0_8px_26px_rgba(32,70,111,0.05)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-copy)]"><span className="mb-[9px] block text-[30px] text-[#1875d1] [[data-theme=dark]_&]:text-[#4aa8ee]" aria-hidden="true">⌕</span><strong className="mb-[5px] block text-[15px] text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-ink)]">No tutors found</strong><p className="mb-4">Try a broader search or remove some filters to see more tutor profiles.</p><button type="button" onClick={resetFilters} className={buttonClass}>Clear search and filters</button></div>
         )}
 
         {!loading && pagination.totalPages > 1 && (
-          <div className="mt-[22px] flex items-center justify-between gap-3 rounded-[10px] border border-[#dfe9f3] bg-white px-3 py-[10px] shadow-[0_8px_26px_rgba(32,70,111,0.05)] max-[420px]:items-start max-[420px]:flex-col [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a]">
-            <p className="m-0 text-xs text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">Page <strong className="text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">{pagination.page}</strong> of <strong className="text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">{pagination.totalPages}</strong></p>
-            <div className="flex gap-[7px] max-[420px]:self-end"><button className="min-h-[34px] rounded-lg border border-[#dfe9f3] bg-white px-[11px] text-[#566b84] disabled:cursor-not-allowed disabled:opacity-45 [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a] [[data-theme=dark]_&]:text-[#b7c7db]" type="button" disabled={pagination.page <= 1} onClick={() => fetchTutors(pagination.page - 1)}>← Previous</button><button className="min-h-[34px] rounded-lg border border-[#dfe9f3] bg-white px-[11px] text-[#566b84] disabled:cursor-not-allowed disabled:opacity-45 [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a] [[data-theme=dark]_&]:text-[#b7c7db]" type="button" disabled={pagination.page >= pagination.totalPages} onClick={() => fetchTutors(pagination.page + 1)}>Next →</button></div>
+          <div className="mt-[22px] flex items-center justify-between gap-3 rounded-[10px] border border-[var(--tf-line)] bg-white px-3 py-[10px] shadow-[0_8px_26px_rgba(32,70,111,0.05)] max-[420px]:items-start max-[420px]:flex-col [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]">
+            <p className="m-0 text-xs text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">Page <strong className="text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-ink)]">{pagination.page}</strong> of <strong className="text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-ink)]">{pagination.totalPages}</strong></p>
+            <div className="flex gap-[7px] max-[420px]:self-end"><button className="min-h-[34px] rounded-lg border border-[var(--tf-line)] bg-white px-[11px] text-[var(--tf-copy)] disabled:cursor-not-allowed disabled:opacity-45 [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-copy)]" type="button" disabled={pagination.page <= 1} onClick={() => fetchTutors(pagination.page - 1)}>← Previous</button><button className="min-h-[34px] rounded-lg border border-[var(--tf-line)] bg-white px-[11px] text-[var(--tf-copy)] disabled:cursor-not-allowed disabled:opacity-45 [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-copy)]" type="button" disabled={pagination.page >= pagination.totalPages} onClick={() => fetchTutors(pagination.page + 1)}>Next →</button></div>
           </div>
         )}
             </section>
@@ -441,26 +441,26 @@ export default function DiscoverTutors() {
       </main>
 
       {selectedTutor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0e1f33]/50 p-[18px] backdrop-blur-sm" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedTutor(null); }}>
-          <section role="dialog" aria-modal="true" aria-labelledby="tutor-quick-view-title" className="max-h-[90vh] w-full max-w-[520px] overflow-y-auto rounded-2xl border border-[#dfe9f3] bg-white p-[23px] text-[#172b46] shadow-[0_18px_50px_rgba(17,44,75,0.22)] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a] [[data-theme=dark]_&]:text-[#e8f0fb] max-[420px]:p-[18px]">
+        <div className="tf-modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-[var(--tf-surface)]/50 p-[18px] backdrop-blur-sm" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedTutor(null); }}>
+          <section role="dialog" aria-modal="true" aria-labelledby="tutor-quick-view-title" className="tf-modal-panel tf-modal-padded max-h-[90vh] w-full max-w-[520px] overflow-y-auto rounded-2xl border border-[var(--tf-line)] bg-white p-[23px] text-[var(--tf-ink)] shadow-[0_18px_50px_rgba(17,44,75,0.22)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-ink)] max-[420px]:p-[18px]">
             <header className="mb-[18px] flex items-start justify-between gap-3">
               <div><p className="mb-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[#1875d1]">Tutor preview</p><h2 className="m-0 text-[21px]" id="tutor-quick-view-title">{getTutorName(selectedTutor)}</h2></div>
-              <button type="button" onClick={() => setSelectedTutor(null)} className="h-[34px] w-[34px] rounded-lg border-0 bg-transparent text-[25px] leading-none text-[#8394a9] hover:bg-[#f8fbff] hover:text-[#172b46] [[data-theme=dark]_&]:text-[#91a5bf] [[data-theme=dark]_&]:hover:bg-[#1b2d44] [[data-theme=dark]_&]:hover:text-[#e8f0fb]" aria-label="Close preview">×</button>
+              <button type="button" onClick={() => setSelectedTutor(null)} className="h-[34px] w-[34px] rounded-lg border-0 bg-transparent text-[25px] leading-none text-[var(--tf-muted)] hover:bg-[var(--tf-surface-soft)] hover:text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-muted)] [[data-theme=dark]_&]:hover:bg-[var(--tf-surface-soft)] [[data-theme=dark]_&]:hover:text-[var(--tf-ink)]" aria-label="Close preview">×</button>
             </header>
-            {detailLoading ? <p className="py-[30px] text-center text-[13px] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">Loading tutor profile…</p> : (
+            {detailLoading ? <p className="py-[30px] text-center text-[13px] text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]">Loading tutor profile…</p> : (
               <>
-                <div className="flex items-center gap-[14px] rounded-xl border border-[#dfe9f3] bg-[#f8fbff] p-[14px] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#1b2d44]">
+                <div className="flex items-center gap-[14px] rounded-xl border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] p-[14px] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)]">
                   <Avatar src={selectedTutor.profilePicture || selectedTutor.profile_picture || selectedTutor.profilepicture} name={getTutorName(selectedTutor)} size="h-[60px] w-[60px] rounded-[13px]" />
-                  <div className="grid min-w-0 gap-1"><p className="m-0 text-xs text-[#8394a9] [[data-theme=dark]_&]:text-[#91a5bf]">@{selectedTutor.username || "username unavailable"}</p><span className="flex items-center gap-[5px] text-xs text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]"><DetailIcon type="location" />{getLocation(selectedTutor) || "Location not provided"}</span>{selectedTutor.tuitionName && <strong className="text-xs text-[#0c5fb7] [[data-theme=dark]_&]:text-[#8bcdf7]">{selectedTutor.tuitionName}</strong>}</div>
+                  <div className="grid min-w-0 gap-1"><p className="m-0 text-xs text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">@{selectedTutor.username || "username unavailable"}</p><span className="flex items-center gap-[5px] text-xs text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]"><DetailIcon type="location" />{getLocation(selectedTutor) || "Location not provided"}</span>{selectedTutor.tuitionName && <strong className="text-xs text-[#0c5fb7] [[data-theme=dark]_&]:text-[#8bcdf7]">{selectedTutor.tuitionName}</strong>}</div>
                 </div>
                 <div className="mt-[14px] grid grid-cols-2 gap-[9px]">
-                  {[["Qualification", selectedTutor.qualification], ["Experience", selectedTutor.teachingYOE != null ? `${selectedTutor.teachingYOE} years` : "Not provided"], ["Rating", selectedTutor.averageRating != null ? `★ ${Number(selectedTutor.averageRating).toFixed(1)}` : "Not rated"], ["Reviews", selectedTutor.totalReviews ?? "—"], ["Languages", selectedTutor.languages]].map(([label, value]) => <div key={label} className="grid gap-1 rounded-[10px] border border-[#dfe9f3] bg-white p-[11px] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#17263a]"><span className="text-[11px] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]">{label}</span><strong className="break-words text-[13px] text-[#172b46] [[data-theme=dark]_&]:text-[#e8f0fb]">{value || "Not provided"}</strong></div>)}
+                  {[["Qualification", selectedTutor.qualification], ["Experience", selectedTutor.teachingYOE != null ? `${selectedTutor.teachingYOE} years` : "Not provided"], ["Rating", selectedTutor.averageRating != null ? `★ ${Number(selectedTutor.averageRating).toFixed(1)}` : "Not rated"], ["Reviews", selectedTutor.totalReviews ?? "No reviews yet"], ["Languages", selectedTutor.languages]].map(([label, value]) => <div key={label} className="grid gap-1 rounded-[10px] border border-[var(--tf-line)] bg-white p-[11px] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]"><span className="text-[11px] text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]">{label}</span><strong className="break-words text-[13px] text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-ink)]">{value || "Not provided"}</strong></div>)}
                 </div>
-                {selectedTutor.about && <section className="mt-4"><h3 className="mb-[5px] mt-0 text-[13px]">About</h3><ExpandableText lines={5} className="m-0 text-[13px] leading-[1.6] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]" preserveWhitespace>{selectedTutor.about}</ExpandableText></section>}
-                {selectedTutor.teachingSubjects && <section className="mt-4"><h3 className="mb-[5px] mt-0 text-[13px]">Teaching subjects</h3><ExpandableText lines={3} className="m-0 text-[13px] leading-[1.6] text-[#566b84] [[data-theme=dark]_&]:text-[#b7c7db]" preserveWhitespace>{selectedTutor.teachingSubjects}</ExpandableText></section>}
+                {selectedTutor.about && <section className="mt-4"><h3 className="mb-[5px] mt-0 text-[13px]">About</h3><ExpandableText lines={5} className="m-0 text-[13px] leading-[1.6] text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]" preserveWhitespace>{selectedTutor.about}</ExpandableText></section>}
+                {selectedTutor.teachingSubjects && <section className="mt-4"><h3 className="mb-[5px] mt-0 text-[13px]">Teaching subjects</h3><ExpandableText lines={3} className="m-0 text-[13px] leading-[1.6] text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]" preserveWhitespace>{selectedTutor.teachingSubjects}</ExpandableText></section>}
               </>
             )}
-            {detailError && <p role="alert" className="mt-[14px] rounded-[9px] border border-[#dfe9f3] bg-[#fff2f3] px-3 py-[10px] text-xs text-[#b93849] [[data-theme=dark]_&]:border-[#30465f] [[data-theme=dark]_&]:bg-[#45232d] [[data-theme=dark]_&]:text-[#ff9aa4]">{detailError}</p>}
+            {detailError && <p role="alert" className="mt-[14px] rounded-[9px] border border-[var(--tf-line)] bg-[#fff2f3] px-3 py-[10px] text-xs text-[#b93849] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[#45232d] [[data-theme=dark]_&]:text-[#ff9aa4]">{detailError}</p>}
             <div className="mt-5 flex justify-end gap-2"><button type="button" onClick={() => setSelectedTutor(null)} className={secondaryButtonClass}>Close</button><button type="button" disabled={!selectedTutor.username} onClick={() => navigate(`/tutor/${encodeURIComponent(selectedTutor.username)}`)} className={buttonClass}>View portfolio ↗</button></div>
           </section>
         </div>

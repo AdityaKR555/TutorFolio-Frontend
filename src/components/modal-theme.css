@@ -1,0 +1,127 @@
+/* Shared appearance for platform prompts; widths and form behavior stay local. */
+.tf-modal-backdrop,
+.tf-modal-panel::backdrop {
+  background-color: rgb(10 18 30 / 48%);
+  backdrop-filter: blur(4px);
+}
+
+.tf-modal-panel {
+  border: 1px solid color-mix(in srgb, var(--tf-line) 85%, transparent);
+  border-radius: 16px;
+  background-color: var(--tf-surface);
+  color: var(--tf-ink);
+  box-shadow: 0 20px 60px rgb(0 0 0 / 18%);
+  max-height: 92dvh;
+}
+
+.tf-modal-padded {
+  padding: 24px;
+}
+
+.tf-modal-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.tf-modal-heading-padded {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--tf-line);
+}
+
+.tf-modal-body {
+  padding: 24px;
+}
+
+.tf-modal-panel :is(h2, h3) {
+  font-size: 20px;
+  line-height: 1.35;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.tf-modal-panel button[aria-label^="Close"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--tf-line);
+  border-radius: 12px;
+  background: var(--tf-surface-soft);
+  color: var(--tf-copy);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 150ms, color 150ms, border-color 150ms;
+}
+
+.tf-modal-panel button[aria-label^="Close"]:hover:not(:disabled) {
+  background: var(--tf-sky);
+  color: var(--tf-blue-pressed);
+  border-color: color-mix(in srgb, var(--tf-blue) 45%, var(--tf-line));
+}
+
+.tf-modal-panel button[aria-label^="Close"]:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.tf-modal-panel :is(input:not([type]), input[type="text"], input[type="email"], input[type="password"], input[type="url"], input[type="number"], input[type="date"], input[type="search"], textarea, select) {
+  min-height: 44px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--tf-line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--tf-surface-soft);
+  color: var(--tf-ink);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tf-modal-panel :is(input, textarea, select):focus-visible {
+  border-color: var(--tf-blue);
+  outline: 2px solid color-mix(in srgb, var(--tf-blue) 25%, transparent);
+  outline-offset: 1px;
+}
+
+.tf-modal-panel form button:not([aria-label]):not([role="switch"]):not([popoverTarget]) {
+  min-height: 42px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+@media (max-width: 760px) {
+  .tf-modal-padded,
+  .tf-modal-body {
+    padding: 20px;
+  }
+
+  .tf-modal-heading-padded {
+    padding: 16px 20px;
+  }
+
+  .tf-modal-panel :is(input:not([type]), input[type="text"], input[type="email"], input[type="password"], input[type="url"], input[type="number"], input[type="date"], input[type="search"], textarea, select) {
+    font-size: 16px;
+  }
+}
+
+.tf-modal-panel textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.tf-modal-panel button[aria-label^="Close"] svg {
+  width: 22px;
+  height: 22px;
+}
+
+:root[data-theme="dark"] .tf-modal-panel {
+  box-shadow: 0 20px 60px rgb(0 0 0 / 45%);
+}

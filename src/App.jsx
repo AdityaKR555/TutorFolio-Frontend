@@ -2,6 +2,7 @@ import React from "react";
 import { Route, Routes } from "react-router-dom";
 
 import Home from "./Home";
+import BackToTop from "./components/BackToTop";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import AuthCallback from "./pages/AuthCallback";
@@ -125,6 +126,7 @@ function App() {
         <Route path="/tutor/:username" element={<PublicTutorWebsite />} />
         <Route path="/tutor/:username/:section" element={<PublicTutorWebsite />} />
       </Routes>
+      <BackToTop />
     </div>
   );
 }

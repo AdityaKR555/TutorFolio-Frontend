@@ -190,9 +190,9 @@ export default function PublicTutorWebsite() {
   };
 
   return (
-    <>
+    <div className="mobile-public-portfolio">
       <ThemeComponent {...themeProps} />
       <VisitorChatWidget tutorId={tutorId} tutorName={name} open={chatOpen} onClose={() => setChatOpen(false)} />
-    </>
+    </div>
   );
 }

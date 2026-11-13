@@ -117,8 +117,8 @@ export default function VisitorChatWidget({ tutorId, tutorName = "Tutor", open, 
   const isClosed = String(thread?.status || "").toLowerCase() === "closed";
   const messages = Array.isArray(thread?.messages) ? thread.messages : [];
 
-  return <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/65 p-0 backdrop-blur-sm sm:items-center sm:p-5" role="dialog" aria-modal="true" aria-label={`Contact ${tutorName}`}>
-    <div className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-t-3xl border border-tf-line bg-tf-surface shadow-2xl shadow-black/20 dark:shadow-black/50 sm:rounded-3xl">
+  return <div className="tf-modal-backdrop fixed inset-0 z-[120] flex items-end justify-center bg-black/65 p-0 backdrop-blur-sm sm:items-center sm:p-5" role="dialog" aria-modal="true" aria-label={`Contact ${tutorName}`}>
+    <div className="tf-modal-panel flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-t-3xl border border-tf-line bg-tf-surface shadow-2xl shadow-black/20 dark:shadow-black/50 sm:rounded-3xl">
       <div className="flex items-center justify-between gap-4 border-b border-tf-line p-4 sm:p-5"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-tf-blue-pressed">TutorFolio messages</p><h2 className="mt-1 text-lg font-bold text-tf-ink">Contact {tutorName}</h2><p className="mt-1 text-xs text-tf-copy">Send an enquiry directly to this tutor.</p></div><button type="button" onClick={onClose} aria-label="Close chat" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-tf-line text-lg text-tf-copy hover:bg-tf-surface-soft">×</button></div>
       <div className="flex-1 space-y-3 overflow-y-auto bg-tf-bg p-4 sm:p-5">
         {!visitorIdentifier && <div className="rounded-xl border border-tf-line bg-tf-surface p-3 text-xs leading-5 text-tf-copy">Your conversation token is saved only in this browser. Keep using the same browser to read replies and continue the chat.</div>}

@@ -1,0 +1,178 @@
+/* Scoped to Batches: desktop keeps its full summary and table layout. */
+.tf-batches .batch-icon-action {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.tf-batches .batch-icon-action:hover,
+.tf-batches .batch-icon-action:active { background: transparent; }
+.tf-batches .batch-icon-action svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+}
+@media (min-width: 761px) {
+  .tf-batches .batch-mobile-list { display: none; }
+}
+@media (max-width: 760px) {
+  .tf-batches { padding: 20px 16px; }
+  .tf-batches .batch-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 8px 12px;
+    margin-bottom: 20px;
+  }
+  .tf-batches .batch-heading > div { display: contents; }
+  .tf-batches .batch-heading h1 {
+    grid-column: 1;
+    margin: 3px 0 0;
+    font-size: 26px;
+    line-height: 34px;
+  }
+  .tf-batches .batch-heading p {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    font-size: 12px;
+    line-height: 19px;
+    max-width: 42ch;
+  }
+  .tf-batches .batch-new {
+    grid-column: 2;
+    grid-row: 1;
+    min-height: 40px;
+    padding: 9px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    gap: 5px;
+  }
+  .tf-batches .batch-new svg { width: 17px; height: 17px; }
+  .tf-batches .batch-summary {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .tf-batches .batch-stat {
+    grid-column: span 2;
+    min-height: 84px;
+    border-radius: 14px;
+    padding: 12px 10px;
+  }
+  .tf-batches .batch-stat > span { font-size: 10px; line-height: 14px; }
+  .tf-batches .batch-stat > strong { margin-top: 6px; font-size: 24px; line-height: 28px; }
+  .tf-batches .batch-stat > svg { width: 64px; height: 46px; opacity: .25; }
+  .tf-batches .batch-stat-total,
+  .tf-batches .batch-stat-revenue {
+    grid-column: span 3;
+    min-height: 112px;
+    padding: 14px;
+    order: -1;
+  }
+  .tf-batches .batch-stat-total > span,
+  .tf-batches .batch-stat-revenue > span { font-size: 11px; }
+  .tf-batches .batch-stat-total > svg,
+  .tf-batches .batch-stat-revenue > svg { width: 94px; height: 66px; opacity: .55; }
+  .tf-batches .batch-stat-total > strong { font-size: 30px; line-height: 32px; }
+  .tf-batches .batch-stat-revenue > strong { font-size: clamp(16px, 4.5vw, 23px) !important; }
+  .tf-batches .batch-stat small { max-width: 105px; font-size: 9px; line-height: 13px; }
+  .tf-batches [role="tablist"] { border-radius: 12px; gap: 2px; }
+  .tf-batches [role="tab"] { flex: 1; padding: 8px 5px; border-radius: 9px; font-size: 11px; }
+  .tf-batches [aria-label="Batch layout"] { border-radius: 12px; padding: 3px; gap: 0; }
+  .tf-batches [aria-label="Batch layout"] button { width: 36px; border-radius: 9px; }
+  .tf-batches input[type="search"] { min-height: 46px; font-size: 13px; }
+  .tf-batches article { padding: 14px; border-radius: 16px; }
+  .tf-batches .batch-card-top { align-items: start; gap: 8px; }
+  .tf-batches .batch-card-top h2 { margin-bottom: 0; font-size: 14px; line-height: 20px; }
+  .tf-batches .batch-card-actions { gap: 4px; }
+  .tf-batches .batch-icon-action { width: 36px; }
+  .tf-batches .batch-preview { gap: 10px; margin: 12px 0; }
+  .tf-batches .batch-preview img { width: 86px; height: 72px; border-radius: 10px; }
+  .tf-batches .batch-preview p { margin-bottom: 0; font-size: 11px; line-height: 17px; }
+  .tf-batches .batch-preview button { min-height: 32px; margin-top: 0; font-size: 11px; }
+  .tf-batches article button[aria-pressed]:not(.batch-icon-action) {
+    /* Preserve a 40px touch target around the 20px visual switch. */
+    min-height: 40px;
+    height: 40px;
+    width: 36px;
+    flex-shrink: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+  .tf-batches article button[aria-pressed]::before {
+    content: "";
+    position: absolute;
+    width: 34px;
+    height: 20px;
+    left: 0;
+    top: 10px;
+    border-radius: 20px;
+    background: var(--tf-line);
+  }
+  .tf-batches article button[aria-pressed="true"]::before { background: var(--tf-blue); }
+  .tf-batches article button[aria-pressed]::after { top: 13px; background: white; }
+  .tf-batches article > div:last-child { margin-top: 10px; padding-top: 4px; }
+  .tf-batches .batch-backdrop { align-items: flex-end; padding: 0; }
+  .tf-batches .batch-modal {
+    max-height: 92dvh;
+    border-radius: 20px 20px 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    overscroll-behavior: contain;
+  }
+  .tf-batches .batch-modal > div:first-child {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--tf-surface);
+  }
+  .tf-batches .batch-modal input:not([type="checkbox"]):not([type="file"]),
+  .tf-batches .batch-modal select,
+  .tf-batches .batch-modal textarea { font-size: 16px; }
+  .tf-batches .batch-desktop-table { display: none; }
+  .tf-batches .batch-mobile-list .batch-preview img { width: 64px; height: 60px; }
+}
+@media (max-width: 360px) {
+  .tf-batches { padding-inline: 12px; }
+  .tf-batches .batch-summary { gap: 8px; }
+  .tf-batches .batch-stat { padding-inline: 8px; }
+  .tf-batches .batch-card-actions { flex-direction: column; }
+}
+
+.tf-batches .batch-revenue-info {
+  position: absolute;
+  top: 5px;
+  right: 3px;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  color: var(--tf-copy);
+  background: transparent;
+  cursor: pointer;
+}
+.tf-batches .batch-revenue-info:hover { color: var(--tf-blue); }
+.batch-revenue-tooltip {
+  position: fixed;
+  inset: 0;
+  width: min(340px, calc(100vw - 32px));
+  height: fit-content;
+  margin: auto;
+  padding: 18px;
+  border: 1px solid var(--tf-line);
+  border-radius: 16px;
+  background: var(--tf-surface);
+  color: var(--tf-ink);
+  box-shadow: 0 12px 40px rgb(15 23 42 / 18%);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.batch-revenue-tooltip p { margin-top: 10px; color: var(--tf-copy); }
+.batch-revenue-tooltip .batch-revenue-formula { font-weight: 600; color: var(--tf-ink); }

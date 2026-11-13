@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import api from "../../api/axios";
+import SystemThemeSettings from "../../components/SystemThemeSettings";
+import { setAuthSession } from "../../utils/auth";
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_.-]+$/;
 
@@ -75,6 +77,15 @@ function Settings() {
     message: "",
   });
   const [usernameEditing, setUsernameEditing] = useState(false);
+  const [currentEmail, setCurrentEmail] = useState(storedUser?.email || "");
+  const [emailDraft, setEmailDraft] = useState("");
+  const [emailEditing, setEmailEditing] = useState(false);
+  const [emailCode, setEmailCode] = useState("");
+  const [pendingEmail, setPendingEmail] = useState("");
+  const [emailSaving, setEmailSaving] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(true);
+  const [resendAt, setResendAt] = useState(0);
+  const [resendSeconds, setResendSeconds] = useState(0);
 
   const availabilityRequest = useRef(0);
 
@@ -110,10 +121,35 @@ function Settings() {
 
   const getUserId = () => {
     const user = getStoredUser();
-    return user?.user_id || null;
+    return user?.userId || user?.user_id || user?.id || null;
   };
 
-  // Load existing profile picture and latest username from backend.
+  useEffect(() => {
+    if (!resendAt) return;
+    const tick = () => setResendSeconds(Math.max(0, Math.ceil((resendAt - Date.now()) / 1000)));
+    tick();
+    const timer = setInterval(tick, 1000);
+    return () => clearInterval(timer);
+  }, [resendAt]);
+
+  useEffect(() => {
+    let cancelled = false;
+    api.get("/profile/settings/account", { timeout: 15000 }).then(({ data: result }) => {
+      if (cancelled) return;
+      if (result.status !== 200 || !result.data) throw new Error("Unable to load account settings");
+      setCurrentEmail(result.data.email);
+      setCurrentUsername(result.data.username);
+      setUsernameDraft(result.data.username);
+      updateStoredUser({ email: result.data.email, username: result.data.username });
+    }).catch((error) => {
+      if (!cancelled) setNotice({ type: "error", text: getErrorMessage(error, "Unable to load account settings. Please reload to try again.") });
+    }).finally(() => {
+      if (!cancelled) setEmailLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Load the independently editable public profile picture.
   useEffect(() => {
     let cancelled = false;
 
@@ -149,15 +185,6 @@ function Settings() {
               details.profilepicture ||
               ""
           );
-
-          if (details.username) {
-            setCurrentUsername(details.username);
-            setUsernameDraft(details.username);
-
-            updateStoredUser({
-              username: details.username,
-            });
-          }
         } else if (result?.status === 404) {
           setHasProfile(false);
           setProfilePicture("");
@@ -628,8 +655,63 @@ function Settings() {
     }
   };
 
+  const handleEmailRequest = async (event) => {
+    event.preventDefault();
+    const newEmail = emailDraft.trim().toLowerCase();
+    if (newEmail === currentEmail.trim().toLowerCase()) {
+      notify("info", "Your email has not changed.");
+      return;
+    }
+    setEmailSaving(true);
+    setNotice({ type: "", text: "" });
+    try {
+      const { data: result } = await api.post("/profile/settings/email/change/request", { newEmail }, { timeout: 30000 });
+      if (result.status !== 200 || !result.data?.newEmail) {
+        notify("error", result.message || "Unable to send verification code.");
+        return;
+      }
+      setPendingEmail(result.data.newEmail);
+      setEmailCode("");
+      setResendAt(Date.now() + result.data.resendAfterSeconds * 1000);
+      notify("success", result.message);
+    } catch (error) {
+      notify("error", getErrorMessage(error, "Unable to send verification code."));
+    } finally {
+      setEmailSaving(false);
+    }
+  };
+
+  const handleEmailConfirm = async (event) => {
+    event.preventDefault();
+    setEmailSaving(true);
+    setNotice({ type: "", text: "" });
+    try {
+      const { data: result } = await api.patch("/profile/settings/email/change", {
+        newEmail: pendingEmail, otp: emailCode,
+      }, { timeout: 15000 });
+      if (result.status !== 200 || !result.data?.email || !result.data?.accessToken) {
+        notify("error", result.message || "Unable to change email.");
+        return;
+      }
+      // Keep user data and the separately stored Bearer token in sync.
+      setAuthSession({ ...getStoredUser(), ...result.data });
+      setCurrentEmail(result.data.email);
+      setPendingEmail("");
+      setEmailCode("");
+      setEmailDraft("");
+      setEmailEditing(false);
+      notify("success", "Email changed successfully. Use your new email next time you log in.");
+    } catch (error) {
+      notify("error", getErrorMessage(error, "Unable to change email."));
+    } finally {
+      setEmailSaving(false);
+    }
+  };
+
   const inputClass = "tf-field disabled:cursor-not-allowed disabled:bg-tf-surface-soft disabled:text-tf-muted";
   const labelClass = "tf-label my-0";
+  const secondaryButtonClass = "inline-flex min-h-[34px] items-center justify-center rounded-lg border border-[var(--tf-line)] bg-[var(--tf-surface)] px-3 py-2 text-[11px] font-semibold text-[var(--tf-copy)] hover:bg-[var(--tf-surface-soft)] disabled:cursor-not-allowed disabled:opacity-55";
+  const primaryButtonClass = "inline-flex min-h-[34px] items-center justify-center rounded-lg border border-[var(--tf-blue)] bg-[var(--tf-blue)] px-3 py-2 text-[11px] font-semibold text-[var(--tf-on-primary)] hover:bg-[var(--tf-blue-pressed)] disabled:cursor-not-allowed disabled:opacity-55";
 
   const availabilityColor = {
     available: "text-[var(--tf-success)]",
@@ -653,12 +735,12 @@ function Settings() {
   );
 
   return (
-    <div className="min-h-full bg-[var(--tf-bg)] px-8 pt-[34px] pb-14 text-[var(--tf-ink)] [font:14px/1.5_Inter,ui-sans-serif,system-ui,-apple-system,'Segoe_UI',sans-serif] max-[800px]:px-[18px] max-[800px]:pt-6 max-[800px]:pb-10 max-[560px]:px-[14px] max-[560px]:pt-5 max-[560px]:pb-8 [&:where([data-theme=dark] *)]:bg-[var(--tf-bg)] [&:where([data-theme=dark] *)]:text-[var(--tf-ink)]">
+    <div className="mobile-page mobile-settings min-h-full bg-[var(--tf-bg)] px-8 pt-[34px] pb-14 text-[var(--tf-ink)] [font:14px/1.5_Inter,ui-sans-serif,system-ui,-apple-system,'Segoe_UI',sans-serif] max-[800px]:px-[18px] max-[800px]:pt-6 max-[800px]:pb-10 max-[560px]:px-[14px] max-[560px]:pt-5 max-[560px]:pb-8 [&:where([data-theme=dark] *)]:bg-[var(--tf-bg)] [&:where([data-theme=dark] *)]:text-[var(--tf-ink)]">
       <div className="mx-auto max-w-[1080px]">
-        <header className="mb-6 flex items-start justify-between gap-[18px]">
+        <header className="mobile-heading mb-6 flex items-start justify-between gap-[18px]">
           <div>
             <h1 className="tf-page-title mt-0 mb-2">Settings</h1>
-            <p className="m-0 text-[13px] text-[var(--tf-copy)]">Manage your username, profile picture and password.</p>
+            <p className="m-0 text-[13px] text-[var(--tf-copy)]">Manage your appearance, username, email, profile picture and password.</p>
           </div>
         </header>
 
@@ -670,6 +752,8 @@ function Settings() {
 
         <div className="grid grid-cols-1">
           <div className="grid gap-[15px]">
+          <SystemThemeSettings />
+
           <section className="tf-card min-w-0 p-5 shadow-sm max-[560px]:p-4" id="account">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
@@ -742,6 +826,42 @@ function Settings() {
                   </button>
                 </div>
               </form>
+            )}
+          </section>
+
+          <section className="tf-card min-w-0 p-5 shadow-sm max-[560px]:p-4" id="email">
+            <h2 className="tf-section-title mt-0 mb-1">Email address</h2>
+            <p className="mb-4 text-[11px] text-[var(--tf-muted)]">Your login email. Verify your new address before saving. Your public contact email is managed in Personal Details.</p>
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <strong className="block text-xs">Current email</strong>
+                <span className="break-all text-[11px] text-[var(--tf-muted)]">{emailLoading ? "Loading…" : currentEmail || "Not set"}</span>
+              </div>
+              {!emailEditing && <button type="button" className={secondaryButtonClass} disabled={emailLoading} onClick={() => { setEmailEditing(true); setEmailDraft(""); setNotice({ type: "", text: "" }); }}>Change email</button>}
+            </div>
+            {emailEditing && (
+              <div className="mt-4 grid gap-3 border-t border-[var(--tf-line)] pt-4">
+                <form onSubmit={handleEmailRequest} className="grid gap-3">
+                  <label htmlFor="new-email" className={labelClass}>New email address</label>
+                  <input id="new-email" type="email" autoComplete="email" maxLength={254} required className={inputClass}
+                    value={emailDraft} disabled={emailSaving}
+                    onChange={(event) => { setEmailDraft(event.target.value); setPendingEmail(""); setEmailCode(""); setNotice({ type: "", text: "" }); }}
+                    placeholder="Enter a new email address" />
+                  <button type="submit" className={secondaryButtonClass} disabled={emailSaving || resendSeconds > 0 || !emailDraft.trim() || emailDraft.trim().toLowerCase() === currentEmail.trim().toLowerCase()}>
+                    {emailSaving ? "Please wait…" : resendSeconds > 0 ? `Resend available in ${resendSeconds}s` : pendingEmail ? "Resend code" : "Send verification code"}
+                  </button>
+                </form>
+                {pendingEmail && (
+                  <form onSubmit={handleEmailConfirm} className="grid gap-3">
+                    <p className="m-0 break-words text-[11px] text-[var(--tf-muted)]">Enter the code sent to {pendingEmail}. It expires in 10 minutes.</p>
+                    <label htmlFor="email-code" className={labelClass}>Verification code</label>
+                    <input id="email-code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required
+                      value={emailCode} onChange={(event) => setEmailCode(event.target.value.replace(/[^0-9]/g, ""))} disabled={emailSaving} className={inputClass} placeholder="6-digit code" />
+                    <button type="submit" className={primaryButtonClass} disabled={emailSaving || emailCode.length !== 6}>{emailSaving ? "Updating…" : "Verify and save email"}</button>
+                  </form>
+                )}
+                <button type="button" className={secondaryButtonClass} disabled={emailSaving} onClick={() => { setEmailEditing(false); setPendingEmail(""); setEmailCode(""); setEmailDraft(""); setNotice({ type: "", text: "" }); }}>Cancel</button>
+              </div>
             )}
           </section>
 

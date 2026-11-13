@@ -42,7 +42,7 @@ const platformFaqs = [
 ];
 
 export default function Guide() {
-  return <main className="mx-auto max-w-6xl space-y-8 p-4 pb-16 sm:p-6 lg:p-8">
+  return <main className="mobile-guide mx-auto max-w-6xl space-y-8 p-4 pb-16 sm:p-6 lg:p-8">
     <header className="rounded-3xl bg-sky-800 px-6 py-9 text-white sm:px-9 sm:py-12 dark:bg-sky-950">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-sky-200">TutorFolio guide</p>
       <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Make the most of your tutor website</h1>

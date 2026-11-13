@@ -151,8 +151,8 @@ function ResumeExtractorModal({ isOpen, onClose, onApply, mode = "all" }) {
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-2xl bg-tf-surface border border-tf-line rounded-3xl p-6 sm:p-8 shadow-2xl text-tf-ink max-h-[90vh] overflow-y-auto">
+    <div className="tf-modal-backdrop mobile-resume-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
+      <div role="dialog" aria-modal="true" aria-label="Auto-fill from Resume" className="tf-modal-panel tf-modal-padded mobile-resume-sheet relative w-full max-w-2xl bg-tf-surface border border-tf-line rounded-3xl p-6 sm:p-8 shadow-2xl text-tf-ink max-h-[90vh] overflow-y-auto">
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="flex items-start justify-between gap-4 pb-5 border-b border-tf-line">
