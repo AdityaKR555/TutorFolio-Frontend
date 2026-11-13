@@ -21,7 +21,7 @@ export const PLANS = [
       { text: "Multiple Website Themes", included: false },
       { text: "Dashboard Refresh Rate: 1 day", included: true },
     ],
-    highlightFeature: "Free lifetime access", ctaText: "Get Started", accentColor: "blue",
+    highlightFeature: "Free lifetime access", ctaText: "Always free", accentColor: "blue",
   },
   {
     id: "pro", name: "Pro", badge: "Popular", description: "More room to showcase your batches, achievements, and brand.", popular: true,

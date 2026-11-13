@@ -23,160 +23,62 @@ export const DEFAULT_ISSUE_TYPES = [
 /**
  * 1. Fetch available active issue types
  */
+const responseError = (data, fallback) => {
+  const detail = data?.message || data?.detail;
+  return new Error(Array.isArray(detail) ? detail.map((item) => item.msg || String(item)).join(", ") : detail || fallback);
+};
+
 export const getIssueTypes = async () => {
-  const possibleEndpoints = [
-    "/issue-reports/types",
-    "/issue-reports/issue-types",
-    "/issues/types",
-    "/report-bug/types",
-  ];
-
-  for (const endpoint of possibleEndpoints) {
-    try {
-      const response = await api.get(endpoint, { timeout: 8000 });
-      const data = response.data;
-
-      if (data?.status === 200 && data?.data?.issueTypes?.length) {
-        return data.data.issueTypes;
-      }
-    } catch {
-      // Try next endpoint candidate
-    }
+  try {
+    const { data } = await api.get("/issues/types", { timeout: 8000 });
+    if (data?.status === 200 && Array.isArray(data?.data?.issueTypes)) return data.data.issueTypes;
+  } catch {
+    // Form defaults remain available; submissions still require server confirmation.
   }
-
-  // Fallback to default types if endpoints not yet routed
   return DEFAULT_ISSUE_TYPES;
 };
 
-/**
- * 2. Submit a new issue report
- * @param {Object} params
- * @param {number} params.userId
- * @param {string} params.issueType
- * @param {string} params.title
- * @param {string} params.description
- * @param {string} [params.pageUrl]
- */
-export const createIssueReport = async ({
-  userId,
-  issueType,
-  title,
-  description,
-  pageUrl,
-}) => {
-  const payload = {
-    issueType: issueType.trim(),
-    title: title.trim(),
-    description: description.trim(),
-    pageUrl: pageUrl?.trim() || null,
-  };
-
-  const possibleEndpoints = [
-    { url: "/issue-reports", method: "post" },
-    { url: `/issue-reports?userId=${userId}`, method: "post" },
-    { url: "/issue-reports/new", method: "post" },
-    { url: "/issues", method: "post" },
-    { url: "/report-bug", method: "post" },
-  ];
-
-  let lastError = null;
-
-  for (const target of possibleEndpoints) {
-    try {
-      const response = await api.post(target.url, payload, {
-        timeout: 12000,
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const data = response.data;
-
-      if (data?.status === 201 || data?.status === 200) {
-        return data.data || data;
-      }
-    } catch (err) {
-      lastError = err;
-      if (err.response?.status === 400 || err.response?.status === 422) {
-        // Validation error from backend
-        const detail = err.response.data?.detail || err.response.data?.message;
-        const msg = Array.isArray(detail)
-          ? detail.map((d) => d.msg || d).join(", ")
-          : detail || "Invalid issue report data.";
-        throw new Error(msg);
-      }
-    }
-  }
-
-  // If backend endpoint is under construction, save to local cache for demo/testing
-  console.warn(
-    "Backend issue report endpoint not reachable. Storing report in local cache.",
-    lastError?.message
-  );
-
-  const localReport = {
-    issueReportId: `report_${Date.now().toString(36)}`,
-    userId,
-    issueType: payload.issueType,
-    title: payload.title,
-    description: payload.description,
-    pageUrl: payload.pageUrl,
-    status: "submitted",
-    createdAt: new Date().toISOString(),
-    modifiedAt: new Date().toISOString(),
-    isLocal: true,
-  };
-
+export const createIssueReport = async ({ issueType, title, description, pageUrl }) => {
   try {
-    const key = `tutorfolio_issue_reports_${userId}`;
-    const existing = JSON.parse(localStorage.getItem(key) || "[]");
-    localStorage.setItem(key, JSON.stringify([localReport, ...existing]));
-  } catch (e) {
-    console.error("Local storage error:", e);
+    const { data } = await api.post("/issues/report", {
+      issueType: issueType.trim(), title: title.trim(), description: description.trim(),
+      pageUrl: pageUrl?.trim() || null,
+    }, { timeout: 12000 });
+    if ((data?.status === 201 || data?.status === 200) && data?.data?.issueReportId) return data.data;
+    throw responseError(data, "Your report could not be submitted. Please try again.");
+  } catch (error) {
+    if (error.response) throw responseError(error.response.data, "Your report could not be submitted. Please try again.");
+    throw error;
   }
-
-  return localReport;
 };
 
-/**
- * 3. Fetch user's submitted issue reports with pagination
- * @param {number} userId
- * @param {number} [page=1]
- * @param {number} [limit=20]
- */
-export const getUserIssueReports = async (userId, page = 1, limit = 20) => {
-  if (!userId) return { total: 0, page: 1, limit, issueReports: [] };
-
-  const possibleEndpoints = [
-    `/issue-reports?userId=${userId}&page=${page}&limit=${limit}`,
-    `/issue-reports/getAll/${userId}?page=${page}&limit=${limit}`,
-    `/issue-reports/user/${userId}?page=${page}&limit=${limit}`,
-    `/issues?userId=${userId}&page=${page}&limit=${limit}`,
-  ];
-
-  for (const endpoint of possibleEndpoints) {
-    try {
-      const response = await api.get(endpoint, { timeout: 8000 });
-      const data = response.data;
-
-      if (data?.status === 200 && data?.data) {
-        return data.data;
-      }
-    } catch {
-      // Try next
-    }
-  }
-
-  // Fallback to local cache if backend endpoint is not yet connected
+// Retain reports saved by the old offline fallback, without calling them submitted.
+const getLegacyReports = (userId) => {
   try {
-    const key = `tutorfolio_issue_reports_${userId}`;
-    const local = JSON.parse(localStorage.getItem(key) || "[]");
-    return {
-      total: local.length,
-      page,
-      limit,
-      issueReports: local,
-    };
+    const reports = JSON.parse(localStorage.getItem(`tutorfolio_issue_reports_${userId}`) || "[]");
+    return Array.isArray(reports) ? reports.filter((item) => item?.isLocal && String(item.userId) === String(userId)) : [];
   } catch {
-    return { total: 0, page: 1, limit, issueReports: [] };
+    return [];
   }
 };
 
+export const getUserIssueReports = async (userId, page = 1, limit = 20) => {
+  if (!userId) throw new Error("Please log in to view your reports.");
+  try {
+    // Ownership is resolved from the Bearer token by the backend.
+    const { data } = await api.get("/issues/my-reports", { params: { page, limit }, timeout: 12000 });
+    if (data?.status !== 200 || !Array.isArray(data?.data?.issueReports) || !Number.isInteger(data.data.total)) {
+      throw responseError(data, "Unable to load your reports. Please try again.");
+    }
+    const local = page === 1 ? getLegacyReports(userId) : [];
+    return {
+      ...data.data,
+      total: data.data.total + local.length,
+      localCount: local.length,
+      issueReports: [...local, ...data.data.issueReports],
+    };
+  } catch (error) {
+    if (error.response) throw responseError(error.response.data, "Unable to load your reports. Please try again.");
+    throw new Error(error.message || "Unable to load your reports. Please try again.");
+  }
+};

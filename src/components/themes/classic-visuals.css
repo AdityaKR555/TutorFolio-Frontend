@@ -25,3 +25,46 @@
   background-size: 32px 32px;
   mask-image: radial-gradient(ellipse, black, transparent 70%);
 }
+
+/* Compact, balanced footer columns with comfortable touch targets on phones. */
+@media (max-width: 639px) {
+  .classic-footer .classic-footer-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 24px 20px;
+    padding: 28px 20px 24px;
+  }
+  .classic-footer-brand {
+    grid-column: 1 / -1;
+    align-items: center;
+  }
+  .classic-footer-brand > :first-child { flex-shrink: 0; }
+  .classic-footer-brand > span { min-width: 0; overflow-wrap: anywhere; font-size: 18px; }
+  .classic-footer-grid > div { min-width: 0; }
+  .classic-footer nav ul { gap: 2px; }
+  .classic-footer nav a,
+  .classic-footer a[href^="mailto:"],
+  .classic-footer a[href^="tel:"],
+  .classic-footer a[href*="#about-contact"] {
+    min-height: 40px;
+    align-items: center;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  .classic-footer-credit {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 12px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 20px;
+    padding-right: 56px; /* Keep the floating contact buttons clear of branding. */
+  }
+  .classic-footer-credit > a { margin-top: 0; min-height: 40px; font-size: 16px; }
+  .classic-footer-credit > p { margin: 0; }
+  .classic-footer > div:last-child { padding-right: 76px; }
+  .classic-footer > div:last-child p { text-align: center; line-height: 1.7; overflow-wrap: anywhere; }
+  [data-theme="dark"] .classic-footer-credit { border-color: #334155; }
+}

@@ -1,0 +1,62 @@
+/* The receipt portal is a direct child of body, separate from billing history. */
+@media print {
+  body:has(> .billing-receipt-backdrop) {
+    background: white !important;
+    color: black !important;
+    overflow: visible !important;
+  }
+
+  body:has(> .billing-receipt-backdrop) > :not(.billing-receipt-backdrop) {
+    display: none !important;
+  }
+
+  .billing-receipt-backdrop {
+    position: static !important;
+    display: block !important;
+    padding: 0 !important;
+    background: white !important;
+    backdrop-filter: none !important;
+    animation: none !important;
+  }
+
+  .billing-receipt-sheet {
+    width: 100% !important;
+    max-width: 640px !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 auto !important;
+    padding: 24px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .billing-receipt-sheet,
+  .billing-receipt-sheet * {
+    color: black !important;
+    background: white !important;
+    text-shadow: none !important;
+    overflow-wrap: anywhere;
+  }
+
+  .billing-receipt-sheet .receipt-screen-only {
+    display: none !important;
+  }
+}
+
+/* Preserve the mobile sheet presentation when rendered outside the app shell. */
+@media screen and (max-width: 760px) {
+  .billing-receipt-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .billing-receipt-sheet {
+    max-width: none;
+    max-height: 92dvh;
+    overflow-y: auto;
+    border-radius: 20px 20px 0 0;
+    padding: 20px 16px max(20px, env(safe-area-inset-bottom));
+  }
+}

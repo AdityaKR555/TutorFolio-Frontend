@@ -1,3 +1,4 @@
+import KpiState from "../../components/KpiState";
 import React, { useEffect, useMemo, useState } from "react";
 import api from "../../api/axios";
 
@@ -253,10 +254,10 @@ function Dashboard() {
     : [];
 
   return (
-    <div className="p-5 sm:p-8">
+    <div className="mobile-page mobile-dashboard p-5 sm:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
+        <div className="mobile-dashboard-heading mb-8 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
           <div>
             <p className="text-tf-copy text-sm mb-2">Tutor Dashboard</p>
 
@@ -301,9 +302,9 @@ function Dashboard() {
         )}
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+        <div className="mobile-dashboard-summary grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
           {/* Rating */}
-          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5">
+          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5"><KpiState empty={!(Number(kpis.totalReviews) > 0)} label="Average Rating" message="No reviews yet" kind="rating">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-tf-copy text-sm">Average Rating</p>
@@ -328,10 +329,10 @@ function Dashboard() {
             <p className="text-tf-muted text-xs mt-3">
               {formatNumber(kpis.totalReviews)} total reviews
             </p>
-          </div>
+          </KpiState></div>
 
           {/* Batches */}
-          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5">
+          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5"><KpiState empty={!(Number(kpis.totalBatches) > 0)} label="Total Batches" message="Your first batch starts here" kind="records">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-tf-copy text-sm">Total Batches</p>
@@ -361,10 +362,10 @@ function Dashboard() {
             <p className="text-tf-muted text-xs mt-3">
               Current + upcoming + completed
             </p>
-          </div>
+          </KpiState></div>
 
           {/* Achievements */}
-          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5">
+          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5"><KpiState empty={!(Number(kpis.totalAchievements) > 0)} label="Achievements" message="Your next success story belongs here" kind="rating">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-tf-copy text-sm">Achievements</p>
@@ -394,10 +395,10 @@ function Dashboard() {
             <p className="text-tf-muted text-xs mt-3">
               Student success stories
             </p>
-          </div>
+          </KpiState></div>
 
           {/* Capacity */}
-          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5">
+          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5"><KpiState empty={!(Number(kpis.totalStudentsCapacity) > 0)} label="Student Capacity" message="Add seats to your batches" kind="people">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-tf-copy text-sm">Student Capacity</p>
@@ -427,10 +428,10 @@ function Dashboard() {
             <p className="text-tf-muted text-xs mt-3">
               Maximum seats across batches
             </p>
-          </div>
+          </KpiState></div>
 
           {/* Enrolled */}
-          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5">
+          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5"><KpiState empty={!(Number(kpis.totalEnrolledStudents) > 0)} label="Enrolled Students" message="Ready for your first student" kind="people">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-tf-copy text-sm">Enrolled Students</p>
@@ -460,10 +461,10 @@ function Dashboard() {
             <p className="text-tf-muted text-xs mt-3">
               Currently allotted seats
             </p>
-          </div>
+          </KpiState></div>
 
           {/* Occupancy */}
-          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5">
+          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5"><KpiState empty={!(Number(occupancyData.totalMaximumSeats) > 0) && !(Number(kpis.totalStudentsCapacity) > 0)} label="Overall Occupancy" message="Add batch capacity to see occupancy" kind="people">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-tf-copy text-sm">Overall Occupancy</p>
@@ -494,7 +495,7 @@ function Dashboard() {
             <p className="text-tf-muted text-xs mt-3">
               {formatNumber(occupancyData.totalRemainingSeats)} seats remaining
             </p>
-          </div>
+          </KpiState></div>
         </div>
 
         {/* Row: Batch Distribution + Ratings */}
@@ -720,37 +721,37 @@ function Dashboard() {
             </div>
 
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-tf-surface-soft rounded-2xl p-4">
+              <div className="bg-tf-surface-soft rounded-2xl p-4"><KpiState empty={!(Number(kpis.totalBatches) > 0) || revenueData.totalProjectedRevenue == null} label="Projected Revenue" message="Add batch fees to see a projection" kind="records">
                 <p className="text-tf-muted text-xs">Projected Revenue</p>
 
                 <p className="text-tf-ink text-xl font-semibold mt-2">
                   {formatCurrency(revenueData.totalProjectedRevenue)}
                 </p>
-              </div>
+              </KpiState></div>
 
-              <div className="bg-tf-surface-soft rounded-2xl p-4">
+              <div className="bg-tf-surface-soft rounded-2xl p-4"><KpiState empty={!(Number(kpis.totalBatches) > 0) || revenueData.averageFeePerBatch == null} label="Avg Fee / Batch" message="Add batch fees to see an average" kind="records">
                 <p className="text-tf-muted text-xs">Avg Fee / Batch</p>
 
                 <p className="text-tf-ink text-xl font-semibold mt-2">
                   {formatCurrency(revenueData.averageFeePerBatch)}
                 </p>
-              </div>
+              </KpiState></div>
 
-              <div className="bg-tf-surface-soft rounded-2xl p-4">
+              <div className="bg-tf-surface-soft rounded-2xl p-4"><KpiState empty={!(Number(kpis.totalBatches) > 0) || revenueData.minFee == null} label="Minimum Fee" message="No batch fees recorded yet" kind="records">
                 <p className="text-tf-muted text-xs">Minimum Fee</p>
 
                 <p className="text-tf-ink text-lg font-semibold mt-2">
                   {formatCurrency(revenueData.minFee)}
                 </p>
-              </div>
+              </KpiState></div>
 
-              <div className="bg-tf-surface-soft rounded-2xl p-4">
+              <div className="bg-tf-surface-soft rounded-2xl p-4"><KpiState empty={!(Number(kpis.totalBatches) > 0) || revenueData.maxFee == null} label="Maximum Fee" message="No batch fees recorded yet" kind="records">
                 <p className="text-tf-muted text-xs">Maximum Fee</p>
 
                 <p className="text-tf-ink text-lg font-semibold mt-2">
                   {formatCurrency(revenueData.maxFee)}
                 </p>
-              </div>
+              </KpiState></div>
             </div>
 
             {/* Payment Types */}
@@ -843,22 +844,22 @@ function Dashboard() {
 
             {/* Summary */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-tf-surface-soft rounded-2xl p-4">
+              <div className="bg-tf-surface-soft rounded-2xl p-4"><KpiState empty={!(Number(achievementData.totalAchievements) > 0)} label="Total Achievements" message="Your next success story belongs here" kind="rating">
                 <p className="text-tf-muted text-xs">Total Achievements</p>
 
                 <p className="text-tf-ink text-2xl font-semibold mt-2">
                   {formatNumber(achievementData.totalAchievements)}
                 </p>
-              </div>
+              </KpiState></div>
 
-              <div className="bg-tf-surface-soft rounded-2xl p-4">
+              <div className="bg-tf-surface-soft rounded-2xl p-4"><KpiState empty={!(Number(achievementData.averageStudentRating) > 0)} label="Avg Student Rating" message="No student ratings yet" kind="rating">
                 <p className="text-tf-muted text-xs">Avg Student Rating</p>
 
                 <p className="text-tf-ink text-2xl font-semibold mt-2">
                   {Number(achievementData.averageStudentRating || 0).toFixed(1)}
                   <span className="text-tf-muted text-sm">/5</span>
                 </p>
-              </div>
+              </KpiState></div>
             </div>
 
             {/* Achievement Ratings */}

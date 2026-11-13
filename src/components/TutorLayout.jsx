@@ -468,9 +468,9 @@ function TutorLayout() {
                 src="/tf-logo.png"
                 alt=""
                 aria-hidden="true"
-                className="h-9 max-h-9 w-auto max-w-[112px] object-contain sm:max-w-[132px]"
+                className="h-8 max-h-9 w-auto shrink-0 object-contain sm:h-9 sm:max-w-[132px]"
               />
-              <span className="hidden text-base font-semibold tracking-tight text-tf-ink sm:inline sm:text-lg">
+              <span className="whitespace-nowrap text-sm font-semibold tracking-tight text-tf-ink min-[375px]:text-base sm:text-lg">
                 Tutorfolio
               </span>
             </a>
@@ -478,56 +478,6 @@ function TutorLayout() {
 
           {/* Profile */}
           <div className="relative flex shrink-0 gap-1 items-center sm:gap-2.5" ref={profileRef}>
-            {/* Mobile theme toggle */}
-            <button
-              type="button"
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              className={`flex h-9 w-9 items-center justify-center rounded-full border transition-all duration-200 active:scale-95 sm:hidden shadow-xs ${
-                theme === "light"
-                  ? "border-tf-line bg-tf-surface-soft text-indigo-500 hover:bg-tf-surface hover:border-indigo-300"
-                  : "border-slate-700 bg-slate-800 text-amber-400 hover:bg-slate-700 hover:border-amber-500/40 shadow-[0_0_10px_rgba(251,191,36,0.15)]"
-              }`}
-              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
-              title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
-            >
-              {theme === "light" ? (
-                <svg
-                  className="h-5 w-5 transition-transform duration-300"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.9"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path
-                    d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"
-                    fill="currentColor"
-                    fillOpacity="0.18"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  className="h-5 w-5 transition-transform duration-300"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="4" fill="currentColor" fillOpacity="0.25" />
-                  <path d="M12 2v2.2" />
-                  <path d="M12 19.8v2.2" />
-                  <path d="m4.93 4.93 1.55 1.55" />
-                  <path d="m17.52 17.52 1.55 1.55" />
-                  <path d="M2 12h2.2" />
-                  <path d="M19.8 12h2.2" />
-                  <path d="m4.93 19.07 1.55-1.55" />
-                  <path d="m17.52 6.48 1.55-1.55" />
-                </svg>
-              )}
-            </button>
             <div className="hidden h-10 items-center gap-1 rounded-full border border-tf-line bg-tf-surface-soft p-1 sm:inline-flex">
               <button
                 type="button"
@@ -570,6 +520,8 @@ function TutorLayout() {
               onClick={() => setProfileOpen((prev) => !prev)}
               className="flex items-center gap-2 p-1 text-tf-ink transition-colors sm:p-2"
               aria-label="Profile menu"
+              aria-expanded={profileOpen}
+              aria-controls={profileOpen ? "profile-dropdown" : undefined}
             >
               <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full text-tf-blue-pressed">
                 {user?.profilePicture || user?.profile_picture || user?.profilepicture ? (
@@ -617,8 +569,9 @@ function TutorLayout() {
 
             {/* Profile dropdown */}
             {profileOpen && (
-              <div className="absolute right-0 top-14 z-50 w-52 overflow-hidden rounded-2xl border border-tf-line bg-tf-surface text-tf-ink shadow-xl">
-                <div className="border-b border-tf-line px-4 py-3">
+              <div id="profile-dropdown" className="absolute right-0 top-14 z-50 w-[min(288px,calc(100vw-24px))] overflow-hidden rounded-2xl border border-tf-line bg-tf-surface text-tf-ink shadow-xl sm:w-52">
+                <div className="flex items-center justify-between gap-3 border-b border-tf-line px-4 py-3">
+                  <div className="min-w-0 flex-1">
                   <p className="truncate font-medium capitalize">
                     {user?.username
                       ? user.username.charAt(0).toUpperCase() +
@@ -628,6 +581,26 @@ function TutorLayout() {
                   <p className="mt-1 truncate text-xs text-tf-copy">
                     {user?.email}
                   </p>
+                  </div>
+                  <span aria-hidden="true" className="h-8 w-px shrink-0 bg-tf-line sm:hidden" />
+                  <button
+                    type="button"
+                    onClick={() => setTheme((current) => current === "light" ? "dark" : "light")}
+                    aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+                    title={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+                    className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border border-tf-line bg-tf-surface-soft transition-colors hover:bg-tf-surface sm:hidden ${theme === "light" ? "text-indigo-500" : "text-amber-500"}`}
+                  >
+                    {theme === "light" ? (
+                      <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z" fill="currentColor" fillOpacity="0.15" />
+                      </svg>
+                    ) : (
+                      <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                        <circle cx="12" cy="12" r="4" fill="currentColor" fillOpacity="0.2" />
+                        <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" />
+                      </svg>
+                    )}
+                  </button>
                 </div>
 
                 <button
@@ -650,7 +623,7 @@ function TutorLayout() {
                       d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
                     />
                   </svg>
-                  Plans &amp; Billing
+                  Unlock Features
                 </button>
 
                 <button
@@ -731,7 +704,7 @@ function TutorLayout() {
       </header>
 
       {/* ================= DESKTOP SIDEBAR ================= */}
-      <aside className="fixed bottom-0 left-0 top-[72px] z-40 hidden w-[250px] flex-col border-r border-tf-line bg-tf-surface shadow-sm lg:flex">
+      <aside className="tf-sidebar fixed bottom-0 left-0 top-[72px] z-40 hidden w-[250px] flex-col border-r border-tf-line bg-tf-bg shadow-sm lg:flex">
         <nav className="flex flex-1 flex-col overflow-y-auto p-4">
           {/* Main features stay at the top */}
           <div className="space-y-2">{renderNavItems(orderedMainNavItems)}</div>
@@ -753,7 +726,7 @@ function TutorLayout() {
           />
 
           {/* Drawer */}
-          <aside className="absolute bottom-0 left-0 top-0 flex w-[280px] flex-col border-r border-tf-line bg-tf-surface shadow-2xl">
+          <aside className="tf-sidebar absolute bottom-0 left-0 top-0 flex w-[280px] flex-col border-r border-tf-line bg-tf-bg shadow-2xl">
             <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-tf-line px-5">
               <img
                 src="/tf-logo.png"
@@ -798,7 +771,7 @@ function TutorLayout() {
       )}
 
       {/* ================= MAIN CONTENT ================= */}
-      <main className="pt-[72px] lg:pl-[250px] min-h-screen">
+      <main className="tf-mobile-platform pt-[72px] lg:pl-[250px] min-h-screen">
         <Outlet />
       </main>
     </div>

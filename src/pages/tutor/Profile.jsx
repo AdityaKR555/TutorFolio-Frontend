@@ -715,7 +715,7 @@ function Profile() {
   }
 
   return (
-    <div className="min-h-full bg-[var(--tf-bg)] px-8 pt-[34px] pb-[58px] text-[var(--tf-ink)] [font:14px/1.5_Inter,ui-sans-serif,system-ui,-apple-system,'Segoe_UI',sans-serif] max-[850px]:px-[18px] max-[850px]:pt-6 max-[850px]:pb-10 max-[560px]:px-[14px] max-[560px]:pt-5 max-[560px]:pb-8 [&:where([data-theme=dark] *)]:bg-[var(--tf-bg)] [&:where([data-theme=dark] *)]:text-[var(--tf-ink)]">
+    <div className="mobile-page mobile-profile min-h-full bg-[var(--tf-bg)] px-8 pt-[34px] pb-[58px] text-[var(--tf-ink)] [font:14px/1.5_Inter,ui-sans-serif,system-ui,-apple-system,'Segoe_UI',sans-serif] max-[850px]:px-[18px] max-[850px]:pt-6 max-[850px]:pb-10 max-[560px]:px-[14px] max-[560px]:pt-5 max-[560px]:pb-8 [&:where([data-theme=dark] *)]:bg-[var(--tf-bg)] [&:where([data-theme=dark] *)]:text-[var(--tf-ink)]">
       <div className="mx-auto max-w-[1100px]">
         <ResumeExtractorModal
           isOpen={showResumeModal}
@@ -724,7 +724,7 @@ function Profile() {
           mode="profile"
         />
 
-        <header className="mb-5 flex items-start justify-between gap-5 max-[560px]:flex-col">
+        <header className="mobile-heading mb-5 flex items-start justify-between gap-5 max-[560px]:flex-col">
           <div>
             <h1 className="tf-page-title mt-0 mb-2">Personal details</h1>
             <p className="m-0 text-[13px] text-[var(--tf-copy)]">Add and manage the information shown on your tutor profile.</p>
@@ -732,11 +732,11 @@ function Profile() {
           <div className="flex items-center gap-[9px] max-[560px]:w-full">
             {!isEditing && (
               <button type="button" onClick={handleEdit} className="inline-flex min-h-[38px] items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-blue)] bg-[var(--tf-blue)] px-[14px] py-[9px] text-xs font-semibold text-[var(--tf-on-primary)] transition-colors hover:border-[var(--tf-blue-pressed)] hover:bg-[var(--tf-blue-pressed)] max-[560px]:w-full">
-                <span aria-hidden="true">✎</span> Edit profile
+                <span aria-hidden="true">✎</span> <span className="mobile-profile-edit-label">Edit profile</span>
               </button>
             )}
             <button type="button" onClick={() => setShowResumeModal(true)} className="inline-flex min-h-[38px] items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[14px] py-[9px] text-xs font-semibold text-[var(--tf-copy)] transition-colors hover:bg-[var(--tf-surface-soft)] hover:text-[var(--tf-blue)] max-[560px]:w-full [&:where([data-theme=dark] *)]:bg-[var(--tf-surface)]">
-              <span aria-hidden="true">↑</span> Upload resume
+              <span aria-hidden="true">↑</span> <span className="hidden min-[761px]:inline">Upload resume</span><span className="min-[761px]:hidden">Resume</span>
             </button>
           </div>
         </header>

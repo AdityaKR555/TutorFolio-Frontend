@@ -1,6 +1,8 @@
+import KpiState from "../../components/KpiState";
 import React, { useCallback, useEffect, useState } from "react";
 import BatchSummaryArt from "./BatchSummaryArt";
-import { Search, Plus } from "lucide-react";
+import "./batches-mobile.css";
+import { Search, Plus, Info } from "lucide-react";
 import api from "../../api/axios";
 import ExpandableText from "../../components/ExpandableText";
 import { UPLOAD_LIMITS } from "../../api/uploadLimits";
@@ -8,17 +10,17 @@ import { UPLOAD_LIMITS } from "../../api/uploadLimits";
 const { maxSizeBytes: MAX_BATCH_IMAGE_SIZE, label: MAX_BATCH_IMAGE_LABEL } = UPLOAD_LIMITS["batch-image"];
 
 const pageStyles = {
-  page: "min-h-full bg-tf-bg px-4 py-6 text-sm leading-relaxed text-tf-ink sm:px-6 lg:px-8",
+  page: "tf-batches min-h-full bg-tf-bg px-4 py-6 text-sm leading-relaxed text-tf-ink sm:px-6 lg:px-8",
   content: "mx-auto max-w-[1120px]",
-  heading: "mb-8 flex items-start justify-between gap-5 max-[520px]:flex-col",
+  heading: "batch-heading mb-8 flex items-start justify-between gap-5",
   headingTitle: "mb-2 text-3xl font-bold tracking-tight text-tf-ink sm:text-4xl",
   headingCopy: "m-0 text-sm leading-6 text-tf-copy sm:text-base",
   button: "tf-button-secondary cursor-pointer",
   buttonPrimary: "tf-button-primary cursor-pointer",
   buttonSmall: "inline-flex min-h-[31px] cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[9px] py-1.5 text-[11px] font-semibold text-[var(--tf-copy)] transition-colors duration-[160ms] hover:bg-[var(--tf-surface-soft)] hover:text-[var(--tf-blue)] disabled:cursor-not-allowed disabled:opacity-[.58] focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2 [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
   buttonDanger: "inline-flex min-h-[31px] cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-[9px] py-1.5 text-[11px] font-semibold text-[var(--tf-danger)] transition-colors duration-[160ms] hover:bg-[var(--tf-surface-soft)] hover:text-[var(--tf-blue)] disabled:cursor-not-allowed disabled:opacity-[.58] focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2 [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
-  summary: "mb-8 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5",
-  stat: "relative min-h-[174px] min-w-0 overflow-hidden rounded-2xl border bg-tf-surface p-4 shadow-[0_4px_15px_-10px_rgb(15_23_42_/_15%)] sm:p-5",
+  summary: "batch-summary mb-8 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5",
+  stat: "batch-stat relative min-h-[174px] min-w-0 overflow-hidden rounded-2xl border bg-tf-surface p-4 shadow-[0_4px_15px_-10px_rgb(15_23_42_/_15%)] sm:p-5",
   statGreen: "",
   statGold: "",
   statLabel: "relative z-10 block text-sm font-medium text-tf-copy",
@@ -37,11 +39,11 @@ const pageStyles = {
   viewButton: "grid h-10 w-10 cursor-pointer place-items-center rounded-xl text-tf-muted transition-colors hover:text-tf-ink",
   grid: "grid grid-cols-2 gap-[15px] max-[760px]:grid-cols-1",
   card: "tf-card min-w-0 p-5 shadow-sm",
-  cardTop: "flex items-start justify-between gap-[10px] max-[520px]:flex-col",
+  cardTop: "batch-card-top flex items-start justify-between gap-[10px]",
   cardHeading: "min-w-0",
   cardTitle: "mb-[7px] break-words text-[15px] font-bold leading-[1.35] text-[var(--tf-ink)]",
   session: "text-[11px] text-[var(--tf-muted)]",
-  cardActions: "flex flex-none items-center justify-end gap-[6px] max-[760px]:flex-wrap max-[520px]:w-full max-[520px]:justify-start",
+  cardActions: "batch-card-actions flex flex-none items-center justify-end gap-[6px]",
   status: "inline-flex items-center whitespace-nowrap rounded-[20px] bg-[var(--tf-sky)] px-2 py-1 text-[10px] font-semibold text-[var(--tf-blue)] [[data-theme=dark]_&]:bg-[var(--tf-sky)]",
   statusCurrent: "bg-[var(--tf-success-soft)] text-[var(--tf-success)] [[data-theme=dark]_&]:bg-[var(--tf-success-soft)]",
   statusOld: "bg-[var(--tf-surface-soft)] text-[var(--tf-muted)] [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)]",
@@ -78,13 +80,13 @@ const pageStyles = {
   loading: "grid min-h-[320px] place-content-center gap-3 rounded-[13px] border border-[var(--tf-line)] bg-[var(--tf-surface)] px-5 py-[42px] text-center text-[var(--tf-copy)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
   spinner: "mx-auto h-8 w-8 animate-spin rounded-full border-[3px] border-[var(--tf-line)] border-t-[var(--tf-blue)]",
   loadingCopy: "m-0",
-  backdrop: "fixed inset-0 z-[1000] flex items-center justify-center bg-[rgb(10_25_45_/_45%)] p-5 max-[520px]:p-[10px]",
-  modal: "max-h-[92vh] w-full max-w-[720px] overflow-auto rounded-[15px] border border-[var(--tf-line)] bg-[var(--tf-surface)] text-[var(--tf-ink)] shadow-[0_12px_32px_rgb(26_67_112_/_16%)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
-  modalHead: "flex items-start justify-between gap-4 border-b border-[var(--tf-line)] px-[22px] py-[18px] max-[520px]:px-4 max-[520px]:py-[15px]",
+  backdrop: "tf-modal-backdrop batch-backdrop fixed inset-0 z-[1000] flex items-center justify-center bg-[rgb(10_25_45_/_45%)] p-5 max-[520px]:p-[10px]",
+  modal: "tf-modal-panel batch-modal max-h-[92vh] w-full max-w-[720px] overflow-auto rounded-[15px] border border-[var(--tf-line)] bg-[var(--tf-surface)] text-[var(--tf-ink)] shadow-[0_12px_32px_rgb(26_67_112_/_16%)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
+  modalHead: "tf-modal-heading tf-modal-heading-padded flex items-start justify-between gap-4 border-b border-[var(--tf-line)] px-[22px] py-[18px] max-[520px]:px-4 max-[520px]:py-[15px]",
   modalTitle: "mb-1 text-[17px] font-semibold text-[var(--tf-ink)]",
   modalCopy: "text-xs text-[var(--tf-copy)]",
   close: "cursor-pointer border-0 bg-transparent text-2xl leading-none text-[var(--tf-muted)] focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2",
-  form: "grid gap-[15px] px-[22px] py-5 max-[520px]:p-4",
+  form: "tf-modal-body grid gap-[15px] px-[22px] py-5 max-[520px]:p-4",
   formGrid: "grid grid-cols-2 gap-[13px] max-[520px]:grid-cols-1",
   field: "grid min-w-0 content-start gap-[6px]",
   fieldFull: "col-span-full max-[520px]:col-auto",
@@ -916,7 +918,6 @@ function Batches() {
       return total + (Number.isFinite(maximum) ? Math.max(0, maximum - filled) : 0);
     }, 0);
   const estimatedRevenue = batches
-    .filter((batch) => batch.batchType !== "old")
     .reduce((total, batch) => {
       const fee = Number(String(batch.fee ?? "").replace(/[^\d.]/g, ""));
       const filled = Number(batch.allottedSeats) || 0;
@@ -948,16 +949,35 @@ function Batches() {
             <h1 className={pageStyles.headingTitle}>Batches</h1>
             <p className={pageStyles.headingCopy}>Organize your classes, track seats, and manage what students can see.</p>
           </div>
-          <button type="button" onClick={handleAdd} className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600">
+          <button type="button" onClick={handleAdd} className="batch-new inline-flex shrink-0 items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600">
             <Plus size={21} aria-hidden="true"/> New batch
           </button>
         </header>
 
         <section aria-label="Batch statistics" className={pageStyles.summary}>
-          {[["Total batches", batches.length, "total", "#8b5cf6"], ["Upcoming batches", upcomingCount, "upcoming", "#f59e0b"], ["Running batches", currentCount, "running", "#14b8a6"], ["Seats available", availableSeats, "seats", "#38bdf8"], ["Estimated revenue", formatCurrency(estimatedRevenue), "revenue", "#fb7185"]].map(([label,value,type,color]) => <div key={type} className={pageStyles.stat} style={{ color, borderColor: `${color}45` }}>
-            <span className={pageStyles.statLabel}>{label}</span><strong className={`${pageStyles.statValue} ${type === "revenue" ? "text-[clamp(1.2rem,1.8vw,1.875rem)]!" : ""}`}>{value}</strong>
-            {type === "revenue" && <small className={pageStyles.statNote}>Based on enrolled seats</small>}
-            <BatchSummaryArt type={type}/>
+          {[["Total batches", batches.length, "total", "#8b5cf6"], ["Upcoming batches", upcomingCount, "upcoming", "#f59e0b"], ["Running batches", currentCount, "running", "#14b8a6"], ["Seats available", availableSeats, "seats", "#38bdf8"], ["Estimated revenue", formatCurrency(estimatedRevenue), "revenue", "#fb7185"]].map(([label,value,type,color]) => <div key={type} className={`${pageStyles.stat} batch-stat-${type}`} style={{ color, borderColor: `${color}45` }}>
+            <KpiState unavailable={Boolean(error) && batches.length === 0} empty={type === "revenue" ? batches.length === 0 : type === "seats" ? batches.length === 0 : value === 0} label={label} message={type === "upcoming" ? "No upcoming batches yet" : type === "running" ? "No running batches yet" : "Your first batch starts here"} kind="records"><span className={`${pageStyles.statLabel} ${type === "revenue" ? "pr-5" : ""}`}>{label}</span>
+            {type === "revenue" && (
+              <>
+                <button
+                  type="button"
+                  popoverTarget="estimated-revenue-tooltip"
+                  aria-label="How estimated revenue is calculated"
+                  title="Sum of (enrolled students × batch fee) across all batches, including past batches."
+                  className="batch-revenue-info"
+                >
+                  <Info size={16} strokeWidth={2} aria-hidden="true" />
+                </button>
+                <div id="estimated-revenue-tooltip" popover="auto" className="batch-revenue-tooltip">
+                  <strong>Estimated revenue</strong>
+                  <p>For each batch, multiply its enrolled students by its batch fee, then add the results across all batches, including past batches.</p>
+                  <p className="batch-revenue-formula">Total = Σ (enrolled students × batch fee)</p>
+                </div>
+              </>
+            )}
+            <strong className={`${pageStyles.statValue} ${type === "revenue" ? "text-[clamp(1.2rem,1.8vw,1.875rem)]!" : ""}`}>{value}</strong>
+            {type === "revenue" && <small className={pageStyles.statNote}>Across all batches</small>}
+            <BatchSummaryArt type={type}/></KpiState>
           </div>)}
         </section>
 
@@ -1352,8 +1372,9 @@ function Batches() {
               </button>
             )}
           </div>
-        ) : viewMode === "list" ? (
-          <div className={pageStyles.tableWrap} role="region" aria-label="Batch list" tabIndex="0">
+        ) : (
+          <>
+          {viewMode === "list" && <div className={`${pageStyles.tableWrap} batch-desktop-table`} role="region" aria-label="Batch list" tabIndex="0">
             <table className={pageStyles.table}>
               <thead>
                 <tr>
@@ -1407,14 +1428,16 @@ function Batches() {
                       </td>
                       <td className={pageStyles.tableCell}>
                         <div className={pageStyles.rowActions}>
-                          <button type="button" className={pageStyles.buttonSmall} onClick={() => handleEdit(batch)}><svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m13.5 3.5 3 3M3 17l3.8-.8L16 7a2.1 2.1 0 0 0-3-3L3.8 13.2 3 17Z"/></svg>Edit</button>
+                          <button type="button" className={`${pageStyles.buttonSmall} batch-icon-action`} aria-label={`Edit ${batch.title}`} title="Edit batch" onClick={() => handleEdit(batch)}><svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m13.5 3.5 3 3M3 17l3.8-.8L16 7a2.1 2.1 0 0 0-3-3L3.8 13.2 3 17Z"/></svg><span className="sr-only">Edit</span></button>
                           <button
                             type="button"
-                            className={pageStyles.buttonDanger}
+                            className={`${pageStyles.buttonDanger} batch-icon-action`}
+                            aria-label={deletingId === batch.batchId ? `Deleting ${batch.title}` : `Delete ${batch.title}`}
+                            title="Delete batch"
                             onClick={() => handleDelete(batch.batchId)}
                             disabled={deletingId === batch.batchId}
                           >
-                            {deletingId === batch.batchId ? <><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current" aria-hidden="true"/>Deleting…</> : <><svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 5h14M7 5V3h6v2m-8 0 1 12h8l1-12M8 8v6m4-6v6"/></svg>Delete</>}
+                            {deletingId === batch.batchId ? <><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current" aria-hidden="true"/><span className="sr-only">Deleting…</span></> : <><svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 5h14M7 5V3h6v2m-8 0 1 12h8l1-12M8 8v6m4-6v6"/></svg><span className="sr-only">Delete</span></>}
                           </button>
                         </div>
                       </td>
@@ -1423,9 +1446,8 @@ function Batches() {
                 })}
               </tbody>
             </table>
-          </div>
-        ) : (
-          <div className={pageStyles.grid}>
+          </div>}
+          <div className={`${pageStyles.grid} ${viewMode === "list" ? "batch-mobile-list" : ""}`}>
 
             {filteredBatches.map((batch) => {
               const visible =
@@ -1441,35 +1463,37 @@ function Batches() {
                   <div className={pageStyles.cardTop}>
                     <div className={pageStyles.cardHeading}>
                       <h2 className={`${pageStyles.cardTitle} [overflow-wrap:anywhere]`}>{batch.title}</h2>
-                      {batch.session && (
-                        <span className={pageStyles.session}>Session {batch.session}</span>
-                      )}
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <span className={`${pageStyles.status} ${getTypeClass(batch.batchType)}`}>{getTypeLabel(batch.batchType)}</span>
+                        {batch.session && <span className={pageStyles.session}>Session {batch.session}</span>}
+                      </div>
                     </div>
                     <div className={pageStyles.cardActions}>
-                      <span className={`${pageStyles.status} ${getTypeClass(batch.batchType)}`}>
-                        {getTypeLabel(batch.batchType)}
-                      </span>
                       <button
                         type="button"
-                        className={pageStyles.buttonSmall}
+                        className={`${pageStyles.buttonSmall} batch-icon-action`}
+                        aria-label={`Edit ${batch.title}`}
+                        title="Edit batch"
                         onClick={() => handleEdit(batch)}
                       >
                         <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m13.5 3.5 3 3M3 17l3.8-.8L16 7a2.1 2.1 0 0 0-3-3L3.8 13.2 3 17Z"/></svg>
-                        Edit
+                        <span className="sr-only">Edit</span>
                       </button>
                       <button
                         type="button"
-                        className={pageStyles.buttonDanger}
+                        className={`${pageStyles.buttonDanger} batch-icon-action`}
+                        aria-label={deletingId === batch.batchId ? `Deleting ${batch.title}` : `Delete ${batch.title}`}
+                        title="Delete batch"
                         onClick={() => handleDelete(batch.batchId)}
                         disabled={deletingId === batch.batchId}
                       >
-                        {deletingId === batch.batchId ? <><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current" aria-hidden="true"/>Deleting…</> : <><svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 5h14M7 5V3h6v2m-8 0 1 12h8l1-12M8 8v6m4-6v6"/></svg>Delete</>}
+                        {deletingId === batch.batchId ? <><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current" aria-hidden="true"/><span className="sr-only">Deleting…</span></> : <><svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 5h14M7 5V3h6v2m-8 0 1 12h8l1-12M8 8v6m4-6v6"/></svg><span className="sr-only">Delete</span></>}
                       </button>
                     </div>
                   </div>
 
                   {batch.imageUrl ? (
-                    <div className="mt-3 mb-3.5 flex items-start gap-3.5">
+                    <div className="batch-preview mt-3 mb-3.5 flex items-start gap-3.5">
                       <img
                         className="h-20 w-32 shrink-0 rounded-xl border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] object-cover shadow-sm sm:h-24 sm:w-36"
                         src={batch.imageUrl}
@@ -1550,6 +1574,7 @@ function Batches() {
             })}
 
           </div>
+          </>
         )}
 
         <div className="pb-6" />

@@ -1,3 +1,4 @@
+import { Pencil } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import api from "../../api/axios";
 import { UPLOAD_LIMITS } from "../../api/uploadLimits";
@@ -435,9 +436,9 @@ function TuitionDetails() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-72px)] bg-[var(--tf-bg)] px-[42px] py-[34px] text-[var(--tf-ink)] [font:14px/1.5_Inter,ui-sans-serif,system-ui,-apple-system,'Segoe_UI',sans-serif] [&:where([data-theme=dark] *)]:bg-[var(--tf-bg)] [&:where([data-theme=dark] *)]:text-[var(--tf-ink)] max-[1000px]:px-6 max-[1000px]:py-[26px] max-[760px]:px-4 max-[760px]:py-[22px] max-[560px]:px-[14px] max-[560px]:pb-[38px]">
+    <div className="mobile-page mobile-tuitiondetails min-h-[calc(100vh-72px)] bg-[var(--tf-bg)] px-[42px] py-[34px] text-[var(--tf-ink)] [font:14px/1.5_Inter,ui-sans-serif,system-ui,-apple-system,'Segoe_UI',sans-serif] [&:where([data-theme=dark] *)]:bg-[var(--tf-bg)] [&:where([data-theme=dark] *)]:text-[var(--tf-ink)] max-[1000px]:px-6 max-[1000px]:py-[26px] max-[760px]:px-4 max-[760px]:py-[22px] max-[560px]:px-[14px] max-[560px]:pb-[38px]">
     <main className="mx-auto w-full max-w-[1120px]">
-      <header className="mb-6 flex items-start justify-between gap-5 max-[760px]:flex-col">
+      <header className="mobile-heading mb-6 flex items-start justify-between gap-5 max-[760px]:flex-col">
           <div>
             <h1 className="tf-page-title mt-0 mb-2">Tuition details</h1>
             <p className="m-0 text-[var(--tf-copy)]">Manage the information students see about your tuition classes.</p>
@@ -475,7 +476,7 @@ function TuitionDetails() {
                 <h2 className="tf-section-title mt-0 mb-1">About your tuition</h2>
                 <p className="m-0 text-xs text-[var(--tf-muted)]">Name, ownership and a short introduction.</p>
               </div>
-              {!isEditing && <button className="cursor-pointer border-0 bg-transparent p-[3px] text-xs font-semibold text-[var(--tf-blue)]" type="button" onClick={handleEdit}>Edit</button>}
+              {!isEditing && <button className="mobile-icon-action cursor-pointer border-0 bg-transparent p-[3px] text-xs font-semibold text-[var(--tf-blue)]" type="button" onClick={handleEdit} aria-label="Edit details"><Pencil className="mobile-only-action-icon" size={20}/><span className="mobile-action-label">Edit</span></button>}
             </div>
             <div className="grid grid-cols-2 gap-x-[15px] gap-y-[14px] max-[560px]:grid-cols-1">
               {field("tuitionName", "Tuition name", { required: true, maxLength: 100, placeholder: "Enter tuition name" })}
@@ -492,7 +493,7 @@ function TuitionDetails() {
                 <h2 className="tf-section-title mt-0 mb-1">Subjects and classes</h2>
                 <p className="m-0 text-xs text-[var(--tf-muted)]">Help families find the right subject and grade.</p>
               </div>
-              {!isEditing && <button className="cursor-pointer border-0 bg-transparent p-[3px] text-xs font-semibold text-[var(--tf-blue)]" type="button" onClick={handleEdit}>Edit</button>}
+              {!isEditing && <button className="mobile-icon-action cursor-pointer border-0 bg-transparent p-[3px] text-xs font-semibold text-[var(--tf-blue)]" type="button" onClick={handleEdit} aria-label="Edit details"><Pencil className="mobile-only-action-icon" size={20}/><span className="mobile-action-label">Edit</span></button>}
             </div>
             <div className="grid grid-cols-2 gap-x-[15px] gap-y-[14px] max-[560px]:grid-cols-1">
               {field("teachingSubjects", "Teaching subjects", { full: true, chips: true, maxLength: 500, placeholder: "e.g. Mathematics, Science, English" })}
@@ -507,7 +508,7 @@ function TuitionDetails() {
                 <h2 className="tf-section-title mt-0 mb-1">Location</h2>
                 <p className="m-0 text-xs text-[var(--tf-muted)]">Where students can attend your classes.</p>
               </div>
-              {!isEditing && <button className="cursor-pointer border-0 bg-transparent p-[3px] text-xs font-semibold text-[var(--tf-blue)]" type="button" onClick={handleEdit}>Edit</button>}
+              {!isEditing && <button className="mobile-icon-action cursor-pointer border-0 bg-transparent p-[3px] text-xs font-semibold text-[var(--tf-blue)]" type="button" onClick={handleEdit} aria-label="Edit details"><Pencil className="mobile-only-action-icon" size={20}/><span className="mobile-action-label">Edit</span></button>}
             </div>
             <div className="grid grid-cols-3 gap-3 max-[560px]:grid-cols-1">
               {field("state", "State", { maxLength: 100, placeholder: "Enter state" })}
@@ -600,7 +601,7 @@ function TuitionDetails() {
                 <h2 className="tf-section-title mt-0 mb-1">Search tags</h2>
                 <p className="m-0 text-xs text-[var(--tf-muted)]">Short keywords that help students discover you.</p>
               </div>
-              {!isEditing && <button className="cursor-pointer border-0 bg-transparent p-[3px] text-xs font-semibold text-[var(--tf-blue)]" type="button" onClick={handleEdit}>Edit</button>}
+              {!isEditing && <button className="mobile-icon-action cursor-pointer border-0 bg-transparent p-[3px] text-xs font-semibold text-[var(--tf-blue)]" type="button" onClick={handleEdit} aria-label="Edit details"><Pencil className="mobile-only-action-icon" size={20}/><span className="mobile-action-label">Edit</span></button>}
             </div>
             {field("tags", "Tags", { chips: true, maxLength: 1000, placeholder: "e.g. maths, science, exam preparation", hint: "Separate tags with commas" })}
           </section>

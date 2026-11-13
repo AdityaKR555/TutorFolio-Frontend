@@ -9,8 +9,33 @@
       } catch {
         document.documentElement.dataset.theme = "light";
       }
+      // Restore before the first paint and follow changes from other tabs.
+      function restoreBackground() {
+        let background = "cream";
+        try {
+          const saved = localStorage.getItem("tutorfolio-background");
+          if (["cream", "lavender", "white", "custom"].includes(saved)) background = saved;
+          const custom = localStorage.getItem("tutorfolio-custom-background");
+          const color = /^#[0-9a-f]{6}$/i.test(custom) ? custom : "#eaeafb";
+          document.documentElement.style.setProperty("--tf-custom-bg", color);
+          const rgb = color.slice(1).match(/../g).map(function (part) { return parseInt(part, 16) / 255; });
+          const linear = rgb.map(function (value) { return value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4); });
+          const luminance = linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+          document.documentElement.style.setProperty("--tf-sidebar-custom-ink", luminance < 0.179 ? "#ffffff" : "#172b46");
+        } catch {}
+        document.documentElement.dataset.background = background;
+      }
+      if (["/", "/login", "/signup"].includes(location.pathname.replace(/\/$/, "") || "/")) {
+        document.documentElement.dataset.theme = "light";
+        document.documentElement.dataset.publicPage = "true";
+      }
+      restoreBackground();
+      window.addEventListener("storage", function (event) {
+        if (event.key === "tutorfolio-background" || event.key === "tutorfolio-custom-background" || event.key === null) restoreBackground();
+      });
     </script>
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="/tf-logo.png" />
+    <link rel="apple-touch-icon" href="/tf-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="./src/style.css">
     <title>TutorFolio</title>
