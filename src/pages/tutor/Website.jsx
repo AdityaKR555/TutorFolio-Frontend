@@ -172,28 +172,59 @@ export default function Website() {
     try {
       const themesRes = await api.get("/themes", { params: { userId } });
       const themesData = checkApiResponse(themesRes, "Unable to fetch themes.");
-      const registry = new Map(THEMES.map((theme) => [theme.id, theme]));
-      const backendThemes = (themesData?.themes || [])
-        .map((theme) => {
-          const visual = registry.get(theme.themeId) || THEMES[0];
-          return {
-            ...visual,
-            ...theme,
-            id: theme.themeId,
-            label: theme.title || visual.label,
-            primaryColor: theme.primaryColor || visual.primaryColor,
-            secondaryColor: theme.secondaryColor || visual.secondaryColor,
-            backgroundColor: theme.backgroundColor || visual.backgroundColor,
-            description: theme.description || visual.description,
-            isPlanAllowed: theme.isPlanAllowed !== false,
-          };
-        });
-      setAvailableThemes(backendThemes);
-      const selected = backendThemes.find((theme) => theme.isSelected);
-      if (selected) setActiveThemeId(selected.id);
-      setUserPlan(themesData?.userPlan || "free");
+      const plan = themesData?.userPlan || "free";
+      const isPaidUser = plan.toLowerCase() !== "free";
+      const rawThemes = themesData?.themes || [];
+
+      // Exactly 3 themes: Classic, Minimal, Luminary Elite
+      const canonicalThemes = THEMES.map((theme) => {
+        const backendMatch = rawThemes.find(
+          (bt) =>
+            bt.themeId === theme.id ||
+            (theme.id === "luminary_elite" &&
+              ["elite_academy", "theme_3", "elite", "luminary_elite"].includes(bt.themeId))
+        );
+
+        const isAllowed = theme.isPaidOnly
+          ? backendMatch
+            ? backendMatch.isPlanAllowed !== false
+            : isPaidUser
+          : true;
+
+        const isSelected = backendMatch?.isSelected || false;
+
+        return {
+          ...theme,
+          isSelected,
+          isPlanAllowed: isAllowed,
+          backendThemeId:
+            backendMatch?.themeId || (theme.id === "luminary_elite" ? "elite_academy" : theme.id),
+        };
+      });
+
+      setAvailableThemes(canonicalThemes);
+
+      // Determine active theme
+      const selected = canonicalThemes.find((t) => t.isSelected);
+      if (selected) {
+        setActiveThemeId(selected.id);
+      } else {
+        const rawSelected = rawThemes.find((t) => t.isSelected);
+        if (rawSelected) {
+          if (["elite_academy", "bold_educator", "vibrant_slate", "luminary_elite"].includes(rawSelected.themeId)) {
+            setActiveThemeId("luminary_elite");
+          } else if (rawSelected.themeId === "minimal") {
+            setActiveThemeId("minimal");
+          } else {
+            setActiveThemeId("classic");
+          }
+        }
+      }
+      setUserPlan(plan);
     } catch (err) {
       console.error("Could not load themes from API:", err.message);
+      // Fallback display for the 3 themes
+      setAvailableThemes(THEMES.map((t) => ({ ...t, isPlanAllowed: !t.isPaidOnly })));
       setError(getErrorMessage(err, "Unable to fetch themes from the server."));
     } finally {
       setLoading(false);
@@ -211,11 +242,31 @@ export default function Website() {
     setError("");
     setSuccess("");
     try {
-      const res = await api.post("/themes/select", {
-        userId: Number(userId),
-        themeId,
-      });
-      checkApiResponse(res, "Unable to select theme.");
+      const targetTheme =
+        availableThemes.find((t) => t.id === themeId) ||
+        THEMES.find((t) => t.id === themeId);
+
+      let targetBackendId = targetTheme?.backendThemeId || themeId;
+
+      try {
+        const res = await api.post("/themes/select", {
+          userId: Number(userId),
+          themeId: targetBackendId,
+        });
+        checkApiResponse(res, "Unable to select theme.");
+      } catch (postErr) {
+        // Fallback for luminary_elite if backend only recognizes elite_academy
+        if (themeId === "luminary_elite" && targetBackendId !== "elite_academy") {
+          const res = await api.post("/themes/select", {
+            userId: Number(userId),
+            themeId: "elite_academy",
+          });
+          checkApiResponse(res, "Unable to select theme.");
+        } else {
+          throw postErr;
+        }
+      }
+
       setActiveThemeId(themeId);
       const t = THEMES.find((x) => x.id === themeId);
       setSuccess(
@@ -378,8 +429,8 @@ export default function Website() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[0, 1, 2, 3].map((i) => (
+            <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[0, 1, 2].map((i) => (
                 <div
                   key={i}
                   className="animate-pulse overflow-hidden rounded-xl sm:rounded-2xl border border-tf-line bg-tf-surface"
@@ -393,7 +444,7 @@ export default function Website() {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {availableThemes.map((theme) => (
                 <ThemePreviewMini
                   key={theme.id}

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import api from "../../api/axios";
 import VisitorChatWidget from "../../components/VisitorChatWidget";
-import { ThemeClassic, ThemeModern, ThemeBold, ThemeMinimal } from "../../components/themes/index.js";
+import { ThemeClassic, ThemeMinimal, ThemeLuminary } from "../../components/themes/index.js";
 
 /* ─── data helpers ─────────────────────────────────────────────────────────── */
 function unwrap(body) {
@@ -40,14 +40,18 @@ function normalizeWebsite(root) {
 const THEME_MAP = {
   classic: ThemeClassic,
   minimal: ThemeMinimal,
-  vibrant_slate: ThemeModern,
-  bold_educator: ThemeBold,
-  elite_academy: ThemeBold,
-  // Keep rendering support for previously saved identifiers.
+  luminary_elite: ThemeLuminary,
+  theme_3: ThemeLuminary,
+  theme3: ThemeLuminary,
+  elite: ThemeLuminary,
+  elite_academy: ThemeLuminary,
+  // Backward compatibility aliases for existing saved records in DB
+  vibrant_slate: ThemeLuminary,
+  bold_educator: ThemeLuminary,
   theme_classic: ThemeClassic,
-  theme_modern: ThemeModern,
-  theme_bold: ThemeBold,
   theme_minimal: ThemeMinimal,
+  theme_modern: ThemeMinimal,
+  theme_bold: ThemeLuminary,
 };
 const DEFAULT_THEME = "classic";
 
