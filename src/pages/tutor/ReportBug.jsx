@@ -1,3 +1,4 @@
+import "./report-bug-mobile.css";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   createIssueReport,
@@ -210,7 +211,7 @@ function ReportBug() {
         </header>
 
         {/* ================= TABS ================= */}
-        <div className="mb-6 inline-flex items-center rounded-[14px] border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] p-1 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[var(--tf-line)] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[var(--tf-surface-soft)]">
+        <div className="report-tabs mb-6 inline-flex items-center rounded-[14px] border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] p-1 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[var(--tf-line)] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[var(--tf-surface-soft)]">
           <button
             type="button"
             onClick={() => setActiveTab("submit")}
@@ -255,8 +256,8 @@ function ReportBug() {
        )}
 
         {success && (
-          <div className="mb-5 flex items-start justify-between gap-3 rounded-xl border border-emerald-700/25 bg-[#eaf8f1] px-4 py-3 text-[13px] text-[#147d5a] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#183d37] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#69d4a8]" role="status">
-            <span>{success}</span>
+          <div className="report-success mb-5 flex items-start justify-between gap-3 rounded-xl border border-emerald-700/25 bg-[#eaf8f1] px-4 py-3 text-[13px] text-[#147d5a] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#183d37] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#69d4a8]" role="status">
+            <span className="report-success-copy"><strong>Report submitted</strong><span>{success}</span></span>
             <button
               type="button"
               onClick={() => setSuccess("")}
@@ -274,7 +275,6 @@ function ReportBug() {
             {/* Quick Tips */}
             <div className="mb-6 rounded-2xl border border-[var(--tf-line)] bg-[#eaf6ff] px-5 py-[18px] text-[var(--tf-ink)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[var(--tf-line)] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[#193852] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[var(--tf-ink)]">
               <div className="mb-2 flex items-center gap-2 text-[13px] font-bold text-[#1875d1] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[#4aa8ee]">
-                <span aria-hidden="true">💡</span>
                 <span>Tips for faster resolution:</span>
               </div>
               <ul className="m-0 list-disc pl-5 text-xs leading-[1.6] text-[var(--tf-copy)] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[var(--tf-copy)]">
@@ -284,7 +284,7 @@ function ReportBug() {
               </ul>
             </div>
 
-            <section className="mb-6 rounded-[20px] border border-[var(--tf-line)] bg-white px-6 py-[26px] shadow-[var(--tf-shadow)] sm:px-[30px] sm:py-8 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[var(--tf-line)] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[var(--tf-surface)]">
+            <section className="report-history mb-6 rounded-[20px] border border-[var(--tf-line)] bg-white px-6 py-[26px] shadow-[var(--tf-shadow)] sm:px-[30px] sm:py-8 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[var(--tf-line)] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[var(--tf-surface)]">
               <h2 className="tf-section-title mb-1.5">Describe the issue</h2>
               <p className="mb-6 text-[13px] text-[var(--tf-copy)] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[var(--tf-copy)]">
                 Fill in the details below. Our engineering team reviews all submitted tickets.
@@ -401,7 +401,7 @@ function ReportBug() {
         {/* ================= TAB 2: MY REPORTS ================= */}
         {activeTab === "history" && (
           <section className="mb-6 rounded-[20px] border border-[var(--tf-line)] bg-white px-6 py-[26px] shadow-[var(--tf-shadow)] sm:px-[30px] sm:py-8 [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[var(--tf-line)] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[var(--tf-surface)]">
-            <div className="flex items-center justify-between mb-6">
+            <div className="report-history-heading flex items-center justify-between mb-6">
               <div>
                 <h2 className="tf-section-title mb-1.5">Submitted Issue Reports</h2>
                 <p className="mb-0 text-[13px] text-[var(--tf-copy)] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[var(--tf-copy)]">
@@ -440,11 +440,11 @@ function ReportBug() {
                   const status = item.isLocal ? "Not submitted (saved locally)" : item.status || "Pending";
 
                   return (
-                    <article key={id} className="mb-4 rounded-2xl border border-[var(--tf-line)] bg-white p-5 shadow-[var(--tf-shadow)] transition-colors hover:border-[#1875d1] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[var(--tf-line)] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[var(--tf-surface)]">
-                      <div className="mb-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+                    <article key={id} className="report-card mb-4 rounded-2xl border border-[var(--tf-line)] bg-white p-5 shadow-[var(--tf-shadow)] transition-colors hover:border-[#1875d1] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[var(--tf-line)] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[var(--tf-surface)]">
+                      <div className="report-card-heading mb-3 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
                         <div className="space-y-1">
                           <h3 className="text-[15px] font-bold text-[var(--tf-ink)] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[var(--tf-ink)]">{item.title}</h3>
-                          <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--tf-muted)]">
+                          <div className="report-card-meta flex flex-wrap items-center gap-3 text-xs text-[var(--tf-muted)]">
                             <span className="inline-block rounded-md border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--tf-copy)] [&:where([data-theme=dark],[data-theme=dark]_*)]:border-[var(--tf-line)] [&:where([data-theme=dark],[data-theme=dark]_*)]:bg-[var(--tf-surface-soft)] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[var(--tf-copy)]">
                               {item.issueType || "Bug"}
                             </span>
@@ -464,7 +464,7 @@ function ReportBug() {
                         </div>
                       </div>
 
-                      <ExpandableText lines={4} className="mb-2.5 text-[13px] leading-[1.6] text-[var(--tf-copy)] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[var(--tf-copy)]" preserveWhitespace>{item.description}</ExpandableText>
+                      <ExpandableText lines={4} className="report-description mb-2.5 text-[13px] leading-[1.6] text-[var(--tf-copy)] [&:where([data-theme=dark],[data-theme=dark]_*)]:text-[var(--tf-copy)]" preserveWhitespace>{item.description}</ExpandableText>
 
                       {item.pageUrl && (
                         <div>

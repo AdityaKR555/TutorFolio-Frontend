@@ -1,8 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import PlatformLoader from "../../components/PlatformLoader";
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import api from "../../api/axios";
 import VisitorChatWidget from "../../components/VisitorChatWidget";
-import { ThemeClassic, ThemeMinimal, ThemeLuminary } from "../../components/themes/index.js";
+import { ThemeClassic, ThemeMinimal, ThemeLuminary, ThemeAurora } from "../../components/themes/index.js";
+import TuitionLogo from "../../components/themes/TuitionLogo";
+import "../../components/themes/theme-standards.css";
+const ThemeFive = lazy(() => import("../../components/themes/ThemeFive"));
 
 /* ─── data helpers ─────────────────────────────────────────────────────────── */
 function unwrap(body) {
@@ -38,6 +42,10 @@ function normalizeWebsite(root) {
 
 /* ─── theme registry ───────────────────────────────────────────────────────── */
 const THEME_MAP = {
+  theme5: ThemeFive,
+  motion_studio: ThemeFive,
+  theme4: ThemeAurora,
+  aurora: ThemeAurora,
   classic: ThemeClassic,
   minimal: ThemeMinimal,
   luminary_elite: ThemeLuminary,
@@ -60,7 +68,7 @@ function LoadingScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-tf-bg px-5">
       <div className="text-center">
-        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-blue-200 dark:border-blue-500/20 border-t-blue-500" />
+        <PlatformLoader showLabel={false} />
         <p className="mt-4 text-sm text-tf-copy">Loading tutor website…</p>
       </div>
     </div>
@@ -82,7 +90,8 @@ function ErrorScreen({ error, onRetry }) {
 
 /* ─── main component ────────────────────────────────────────────────────────── */
 export default function PublicTutorWebsite() {
-  const { username = "", section = "" } = useParams();
+  const { username = "", section = "", previewThemeId, previewUserId } = useParams();
+  const isPreview = Boolean(previewThemeId && previewUserId);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -92,40 +101,54 @@ export default function PublicTutorWebsite() {
   const [copyMessage, setCopyMessage] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
   const [themeId, setThemeId] = useState(searchParams.get("theme") || DEFAULT_THEME);
-  const visitRecordedRef = useRef(new Set());
+  const [themeInfo, setThemeInfo] = useState(null);
+  const visitRecordedRef = useRef(null);
 
   /* fetch main website data */
   const fetchWebsite = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const res = await api.get(`/website/u/${encodeURIComponent(username)}`, { timeout: 20000 });
+      const res = await api.get(isPreview
+        ? `/themes/preview/${encodeURIComponent(previewThemeId)}?userId=${encodeURIComponent(previewUserId)}`
+        : `/website/u/${encodeURIComponent(username)}`, { timeout: 20000 });
       const body = res?.data ?? {};
       if (body.status !== undefined && body.status !== 200) throw new Error(body.message || "Tutor website could not be found.");
-      const root = unwrap(body);
+      const payload = unwrap(body);
+      const root = isPreview ? payload.website : payload;
+      if (isPreview) {
+        if (!THEME_MAP[payload.theme?.themeId]) throw new Error("This theme does not have a supported preview yet.");
+        setThemeId(payload.theme.themeId);
+        setThemeInfo(payload.theme);
+      }
       const normalized = normalizeWebsite(root);
       if (!Object.keys(normalized.profile).length && (root.username || root.firstName || root.profilePicture)) normalized.profile = root;
-      setWebsite({ ...normalized, raw: root });
-
-      /* fetch the tutor's selected theme from backend (non-blocking) */
+      /* Resolve theme metadata before displaying the site so branding matches the selected theme. */
       const tutorId = Number(fd(normalized.profile, ["userId","user_id","userid","tutorId","tutor_id"], 0)) || null;
-      if (tutorId && !searchParams.get("theme")) {
-        api.get(`/themes/current/${tutorId}`, { timeout: 8000 })
-          .then((r) => {
-            const tid = r?.data?.data?.theme?.themeId;
-            if (tid && THEME_MAP[tid]) setThemeId(tid);
-          })
-          .catch(() => {}); /* silently fall back to default */
+      if (!isPreview) {
+        const requestedTheme = searchParams.get("theme");
+        try {
+          const themeResponse = await api.get(requestedTheme ? `/themes/${encodeURIComponent(requestedTheme)}` : tutorId ? `/themes/current/${tutorId}` : `/themes/${DEFAULT_THEME}`, { timeout: 8000 });
+          const data = themeResponse?.data?.data;
+          const theme = data?.theme || data;
+          const tid = theme?.themeId;
+          if (tid && THEME_MAP[tid]) { setThemeId(tid); setThemeInfo(theme); }
+          else { setThemeId(DEFAULT_THEME); setThemeInfo(null); }
+        } catch {
+          setThemeId(DEFAULT_THEME);
+          setThemeInfo(null);
+        }
       }
+      setWebsite({ ...normalized, raw: root });
     } catch (err) {
       setWebsite(null);
       setError(err?.response?.data?.message || err.message || "Unable to load this tutor website.");
     } finally {
       setLoading(false);
     }
-  }, [username, searchParams]);
+  }, [username, searchParams, isPreview, previewThemeId, previewUserId]);
 
-  useEffect(() => { if (username) fetchWebsite(); }, [fetchWebsite, username]);
+  useEffect(() => { if (username || isPreview) fetchWebsite(); }, [fetchWebsite, username, isPreview]);
 
   /* derived data */
   const profile = website?.profile ?? {};
@@ -139,24 +162,34 @@ export default function PublicTutorWebsite() {
   const name = [fd(profile, ["firstName","first_name"]), fd(profile, ["lastName","last_name"])].filter(Boolean).join(" ") || fd(profile, ["username"], username);
   const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
-  /* visit tracking */
-  const VISIT_COOLDOWN_MS = 10 * 60 * 1000;
-  useEffect(() => {
-    if (!website || !tutorId || visitRecordedRef.current.has(tutorId)) return;
-    const key = `tutorfolio:visit-ts:${tutorId}`;
-    try {
-      if (Date.now() - Number(localStorage.getItem(key) || 0) < VISIT_COOLDOWN_MS) return;
-      localStorage.setItem(key, String(Date.now()));
-    } catch {}
-    visitRecordedRef.current.add(tutorId);
-    let referrer = null;
-    try { referrer = document.referrer || null; } catch {}
-    api.post("/notifications/visit", { tutorId, referrer }, { timeout: 10000 }).catch(() => {});
-  }, [website, tutorId]);
-
   const validPages = ["about", "classes", "batches", "gallery", "achievements", "experience"];
   const currentPage = ["faqs", "contact"].includes(section) ? "about" : validPages.includes(section) ? section : "home";
-  const navigatePage = (page) => navigate(page === "home" ? `/tutor/${encodeURIComponent(username)}` : `/tutor/${encodeURIComponent(username)}/${page}`);
+
+  /* The 24-hour quiet period resets on every page visit, per tutor and browser. */
+  useEffect(() => {
+    if (isPreview || !website || !tutorId) return;
+    const visitKey = `${tutorId}:${currentPage}`;
+    if (visitRecordedRef.current === visitKey) return;
+    visitRecordedRef.current = visitKey;
+    const key = `tutorfolio:last-visit-v2:${tutorId}`;
+    let notifyTutor = true;
+    try {
+      const now = Date.now();
+      const last = Number(localStorage.getItem(key));
+      notifyTutor = !last || now - last >= 24 * 60 * 60 * 1000 || now < last;
+      localStorage.setItem(key, String(now));
+    } catch { /* Without storage, repeat visits cannot be recognized. */ }
+    let referrer = null;
+    try { referrer = document.referrer || null; } catch {}
+    api.post("/notifications/visit", { tutorId, referrer, section: currentPage, notifyTutor }, { timeout: 10000 }).catch(() => {});
+  }, [website, tutorId, isPreview, currentPage]);
+
+  const navigatePage = (page) => {
+    const base = isPreview
+      ? `/theme-preview/${encodeURIComponent(previewThemeId)}/${encodeURIComponent(previewUserId)}`
+      : `/tutor/${encodeURIComponent(username)}`;
+    navigate(page === "home" ? base : `${base}/${page}`);
+  };
   const navigateLegacySection = (tab) => navigatePage(({ overview: "home", tuition: "classes", faqs: "about", contact: "about" })[tab] || tab);
 
   /* copy link */
@@ -172,6 +205,8 @@ export default function PublicTutorWebsite() {
 
   /* pick theme component (fall back to Classic if unknown) */
   const ThemeComponent = THEME_MAP[themeId] ?? ThemeClassic;
+  const isFreeTheme = Array.isArray(themeInfo?.planAvailability) && themeInfo.planAvailability.some((plan) => String(plan).trim().toLowerCase() === "free");
+  const needsSharedIdentity = ![ThemeClassic, ThemeMinimal, ThemeLuminary, ThemeAurora, ThemeFive].includes(ThemeComponent);
 
   const themeProps = {
     profile,
@@ -182,11 +217,12 @@ export default function PublicTutorWebsite() {
     faqs,
     gallery,
     username,
+    previewBasePath: isPreview ? `/theme-preview/${encodeURIComponent(previewThemeId)}/${encodeURIComponent(previewUserId)}` : undefined,
     currentPage,
     activeTab: ({ home: "overview", classes: "tuition" })[currentPage] || currentPage,
     onPageChange: navigatePage,
     onTabChange: navigateLegacySection,
-    onContactClick: () => setChatOpen(true),
+    onContactClick: () => { if (!isPreview) setChatOpen(true); },
     onCopyLink: copyLink,
     copyMessage,
     sectionLoading: false,
@@ -195,8 +231,17 @@ export default function PublicTutorWebsite() {
 
   return (
     <div className="mobile-public-portfolio">
-      <ThemeComponent {...themeProps} />
-      <VisitorChatWidget tutorId={tutorId} tutorName={name} open={chatOpen} onClose={() => setChatOpen(false)} />
+      {isPreview && (
+        <div className="sticky top-0 z-50 flex items-center justify-between gap-3 bg-indigo-600 px-4 py-3 text-sm text-white">
+          <span>Theme preview. Your live website has not changed.</span>
+          <Link to="/website" className="shrink-0 rounded-lg bg-white px-3 py-2 font-semibold text-indigo-700">Back to themes</Link>
+        </div>
+      )}
+      {needsSharedIdentity && <TuitionLogo tuition={tuition} name={fd(tuition, ["tuitionName", "tuitionClassName"], name)} className="tf-theme-identity-logo" fallback={null} />}
+      <Suspense fallback={<LoadingScreen />}><ThemeComponent {...themeProps} /></Suspense>
+      {needsSharedIdentity && <TuitionLogo tuition={tuition} name={fd(tuition, ["tuitionName", "tuitionClassName"], name)} className="tf-theme-identity-logo" fallback={null} />}
+      {isFreeTheme && <footer className="tf-theme-credit"><div className="tf-theme-credit-inner"><div className="tf-theme-credit-brand"><img src="/tf-logo.png" alt="" /><span>This website is built by <a className="tf-theme-credit-name" href="https://alpha.tutorfolio.site" target="_blank" rel="noopener noreferrer">TutorFolio</a></span></div><a className="tf-theme-credit-action" href="https://alpha.tutorfolio.site" target="_blank" rel="noopener noreferrer">Get your own free website now <span aria-hidden="true">↗</span></a></div></footer>}
+      {!isPreview && <VisitorChatWidget tutorId={tutorId} tutorName={name} open={chatOpen} onClose={() => setChatOpen(false)} />}
     </div>
   );
 }

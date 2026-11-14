@@ -123,6 +123,8 @@ function App() {
         </Route>
 
         {/* Public tutor website */}
+        <Route path="/theme-preview/:previewThemeId/:previewUserId" element={<PublicTutorWebsite />} />
+        <Route path="/theme-preview/:previewThemeId/:previewUserId/:section" element={<PublicTutorWebsite />} />
         <Route path="/tutor/:username" element={<PublicTutorWebsite />} />
         <Route path="/tutor/:username/:section" element={<PublicTutorWebsite />} />
       </Routes>

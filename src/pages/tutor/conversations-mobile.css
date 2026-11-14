@@ -1,0 +1,78 @@
+.conversation-view-cue { display: none; }
+@media (max-width: 760px) {
+  .tf-mobile-platform .mobile-conversations .mobile-heading { gap: 18px; }
+  .tf-mobile-platform .mobile-conversations .conversation-summary { display: flex; flex-wrap: nowrap; width: 100%; gap: 0; padding: 6px; border: 1px solid var(--tf-line); border-radius: 14px; background: var(--tf-surface); }
+  .conversation-summary > div { flex: 1; min-width: 0; gap: 4px; padding: 6px; min-height: 38px; border: 0; border-radius: 0; background: transparent; font-size: 11px; }
+  .conversation-summary > div:first-child { border-right: 1px solid var(--tf-line); }
+  .conversation-summary > button { flex-shrink: 0; min-height: 38px; padding: 6px 8px; border: 0; border-radius: 10px; background: var(--tf-sky); color: var(--tf-blue); font-size: 11px; }
+  .tf-mobile-platform .mobile-conversations .mobile-chat-layout { min-height: 0; grid-template-columns: minmax(0, 1fr); }
+  .tf-mobile-platform .mobile-conversations section[aria-label="Inbox"] { min-height: 0; max-height: none; border-radius: 18px; }
+  .mobile-conversations section[aria-label="Inbox"] > div:first-child { padding: 16px 14px 12px; border-bottom: 0; }
+  .mobile-conversations [aria-label="Filter conversations"] { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; overflow: hidden; border-radius: 11px; background: var(--tf-surface-soft); }
+  .mobile-conversations [aria-label="Filter conversations"] button { min-height: 42px; border: 0; border-radius: 0; padding-inline: 3px; font-size: 12px; }
+  .mobile-conversations [aria-label="Filter conversations"] button[aria-selected="true"] { border-radius: 10px; background: var(--tf-blue); color: var(--tf-on-primary, white); }
+  .mobile-conversations .conversation-inbox-items { display: grid; gap: 10px; padding: 4px 12px 12px; overflow: visible; }
+  .mobile-conversations .conversation-inbox-item { padding: 12px; border: 1px solid var(--tf-line); border-radius: 14px; background: var(--tf-surface); gap: 10px; }
+  .conversation-inbox-item strong { font-size: 14px; }
+  .conversation-inbox-item time { font-size: 11px; }
+  .conversation-inbox-item > span > span:nth-child(2) { font-weight: 600; }
+  .conversation-item-footer { flex-wrap: wrap; row-gap: 6px; }
+  .conversation-view-cue { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; color: var(--tf-blue); font-size: 11px; font-weight: 600; }
+  .conversation-view-cue > span { font-size: 20px; line-height: 1; }
+  .mobile-conversations section[aria-label="Inbox"] > div:last-child { padding: 12px 14px; }
+}
+
+@media (max-width: 760px) {
+  .tf-mobile-platform .mobile-conversations section[aria-label="Selected conversation"] { min-height: 0; border-radius: 18px; }
+  .mobile-conversations section[aria-label="Selected conversation"] > button:first-child { padding: 14px 16px; font-size: 14px; min-height: 48px; }
+  .tf-mobile-platform .mobile-conversations .mobile-thread-heading { display: flex; flex-direction: column; align-items: stretch; padding: 16px; gap: 12px; }
+  .mobile-thread-heading > div:first-child { gap: 12px; }
+  .mobile-thread-heading h2 { font-size: 19px; font-weight: 700; }
+  .mobile-thread-heading p { font-size: 12px; }
+  .tf-mobile-platform .mobile-conversations .mobile-thread-heading > div:last-child { display: flex; flex-wrap: nowrap; justify-content: flex-end; gap: 8px; width: 100%; }
+  .mobile-thread-heading > div:last-child > span:first-child { margin-right: auto; align-self: center; }
+  .tf-mobile-platform .mobile-conversations .mobile-thread-heading button { width: 40px; height: 40px; min-height: 40px; padding: 8px; border: 1px solid var(--tf-line); border-radius: 12px; background: var(--tf-surface); }
+  .mobile-thread-heading button[aria-label="Refresh conversation"] { font-size: 24px; }
+  .tf-mobile-platform .mobile-conversations .mobile-thread-status { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; padding: 12px 16px 16px; }
+  .mobile-thread-status > span { grid-column: 1 / -1; margin-bottom: 8px; font-size: 12px; font-weight: 600; }
+  .tf-mobile-platform .mobile-conversations .mobile-thread-status button { min-height: 42px; padding: 8px 4px; font-size: 12px; border-radius: 10px; }
+  .tf-mobile-platform .mobile-conversations .mobile-thread-status button:disabled { background: var(--tf-sky); color: var(--tf-blue); border-color: var(--tf-blue); }
+  .tf-mobile-platform .mobile-conversations .mobile-chat-messages { padding: 16px; gap: 14px; min-height: 240px; max-height: 55dvh; }
+  .mobile-conversations .conversation-bubble { max-width: 88%; padding: 12px; border-radius: 14px; }
+  .mobile-conversations .conversation-bubble[data-sender="tutor"] { background: var(--tf-blue); border-color: var(--tf-blue); color: var(--tf-on-primary, white); }
+  .mobile-conversations .conversation-bubble[data-sender="tutor"] > span { color: inherit; opacity: .8; }
+  .mobile-conversations .conversation-bubble[data-sender="visitor"] { background: var(--tf-surface); color: var(--tf-ink); }
+  .mobile-conversations .conversation-bubble p { font-size: 14px; }
+  .mobile-conversations .conversation-bubble > span { font-size: 10px; line-height: 1.5; }
+  .mobile-conversations section[aria-label="Selected conversation"] > form { padding: 16px; }
+  .mobile-conversations label[for="reply-message"] { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--tf-ink); }
+  .tf-mobile-platform .mobile-conversations .mobile-chat-composer { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .tf-mobile-platform .mobile-conversations .mobile-chat-composer textarea { min-height: 110px; font-size: 16px; border-radius: 12px; padding: 12px; }
+  .tf-mobile-platform .mobile-conversations .mobile-chat-composer button { justify-self: end; min-height: 44px; padding: 10px 18px; border-radius: 12px; background: var(--tf-blue); border-color: var(--tf-blue); color: var(--tf-on-primary, white); font-size: 14px; }
+}
+
+@media (max-width: 760px) {
+  .tf-mobile-platform .mobile-conversations .mobile-thread-heading { flex-direction: row; align-items: flex-start; gap: 8px; }
+  .mobile-thread-heading > div:first-child { flex: 1; min-width: 0; gap: 8px; }
+  .tf-mobile-platform .mobile-conversations .mobile-thread-heading > div:last-child { width: auto; flex-shrink: 0; gap: 4px; }
+  .mobile-thread-heading .conversation-header-status,
+  .tf-mobile-platform .mobile-conversations .mobile-thread-heading button[aria-label="Mark conversation as read"] { display: none; }
+  .tf-mobile-platform .mobile-conversations .mobile-thread-heading button { width: 34px; height: 36px; min-height: 36px; padding: 7px; }
+  .mobile-thread-heading h2 { font-size: 16px; }
+  .mobile-thread-heading p { font-size: 11px; }
+  .conversation-message-sender { display: none; }
+  .mobile-conversations .conversation-bubble { position: relative; overflow: visible; }
+  .conversation-bubble::before { content: ""; position: absolute; top: 12px; width: 10px; height: 10px; transform: rotate(45deg); background: inherit; }
+  .conversation-bubble[data-sender="visitor"]::before { left: -6px; border-left: 1px solid var(--tf-line); border-bottom: 1px solid var(--tf-line); }
+  .conversation-bubble[data-sender="tutor"]::before { right: -5px; }
+  .conversation-mobile-topbar > button { min-height: 32px; }
+}
+
+.conversation-inline-status { display: none; }
+@media (max-width: 760px) {
+  .conversation-inline-status { display: inline-flex; flex-shrink: 0; }
+  .conversation-footer-status { display: none; }
+  .conversation-inbox-item .conversation-item-footer:has(.conversation-footer-status:only-child) { display: none; }
+  .conversation-inbox-item time { margin-left: auto; }
+  .conversation-message-row .conversation-view-cue { flex-shrink: 0; white-space: nowrap; }
+}

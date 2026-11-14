@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/axios";
 import { getStoredUser } from "../../utils/auth";
-import { THEMES } from "../../components/themes/index.js";
 import {
   UserRound,
   MessageCircle,
@@ -44,22 +43,28 @@ const checkApiResponse = (res, fallback) => {
 const formatPlan = (p) =>
   !p ? "Free" : p.charAt(0).toUpperCase() + p.slice(1).toLowerCase();
 
+const getPlanRequirement = (availability, currentPlan) => {
+  if (!Array.isArray(availability)) return "Plan details unavailable";
+  const plans = availability.filter((plan) => typeof plan === "string" && plan.trim()).map((plan) => plan.trim().toLowerCase());
+  const rank = { free: 0, pro: 1, elite: 2 };
+  const currentRank = rank[String(currentPlan || "").trim().toLowerCase()];
+  const upgrade = plans.filter((plan) => rank[plan] !== undefined && currentRank !== undefined && rank[plan] > currentRank).sort((a, b) => rank[a] - rank[b])[0];
+  if (upgrade) return `Upgrade to ${formatPlan(upgrade)}`;
+  return plans.length ? `Available on ${plans.map(formatPlan).join(" or ")}` : "Plan details unavailable";
+};
+
 /* ─── ThemePreviewMini – visual swatch for picker ─────────────────────────── */
-function ThemePreviewMini({ theme, isSelected, onClick, disabled }) {
+function ThemePreviewMini({ theme, userId, userPlan, isSelected, onApply, disabled }) {
   const p = theme.primaryColor || "#4F46E5";
   const s = theme.secondaryColor || "#818CF8";
   const bg = theme.backgroundColor || "#F8FAFC";
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
+    <article
       className={`group relative w-full overflow-hidden rounded-xl sm:rounded-2xl border-2 transition-all ${
         isSelected
           ? "border-indigo-500 ring-2 sm:ring-4 ring-indigo-100 dark:ring-indigo-900/60"
           : "border-tf-line hover:border-slate-400 dark:hover:border-slate-500"
-      } disabled:cursor-not-allowed disabled:opacity-60`}
-      aria-pressed={isSelected}
+      }`}
     >
       {/* mini visual preview */}
       <div
@@ -114,7 +119,7 @@ function ThemePreviewMini({ theme, isSelected, onClick, disabled }) {
       <div className="p-2 sm:p-3 text-center sm:text-left flex flex-col items-center sm:items-stretch">
         <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-1 sm:gap-2 w-full">
           <span className="font-semibold text-tf-ink text-xs sm:text-sm text-center sm:text-left">
-            {theme.label}
+            {theme.title}
           </span>
           {isSelected && (
             <span className="rounded-full bg-indigo-600 px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-bold text-white shrink-0">
@@ -123,7 +128,7 @@ function ThemePreviewMini({ theme, isSelected, onClick, disabled }) {
           )}
           {!isSelected && theme.isPlanAllowed === false && (
             <span className="rounded-full bg-amber-100 px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-bold text-amber-800 dark:bg-amber-500/15 dark:text-amber-300 text-center shrink-0">
-              Upgrade
+              {getPlanRequirement(theme.planAvailability, userPlan)}
             </span>
           )}
         </div>
@@ -140,8 +145,32 @@ function ThemePreviewMini({ theme, isSelected, onClick, disabled }) {
             />
           ))}
         </div>
+        <div className="mt-3 flex w-full flex-wrap gap-2">
+          {theme.previewUrl ? (
+            <a
+              href={`${theme.previewUrl}/${encodeURIComponent(userId)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Preview ${theme.title} (opens in a new tab)`}
+              className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-tf-line px-3 py-2 text-xs font-semibold text-tf-copy hover:bg-tf-surface-soft"
+            >
+              Preview <ExternalLink size={13} />
+            </a>
+          ) : (
+            <span className="flex-1 px-3 py-2 text-xs text-tf-muted">Preview unavailable</span>
+          )}
+          <button
+            type="button"
+            onClick={onApply}
+            disabled={disabled || isSelected}
+            aria-label={isSelected ? `${theme.title} is active` : `Use ${theme.title}`}
+            className="flex-1 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSelected ? "Current theme" : "Use theme"}
+          </button>
+        </div>
       </div>
-    </button>
+    </article>
   );
 }
 
@@ -161,6 +190,10 @@ export default function Website() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [copied, setCopied] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(null);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [verificationBusy, setVerificationBusy] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
 
   /* Load current theme from backend */
   const loadTheme = useCallback(async () => {
@@ -172,59 +205,21 @@ export default function Website() {
     try {
       const themesRes = await api.get("/themes", { params: { userId } });
       const themesData = checkApiResponse(themesRes, "Unable to fetch themes.");
-      const plan = themesData?.userPlan || "free";
-      const isPaidUser = plan.toLowerCase() !== "free";
-      const rawThemes = themesData?.themes || [];
-
-      // Exactly 3 themes: Classic, Minimal, Luminary Elite
-      const canonicalThemes = THEMES.map((theme) => {
-        const backendMatch = rawThemes.find(
-          (bt) =>
-            bt.themeId === theme.id ||
-            (theme.id === "luminary_elite" &&
-              ["elite_academy", "theme_3", "elite", "luminary_elite"].includes(bt.themeId))
-        );
-
-        const isAllowed = theme.isPaidOnly
-          ? backendMatch
-            ? backendMatch.isPlanAllowed !== false
-            : isPaidUser
-          : true;
-
-        const isSelected = backendMatch?.isSelected || false;
-
-        return {
-          ...theme,
-          isSelected,
-          isPlanAllowed: isAllowed,
-          backendThemeId:
-            backendMatch?.themeId || (theme.id === "luminary_elite" ? "elite_academy" : theme.id),
-        };
-      });
-
-      setAvailableThemes(canonicalThemes);
-
-      // Determine active theme
-      const selected = canonicalThemes.find((t) => t.isSelected);
-      if (selected) {
-        setActiveThemeId(selected.id);
-      } else {
-        const rawSelected = rawThemes.find((t) => t.isSelected);
-        if (rawSelected) {
-          if (["elite_academy", "bold_educator", "vibrant_slate", "luminary_elite"].includes(rawSelected.themeId)) {
-            setActiveThemeId("luminary_elite");
-          } else if (rawSelected.themeId === "minimal") {
-            setActiveThemeId("minimal");
-          } else {
-            setActiveThemeId("classic");
-          }
-        }
-      }
-      setUserPlan(plan);
+      const themes = themesData?.themes || [];
+      setAvailableThemes(themes);
+      setActiveThemeId(
+        themes.find((theme) => theme.isSelected)?.themeId ||
+          themesData?.selectedThemeId || "",
+      );
+      setUserPlan(themesData?.userPlan || "free");
+      const verified = themesData?.isEmailVerified;
+      setEmailVerified(typeof verified === "boolean" ? verified : null);
+      setError(typeof verified === "boolean" ? "" : "Email verification status is unavailable. Please refresh after the backend is updated.");
     } catch (err) {
       console.error("Could not load themes from API:", err.message);
-      // Fallback display for the 3 themes
-      setAvailableThemes(THEMES.map((t) => ({ ...t, isPlanAllowed: !t.isPaidOnly })));
+      setAvailableThemes([]);
+      setEmailVerified(null);
+      setActiveThemeId("");
       setError(getErrorMessage(err, "Unable to fetch themes from the server."));
     } finally {
       setLoading(false);
@@ -237,40 +232,21 @@ export default function Website() {
 
   /* Apply theme */
   const handleApplyTheme = async (themeId) => {
-    if (!userId || saving || themeId === activeThemeId) return;
+    const targetTheme = availableThemes.find((theme) => theme.themeId === themeId);
+    if (!userId || saving || emailVerified !== true || themeId === activeThemeId || !targetTheme ||
+        targetTheme.isPlanAllowed === false) return;
     setSaving(true);
     setError("");
     setSuccess("");
     try {
-      const targetTheme =
-        availableThemes.find((t) => t.id === themeId) ||
-        THEMES.find((t) => t.id === themeId);
-
-      let targetBackendId = targetTheme?.backendThemeId || themeId;
-
-      try {
-        const res = await api.post("/themes/select", {
-          userId: Number(userId),
-          themeId: targetBackendId,
-        });
-        checkApiResponse(res, "Unable to select theme.");
-      } catch (postErr) {
-        // Fallback for luminary_elite if backend only recognizes elite_academy
-        if (themeId === "luminary_elite" && targetBackendId !== "elite_academy") {
-          const res = await api.post("/themes/select", {
-            userId: Number(userId),
-            themeId: "elite_academy",
-          });
-          checkApiResponse(res, "Unable to select theme.");
-        } else {
-          throw postErr;
-        }
-      }
-
-      setActiveThemeId(themeId);
-      const t = THEMES.find((x) => x.id === themeId);
+      const res = await api.post("/themes/select", {
+        userId: Number(userId),
+        themeId: targetTheme.themeId,
+      });
+      const selected = checkApiResponse(res, "Unable to select theme.");
+      setActiveThemeId(selected?.themeId || targetTheme.themeId);
       setSuccess(
-        `Theme "${t?.label || themeId}" applied! Your website now uses this look.`,
+        `Theme "${selected?.theme?.title || targetTheme.title}" applied! Your website now uses this look.`,
       );
     } catch (err) {
       setError(
@@ -281,6 +257,17 @@ export default function Website() {
     }
   };
 
+  const handleVerification = async (verify) => {
+    setVerificationBusy(true); setError(""); setSuccess("");
+    try {
+      const response = await api.post(verify ? "/auth/verify-otp" : "/auth/resend-otp", verify ? { userId: Number(userId), otp: verificationCode } : { userId: Number(userId) });
+      checkApiResponse(response, "Unable to verify email.");
+      if (verify) { setVerificationCode(""); setCodeSent(false); await loadTheme(); setSuccess("Email verified. You can now use a theme and publish your website."); }
+      else { setCodeSent(true); setSuccess("Verification code sent to your account email."); }
+    } catch (err) { setError(getErrorMessage(err, "Unable to verify email.")); }
+    finally { setVerificationBusy(false); }
+  };
+
   /* Copy link */
   const handleCopyLink = async () => {
     if (!websiteUrl) return;
@@ -289,8 +276,7 @@ export default function Website() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setError("Unable to copy the link. Please copy it from the website URL below.");
     }
   };
 
@@ -299,17 +285,14 @@ export default function Website() {
       <div className="mx-auto max-w-6xl">
         {/* ── Page header ── */}
         <div className="mb-5 sm:mb-8">
-          <p className="text-xs sm:text-sm font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
-            Your Public Website
-          </p>
-          <div className="mobile-website-heading mt-1.5 sm:mt-2 flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mobile-website-heading flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-tf-ink">
                 Website Settings
               </h1>
               <p className="mt-1 sm:mt-2 max-w-2xl text-xs sm:text-sm leading-5 sm:leading-6 text-tf-copy">
-                Customize how your public tutor portfolio looks. Changes apply
-                immediately to your live website.
+                Customize how your public tutor portfolio looks. Preview a theme,
+                then choose Use theme to apply it to your live website.
               </p>
             </div>
 
@@ -368,11 +351,17 @@ export default function Website() {
                 {websiteUrl}
               </p>
             </div>
+            <button type="button" onClick={handleCopyLink} aria-label="Copy website URL" className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-tf-line px-2 py-1.5 text-xs font-semibold text-tf-copy"><Copy size={14}/>{copied ? "Copied" : "Copy"}</button>
             <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-              Live
+              {emailVerified === null ? "Status unavailable" : emailVerified ? "Live" : "Not live"}
             </span>
           </div>
         )}
+
+        {emailVerified === false && <div className="mb-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+          <p className="font-bold">Verify your email to publish your website</p><p className="mt-1">You can preview themes now. Verify your account email before using a theme or making your website public.</p>
+          <div className="mt-3 flex flex-wrap items-center gap-2"><button type="button" disabled={verificationBusy} onClick={() => handleVerification(false)} className="rounded-lg border border-amber-400 px-3 py-2 text-xs font-semibold disabled:opacity-50">{codeSent ? "Resend code" : "Send verification code"}</button>{codeSent && <><input aria-label="Email verification code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={verificationCode} onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, ""))} placeholder="6-digit code" className="w-32 rounded-lg border border-amber-400 bg-tf-surface px-3 py-2 text-tf-ink"/><button type="button" disabled={verificationBusy || verificationCode.length !== 6} onClick={() => handleVerification(true)} className="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Verify email</button></>}</div>
+        </div>}
 
         {/* ── Alerts ── */}
         {error && (
@@ -416,8 +405,7 @@ export default function Website() {
                 Choose a Theme
               </h2>
               <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-tf-copy hidden sm:block">
-                Select a visual style for your public website. The change is
-                saved instantly.
+                Open a preview in a new tab, then choose Use theme when you’re ready.
               </p>
             </div>
             <div className="shrink-0 rounded-lg sm:rounded-xl border border-tf-line px-2.5 sm:px-3 py-1 sm:py-2 text-[11px] sm:text-xs text-tf-copy">
@@ -443,15 +431,21 @@ export default function Website() {
                 </div>
               ))}
             </div>
+          ) : availableThemes.length === 0 ? (
+            <p className="text-sm text-tf-muted">
+              {error ? "Themes could not be loaded. Please refresh to try again." : "No themes are currently available."}
+            </p>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {availableThemes.map((theme) => (
                 <ThemePreviewMini
-                  key={theme.id}
+                  key={theme.themeId}
                   theme={theme}
-                  isSelected={activeThemeId === theme.id}
-                  onClick={() => handleApplyTheme(theme.id)}
-                  disabled={saving || !theme.isPlanAllowed}
+                  userId={userId}
+                  userPlan={userPlan}
+                  isSelected={activeThemeId === theme.themeId}
+                  onApply={() => handleApplyTheme(theme.themeId)}
+                  disabled={saving || emailVerified !== true || theme.isPlanAllowed === false}
                 />
               ))}
             </div>
@@ -508,21 +502,7 @@ export default function Website() {
           ))}
         </section>
 
-        <p className="mt-4 sm:mt-6 text-xs text-tf-muted text-center sm:text-left">
-          Your public website is accessible at{" "}
-          {username ? (
-            <a
-              href={websiteUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
-            >
-              {websiteUrl}
-            </a>
-          ) : (
-            "— set a username to activate your website."
-          )}
-        </p>
+
       </div>
     </div>
   );

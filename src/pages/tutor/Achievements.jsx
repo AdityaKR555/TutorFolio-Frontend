@@ -1,3 +1,5 @@
+import { confirmAction } from "../../components/PlatformDialog";
+import PlatformLoader from "../../components/PlatformLoader";
 import KpiState from "../../components/KpiState";
 import React, { useCallback, useEffect, useState } from "react";
 import AchievementSummaryArt from "./AchievementSummaryArt";
@@ -20,7 +22,7 @@ const pageStyles = {
   heading: "mobile-heading mb-6 flex items-start justify-between gap-[18px] max-[520px]:flex-col max-[520px]:items-stretch",
   headingTitle: "mb-2 text-3xl font-bold tracking-tight sm:text-4xl",
   headingCopy: "m-0 text-sm text-tf-copy sm:text-base",
-  headingButton: "max-[520px]:self-end",
+  headingButton: "max-[520px]:self-start max-[520px]:w-auto",
   button: "tf-button-secondary cursor-pointer whitespace-nowrap",
   buttonPrimary: "tf-button-primary cursor-pointer whitespace-nowrap",
   buttonSmall: "inline-flex items-center justify-center gap-2 rounded-xl border border-tf-line px-3 py-2 text-sm font-medium text-tf-copy hover:bg-tf-surface-soft",
@@ -59,8 +61,8 @@ const pageStyles = {
   tags: "mt-3 flex flex-wrap gap-[6px]",
   tag: "rounded-full bg-tf-sky px-3 py-1.5 text-xs font-medium text-tf-blue",
   cardFooter: "mobile-card-footer mt-auto flex flex-wrap items-center gap-2 border-t border-tf-line pt-4",
-  visibilityToggle: "relative mr-auto inline-flex min-h-10 items-center py-1 pl-12 pr-2 text-xs text-tf-copy before:absolute before:left-0 before:h-6 before:w-10 before:rounded-full before:bg-slate-300 before:content-[''] after:absolute after:left-[3px] after:h-[18px] after:w-[18px] after:rounded-full after:bg-white after:transition-transform after:content-[''] focus-visible:outline-2 focus-visible:outline-[var(--tf-blue)] disabled:opacity-50",
-  visibilityToggleOn: "before:bg-[var(--tf-blue)] after:translate-x-4",
+  visibilityToggle: "relative inline-flex h-6 w-10 shrink-0 items-center rounded-full bg-slate-300 p-[3px] focus-visible:outline-2 focus-visible:outline-[var(--tf-blue)] disabled:opacity-50",
+  visibilityToggleOn: "bg-[var(--tf-blue)]",
   empty: "rounded-[13px] border border-dashed border-[var(--tf-line)] bg-[var(--tf-surface)] px-5 py-[42px] text-center text-[var(--tf-copy)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
   emptyIcon: "mx-auto grid h-[58px] w-[58px] place-items-center rounded-2xl bg-[var(--tf-sky)] text-[var(--tf-blue)] [[data-theme=dark]_&]:bg-[var(--tf-sky)]",
   emptyTitle: "tf-section-title mt-3 mb-1",
@@ -708,7 +710,7 @@ function Achievements() {
   };
 
   const handleDelete = async (achievementId) => {
-    const confirmed = window.confirm(
+    const confirmed = await confirmAction(
       "Are you sure you want to delete this achievement?"
     );
 
@@ -893,7 +895,7 @@ function Achievements() {
     return (
       <div className={pageStyles.page}>
         <div className={pageStyles.loading}>
-          <span className={pageStyles.spinner} />
+          <PlatformLoader showLabel={false} />
           <p className={pageStyles.loadingCopy}>Loading achievements...</p>
         </div>
       </div>
@@ -910,7 +912,7 @@ function Achievements() {
           </div>
           {!isFormOpen && (
             <button type="button" onClick={handleAdd} className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-base font-semibold text-white hover:bg-blue-700">
-              <Plus size={20} aria-hidden="true"/> Add achievement
+              <Plus size={20} className="sm:hidden" aria-hidden="true"/> <span className="sm:hidden">New</span><Plus size={20} className="hidden sm:inline" aria-hidden="true"/> <span className="hidden sm:inline">Add achievement</span>
             </button>
           )}
         </header>
@@ -1418,13 +1420,9 @@ function Achievements() {
                       aria-label={`Visible on website: ${achievement.title}`}
                       className={`${pageStyles.visibilityToggle} ${visible ? pageStyles.visibilityToggleOn : ""}`}
                     >
-                      {visibilityId ===
-                      achievement.achievementId
-                        ? "Updating..."
-                        : visible
-                        ? "Visible on website"
-                        : "Hidden from website"}
+                      <span aria-hidden="true" className={`achievement-switch-thumb h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-transform ${visible ? "translate-x-4" : "translate-x-0"}`} />
                     </button>
+                    <span className="achievement-visibility-label mr-auto text-xs text-tf-copy">{visibilityId === achievement.achievementId ? "Updating..." : visible ? "Visible on website" : "Hidden from website"}</span>
 
                     <button
                       type="button"

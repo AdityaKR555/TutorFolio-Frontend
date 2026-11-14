@@ -1,0 +1,14 @@
+.platform-loader { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--tf-copy, #566b84); text-align: center; }
+.platform-loader__graphic { position: relative; display: grid; place-items: center; width: 76px; height: 76px; flex: none; }
+.platform-loader__graphic img { width: 43%; height: 43%; object-fit: contain; }
+.platform-loader__ring { position: absolute; inset: 0; border: 2px solid transparent; border-radius: 50%; animation: platform-loader-spin 1.8s linear infinite; }
+.platform-loader__ring--outer { border-top-color: var(--tf-blue, #1875d1); border-right-color: var(--tf-blue, #1875d1); opacity: .9; }
+.platform-loader__ring--middle { inset: 6px; border-bottom-color: #22b8d1; border-left-color: #22b8d1; animation-duration: 2.5s; animation-direction: reverse; }
+.platform-loader__ring--inner { inset: 12px; border-top-color: #8b5cf6; border-right-color: #8b5cf6; opacity: .7; animation-duration: 1.3s; }
+.platform-loader__label { font-size: 13px; line-height: 1.4; }
+.platform-loader--small .platform-loader__graphic { width: 28px; height: 28px; }
+.platform-loader--small .platform-loader__ring { border-width: 1.5px; }
+.platform-loader--small .platform-loader__ring--middle { inset: 3px; }
+.platform-loader--small .platform-loader__ring--inner { inset: 6px; }
+@keyframes platform-loader-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .platform-loader__ring { animation: none; } }

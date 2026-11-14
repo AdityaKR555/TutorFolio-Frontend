@@ -1,3 +1,5 @@
+.tf-batches .batch-visibility-switch { background-color: #cbd5e1; }
+.tf-batches .batch-visibility-switch[aria-pressed="true"] { background-color: var(--tf-blue); }
 /* Scoped to Batches: desktop keeps its full summary and table layout. */
 .tf-batches .batch-icon-action {
   width: 40px;
@@ -112,7 +114,7 @@
     border-radius: 20px;
     background: var(--tf-line);
   }
-  .tf-batches article button[aria-pressed="true"]::before { background: var(--tf-blue); }
+  .tf-batches article button[aria-pressed="true"]::before { background-color: var(--tf-blue) !important; }
   .tf-batches article button[aria-pressed]::after { top: 13px; background: white; }
   .tf-batches article > div:last-child { margin-top: 10px; padding-top: 4px; }
   .tf-batches .batch-backdrop { align-items: flex-end; padding: 0; }

@@ -1,6 +1,9 @@
+import { confirmAction } from "../../components/PlatformDialog";
+import PlatformLoader from "../../components/PlatformLoader";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import api from "../../api/axios";
+import "./conversations-mobile.css";
 import ExpandableText from "../../components/ExpandableText";
 const validStatuses = ["open", "closed", "archived"];
 
@@ -54,7 +57,8 @@ export default function Conversations() {
   const [page, setPage] = useState(1);
   const [inbox, setInbox] = useState([]);
   const [total, setTotal] = useState(0);
-  const [selectedId, setSelectedId] = useState(() => searchParams.get("conversationId") || "");
+  const [selectedId, setSelectedId] = useState(() => window.matchMedia("(max-width: 760px)").matches ? "" : searchParams.get("conversationId") || "");
+  const [mobileThreadOpen, setMobileThreadOpen] = useState(false);
   const [thread, setThread] = useState(null);
   const [draft, setDraft] = useState("");
   const [inboxLoading, setInboxLoading] = useState(true);
@@ -140,6 +144,7 @@ export default function Conversations() {
       setThread(null);
       return;
     }
+    if (window.matchMedia("(max-width: 760px)").matches && !mobileThreadOpen) return;
     if (!requestedFromQueryRef.current) {
       const target = searchParams.get("conversationId");
       requestedFromQueryRef.current = true;
@@ -151,7 +156,7 @@ export default function Conversations() {
     if (!selectedId || !inbox.some((item) => String(item.conversationId) === String(selectedId))) {
       setSelectedId(String(inbox[0].conversationId));
     }
-  }, [inbox, searchParams, selectedId]);
+  }, [inbox, searchParams, selectedId, mobileThreadOpen]);
 
   useEffect(() => {
     if (!selectedId) { setThread(null); return; }
@@ -172,6 +177,8 @@ export default function Conversations() {
 
   const chooseConversation = (item) => {
     const id = String(item.conversationId);
+    setMobileThreadOpen(true);
+    requestedFromQueryRef.current = true;
     setSelectedId(id);
     setThread(null);
     setDraft("");
@@ -246,7 +253,7 @@ export default function Conversations() {
   const deleteConversation = async () => {
     if (!tutorId || !selectedId || actionLoading) return;
     const visitorName = thread?.visitorName || "this visitor";
-    if (!window.confirm(`Delete the conversation with ${visitorName} from your inbox?`)) return;
+    if (!await confirmAction(`Delete the conversation with ${visitorName} from your inbox?`)) return;
     setActionLoading(true); setThreadError(""); setNotice("");
     try {
       const response = await api.delete(`/chat/tutor/conversation/${encodeURIComponent(selectedId)}`, {
@@ -256,7 +263,8 @@ export default function Conversations() {
       const nextRows = inbox.filter((item) => String(item.conversationId) !== String(selectedId));
       setInbox(nextRows);
       setTotal((value) => Math.max(0, value - 1));
-      setSelectedId(nextRows[0] ? String(nextRows[0].conversationId) : "");
+      setMobileThreadOpen(false);
+      setSelectedId(window.matchMedia("(max-width: 760px)").matches ? "" : nextRows[0] ? String(nextRows[0].conversationId) : "");
       setThread(null);
       setNotice("Conversation deleted from your inbox.");
       await loadUnreadCount();
@@ -274,7 +282,7 @@ export default function Conversations() {
       <main className="mx-auto max-w-[1230px] px-[38px] pb-14 pt-9 max-[850px]:px-[22px] max-[850px]:pb-11 max-[850px]:pt-7 max-[680px]:px-[14px] max-[680px]:pb-9 max-[680px]:pt-[22px] max-[520px]:px-[13px] max-[520px]:pb-8 max-[520px]:pt-5">
         <header className="mobile-heading mb-6 flex items-end justify-between gap-5 max-[680px]:flex-col max-[680px]:items-start">
           <div><h1 className="tf-page-title mb-2">Conversations</h1><p className="m-0 text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]">Manage student enquiries and reply to visitors who contact your public tutor website.</p></div>
-          <div className="flex flex-wrap items-center justify-end gap-[9px] max-[680px]:justify-start max-[520px]:grid max-[520px]:w-full max-[520px]:grid-cols-2">
+          <div className="conversation-summary flex flex-wrap items-center justify-end gap-[9px] max-[680px]:justify-start max-[520px]:grid max-[520px]:w-full max-[520px]:grid-cols-2">
             <div className="inline-flex min-h-[42px] items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-line)] bg-white px-[13px] py-[9px] text-[13px] text-[var(--tf-copy)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-copy)]"><strong className="text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-ink)]">{total}</strong> conversations</div>
             <div className="inline-flex min-h-[42px] items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-line)] bg-white px-[13px] py-[9px] text-[13px] text-[var(--tf-copy)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-copy)]"><strong className="text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-ink)]">{unreadCount}</strong> unread</div>
             <button type="button" className="inline-flex min-h-[42px] items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[var(--tf-line)] bg-white px-[13px] py-[9px] text-[13px] font-semibold text-[var(--tf-copy)] hover:bg-[var(--tf-surface-soft)] disabled:cursor-not-allowed disabled:opacity-50 [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-copy)] [[data-theme=dark]_&]:hover:bg-[var(--tf-surface-soft)]" onClick={() => { loadInbox(); loadUnreadCount(); if (selectedId) loadThread(selectedId, true); }} disabled={inboxLoading}>
@@ -284,7 +292,7 @@ export default function Conversations() {
         </header>
         {error && <ErrorNotice>{error}</ErrorNotice>}
         <div className="mobile-chat-layout grid min-h-[650px] grid-cols-[minmax(265px,0.78fr)_minmax(0,2fr)] items-stretch gap-[17px] max-[850px]:grid-cols-[minmax(235px,0.8fr)_minmax(0,1.4fr)] max-[850px]:gap-3 max-[680px]:grid-cols-1">
-          <section className="flex min-h-[650px] min-w-0 flex-col overflow-hidden rounded-[14px] border border-[var(--tf-line)] bg-white shadow-[0_12px_30px_rgba(32,70,111,0.06)] max-[680px]:min-h-0 max-[680px]:max-h-[430px] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]" aria-label="Inbox">
+          <section className={`${mobileThreadOpen ? "max-[760px]:hidden" : ""} flex min-h-[650px] min-w-0 flex-col overflow-hidden rounded-[14px] border border-[var(--tf-line)] bg-white shadow-[0_12px_30px_rgba(32,70,111,0.06)] max-[680px]:min-h-0 max-[680px]:max-h-[430px] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]`} aria-label="Inbox">
             <div className="border-b border-[var(--tf-line)] p-4 [[data-theme=dark]_&]:border-[var(--tf-line)]">
               <div className="mb-[14px] flex items-center justify-between gap-2"><h2 className="tf-section-title m-0">Inbox</h2><span className="text-xs text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">{filteredUnread} unread here</span></div>
               <div className="grid grid-cols-2 gap-[6px]" role="tablist" aria-label="Filter conversations">
@@ -296,21 +304,21 @@ export default function Conversations() {
                 })}
               </div>
             </div>
-            <div className="flex-1 content-start overflow-auto">
-              {inboxLoading && <div className="px-5 py-[38px] text-center text-[13px] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]"><span className="mx-auto mb-2 block h-[22px] w-[22px] animate-spin rounded-full border-2 border-[var(--tf-line)] border-t-[#1875d1] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:border-t-[#4aa8ee]" aria-hidden="true"/><p className="mt-2">Loading inbox…</p></div>}
+            <div className="conversation-inbox-items flex-1 content-start overflow-auto">
+              {inboxLoading && <div className="px-5 py-[38px] text-center text-[13px] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]"><PlatformLoader label="Loading inbox…" /></div>}
               {!inboxLoading && !inbox.length && <div className="px-5 py-[38px] text-center text-[13px] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]"><span className="mx-auto grid h-12 w-12 place-items-center rounded-[14px] bg-[#eaf6ff] text-xl text-[#1875d1] [[data-theme=dark]_&]:bg-[#193852] [[data-theme=dark]_&]:text-[#4aa8ee]" aria-hidden="true">✉</span><strong className="mt-3 block text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-ink)]">No conversations yet</strong><p className="mx-auto mt-[7px] max-w-[300px] text-xs leading-[1.6] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">When a visitor messages you from your tutor website, it will appear here.</p></div>}
               {!inboxLoading && inbox.map((item) => {
                 const active = String(item.conversationId) === String(selectedId);
                 const visitor = item.visitorName || "Website visitor";
                 const unread = Number(item.unreadCount || 0);
                 return (
-                  <button key={item.conversationId} type="button" onClick={() => chooseConversation(item)} className={`grid w-full grid-cols-[auto_minmax(0,1fr)] gap-[9px] border-b border-[var(--tf-line)] bg-white p-3 text-left text-inherit hover:bg-[#eaf6ff] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:hover:bg-[#193852] ${active ? "bg-[#eaf6ff] [[data-theme=dark]_&]:bg-[#193852]" : ""}`}>
+                  <button key={item.conversationId} type="button" onClick={() => chooseConversation(item)} className={`conversation-inbox-item grid w-full grid-cols-[auto_minmax(0,1fr)] gap-[9px] border-b border-[var(--tf-line)] bg-white p-3 text-left text-inherit hover:bg-[#eaf6ff] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:hover:bg-[#193852] ${active ? "bg-[#eaf6ff] [[data-theme=dark]_&]:bg-[#193852]" : ""}`}>
                     <Initial name={visitor}/>
                     <span className="grid min-w-0">
-                      <span className="flex min-w-0 items-center justify-between gap-[7px]"><strong className={`overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-ink)] ${unread > 0 ? "font-extrabold" : ""}`}>{visitor}</strong><time className="shrink-0 text-[10px] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">{shortDate(item.modifiedAt || item.createdAt)}</time></span>
+                      <span className="flex min-w-0 items-center justify-between gap-[7px]"><strong className={`overflow-hidden text-ellipsis whitespace-nowrap text-[13px] text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-ink)] ${unread > 0 ? "font-extrabold" : ""}`}>{visitor}</strong><span className="conversation-inline-status"><StatusPill status={item.status}/></span><time className="shrink-0 text-[10px] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">{shortDate(item.modifiedAt || item.createdAt)}</time></span>
                       <span className="mt-px overflow-hidden text-ellipsis whitespace-nowrap text-[11px] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">{item.subject || "General enquiry"}</span>
-                      <span className="mt-[5px] block min-w-0 [overflow-wrap:anywhere] text-[11px] leading-[1.45] text-[var(--tf-copy)] line-clamp-2 [[data-theme=dark]_&]:text-[var(--tf-copy)]">{item.lastMessage || "No messages"}</span>
-                      <span className="mt-[7px] flex items-center justify-between gap-[7px]"><StatusPill status={item.status}/>{unread > 0 && <span className="h-2 w-2 shrink-0 rounded-full bg-[#1875d1] [[data-theme=dark]_&]:bg-[#4aa8ee]" aria-label={`${unread} unread messages`}/>}</span>
+                      <span className="conversation-message-row mt-[5px] flex min-w-0 items-center gap-2"><span className="min-w-0 flex-1 truncate text-[11px] leading-[1.45] text-[var(--tf-copy)]">{item.lastMessage || "No messages"}</span><span className="conversation-view-cue">View conversation <span aria-hidden="true">›</span></span></span>
+                      <span className="conversation-item-footer mt-[7px] flex items-center justify-between gap-[7px]"><span className="conversation-footer-status"><StatusPill status={item.status}/></span>{unread > 0 && <span className="h-2 w-2 shrink-0 rounded-full bg-[#1875d1] [[data-theme=dark]_&]:bg-[#4aa8ee]" aria-label={`${unread} unread messages`}/>}</span>
                     </span>
                   </button>
                 );
@@ -321,7 +329,11 @@ export default function Conversations() {
               <div className="flex gap-[7px]"><button className="inline-flex h-[34px] w-9 items-center justify-center rounded-lg border border-[var(--tf-line)] bg-white text-[var(--tf-copy)] disabled:cursor-not-allowed disabled:opacity-50 [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-copy)]" type="button" aria-label="Previous page" disabled={page <= 1 || inboxLoading} onClick={() => setPage((value) => Math.max(1, value - 1))}>←</button><button className="inline-flex h-[34px] w-9 items-center justify-center rounded-lg border border-[var(--tf-line)] bg-white text-[var(--tf-copy)] disabled:cursor-not-allowed disabled:opacity-50 [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-copy)]" type="button" aria-label="Next page" disabled={page >= maxPages || inboxLoading} onClick={() => setPage((value) => value + 1)}>→</button></div>
             </div>
           </section>
-          <section className="flex min-h-[650px] min-w-0 flex-col overflow-hidden rounded-[14px] border border-[var(--tf-line)] bg-white shadow-[0_12px_30px_rgba(32,70,111,0.06)] max-[680px]:min-h-[550px] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]" aria-label="Selected conversation">
+          <section className={`${!mobileThreadOpen ? "max-[760px]:hidden" : ""} flex min-h-[650px] min-w-0 flex-col overflow-hidden rounded-[14px] border border-[var(--tf-line)] bg-white shadow-[0_12px_30px_rgba(32,70,111,0.06)] max-[680px]:min-h-[550px] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]`} aria-label="Selected conversation">
+            <div className="conversation-mobile-topbar hidden max-[760px]:flex items-center justify-between gap-2 border-b border-tf-line px-4 py-3">
+              <button type="button" className="text-sm font-semibold text-tf-blue" onClick={() => { setMobileThreadOpen(false); setSelectedId(""); setThread(null); }}>← Back to inbox</button>
+              <button type="button" className="text-xs font-semibold text-tf-blue disabled:opacity-50" onClick={markRead} disabled={actionLoading || !selectedId}>Mark as read</button>
+            </div>
             {!selectedId && !inboxLoading && <div className="flex flex-1 flex-col items-center justify-center px-5 py-[38px] text-center text-[13px] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]"><span className="grid h-12 w-12 place-items-center rounded-[14px] bg-[#eaf6ff] text-xl text-[#1875d1] [[data-theme=dark]_&]:bg-[#193852] [[data-theme=dark]_&]:text-[#4aa8ee]" aria-hidden="true">✉</span><h2 className="mt-[14px] text-[17px] text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-ink)]">Select a conversation</h2><p className="mx-auto mt-[7px] max-w-[300px] text-xs leading-[1.6] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">Choose a visitor on the left to read their message and reply.</p></div>}
             {selectedId && <>
               <header className="mobile-thread-heading flex items-center justify-between gap-[15px] border-b border-[var(--tf-line)] px-[18px] py-4 max-[850px]:flex-col max-[850px]:items-start max-[520px]:p-[14px] [[data-theme=dark]_&]:border-[var(--tf-line)]">
@@ -330,7 +342,7 @@ export default function Conversations() {
                   <div className="min-w-0"><h2 className="mb-[3px] overflow-hidden text-ellipsis whitespace-nowrap text-[17px]">{thread?.visitorName || currentInboxItem?.visitorName || "Website visitor"}</h2><p className="block overflow-hidden text-ellipsis whitespace-nowrap text-xs text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">{thread?.visitorEmail || currentInboxItem?.visitorEmail || "No email provided"}</p>{(thread?.subject || currentInboxItem?.subject) && <span className="mt-[3px] block overflow-hidden text-ellipsis whitespace-nowrap text-xs text-[#0c5fb7] [[data-theme=dark]_&]:text-[#8bcdf7]">{thread?.subject || currentInboxItem?.subject}</span>}</div>
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-[6px] max-[850px]:justify-start">
-                  <StatusPill status={thread?.status || currentInboxItem?.status}/>
+                  <span className="conversation-header-status"><StatusPill status={thread?.status || currentInboxItem?.status}/></span>
                   <button type="button" className="inline-flex h-[34px] w-9 min-h-[34px] items-center justify-center rounded-lg border border-[var(--tf-line)] bg-white text-[var(--tf-copy)] hover:bg-[var(--tf-surface-soft)] disabled:cursor-not-allowed disabled:opacity-50 [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-copy)] [[data-theme=dark]_&]:hover:bg-[var(--tf-surface-soft)]" onClick={() => loadThread(selectedId)} disabled={threadLoading} aria-label="Refresh conversation">↻</button>
                   <button type="button" className="inline-flex h-9 min-h-9 w-9 items-center justify-center rounded-[9px] border border-[var(--tf-line)] bg-white text-[var(--tf-copy)] hover:bg-[var(--tf-surface-soft)] disabled:cursor-not-allowed disabled:opacity-50 [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-copy)] [[data-theme=dark]_&]:hover:bg-[var(--tf-surface-soft)]" onClick={markRead} disabled={actionLoading} aria-label="Mark conversation as read" title="Mark as read">
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="m4 7 8 6 8-6"/><path d="m9 16 2 2 4-4"/></svg>
@@ -347,12 +359,12 @@ export default function Conversations() {
               })}</div>
               <div className="mobile-chat-messages flex min-h-[320px] flex-1 flex-col gap-[15px] overflow-auto bg-[var(--tf-surface-soft)] px-[25px] py-[22px] max-[520px]:min-h-[210px] max-[520px]:p-4 [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)]" aria-live="polite">
                 {threadError && <ErrorNotice>{threadError}</ErrorNotice>}
-                {threadLoading && !thread && <div className="px-5 py-[38px] text-center text-[13px] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">Loading conversation…</div>}
+                {threadLoading && !thread && <div className="px-5 py-[38px] text-center"><PlatformLoader label="Loading conversation…" /></div>}
                 {!threadLoading && thread && (Array.isArray(thread.messages) ? thread.messages : []).map((message, index) => {
                   const tutorMessage = String(message.senderType || "").toLowerCase() === "tutor";
                   return (
                     <div key={message.messageId ?? message.id ?? index} className={`flex w-full min-w-0 ${tutorMessage ? "justify-end" : "justify-start"}`}>
-                      <div className={`min-w-0 w-fit max-w-[min(88%,520px)] rounded-[13px_13px_13px_4px] border px-[14px] py-3 max-[520px]:max-w-[94%] ${
+                      <div data-sender={tutorMessage ? "tutor" : "visitor"} className={`conversation-bubble min-w-0 w-fit max-w-[min(88%,520px)] rounded-[13px_13px_13px_4px] border px-[14px] py-3 max-[520px]:max-w-[94%] ${
                         tutorMessage
                           ? "rounded-[13px_13px_4px_13px] border-[#1875d1] bg-[#1875d1] text-white [[data-theme=dark]_&]:border-[#4aa8ee] [[data-theme=dark]_&]:bg-[#4aa8ee] [[data-theme=dark]_&]:text-[#101b2b]"
                           : "border-[var(--tf-line)] bg-white text-[var(--tf-ink)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-ink)]"
@@ -362,7 +374,7 @@ export default function Conversations() {
                           tutorMessage
                             ? "text-white/80 [[data-theme=dark]_&]:text-[#101b2b]/75"
                             : "text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]"
-                        }`}>{tutorMessage ? "You" : thread.visitorName || "Visitor"} · {formatDate(message.createdAt)}</span>
+                        }`}><span className="conversation-message-sender">{tutorMessage ? "You" : thread.visitorName || "Visitor"} · </span>{formatDate(message.createdAt)}</span>
                       </div>
                     </div>
                   );
@@ -371,10 +383,10 @@ export default function Conversations() {
                 <div ref={messagesEndRef}/>
               </div>
               <form onSubmit={sendReply} className="border-t border-[var(--tf-line)] px-5 pb-[18px] pt-4 max-[520px]:p-[14px] [[data-theme=dark]_&]:border-[var(--tf-line)]">
-                <label className="mb-2 block text-xs font-semibold text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]" htmlFor="reply-message">Your reply</label>
+                <label className="sr-only" htmlFor="reply-message">Your reply</label>
                 <div className="mobile-chat-composer grid grid-cols-[minmax(0,1fr)_auto] items-end gap-[10px] max-[520px]:grid-cols-1">
                   <textarea className="min-h-[82px] w-full resize-y rounded-[10px] border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] px-[13px] py-3 text-[13px] text-[var(--tf-ink)] outline-none focus:border-[#1875d1] focus:ring-[3px] focus:ring-blue-500/10 placeholder:text-[var(--tf-muted)] disabled:cursor-not-allowed disabled:opacity-[0.65] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)] [[data-theme=dark]_&]:text-[var(--tf-ink)] [[data-theme=dark]_&]:placeholder:text-[var(--tf-muted)]" id="reply-message" value={draft} onChange={(event) => setDraft(event.target.value)} rows={3} maxLength={5000} placeholder={(thread?.status || currentInboxItem?.status) === "closed" ? "Reopen this conversation to reply" : "Write a helpful reply…"} disabled={sending || threadLoading || (thread?.status || currentInboxItem?.status) === "closed"}/>
-                  <button type="submit" className="inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[#1875d1] bg-[#1875d1] px-[18px] py-[9px] text-[13px] font-semibold text-[#ffffff] hover:border-[#0c5fb7] hover:bg-[#0c5fb7] disabled:cursor-not-allowed disabled:opacity-50 max-[520px]:justify-self-end [[data-theme=dark]_&]:border-[#4aa8ee] [[data-theme=dark]_&]:bg-[#4aa8ee] [[data-theme=dark]_&]:text-[#101b2b] [[data-theme=dark]_&]:hover:border-[#8bcdf7] [[data-theme=dark]_&]:hover:bg-[#8bcdf7]" disabled={!draft.trim() || sending || threadLoading || (thread?.status || currentInboxItem?.status) === "closed"}>{sending ? "Sending…" : "Send"}</button>
+                  <button type="submit" className="inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-[9px] border border-[#1875d1] bg-[#1875d1] px-[18px] py-[9px] text-[13px] font-semibold text-[#ffffff] hover:border-[#0c5fb7] hover:bg-[#0c5fb7] disabled:cursor-not-allowed disabled:opacity-50 max-[520px]:justify-self-end [[data-theme=dark]_&]:border-[#4aa8ee] [[data-theme=dark]_&]:bg-[#4aa8ee] [[data-theme=dark]_&]:text-[#101b2b] [[data-theme=dark]_&]:hover:border-[#8bcdf7] [[data-theme=dark]_&]:hover:bg-[#8bcdf7]" disabled={!draft.trim() || sending || threadLoading || (thread?.status || currentInboxItem?.status) === "closed"}><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7ZM22 2 11 13" /></svg>{sending ? "Sending…" : "Send"}</button>
                 </div>
                 <p className="mt-2 text-[10px] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">Messages are saved to this conversation. Visitors can continue the chat using their private conversation token in their browser.</p>
               </form>

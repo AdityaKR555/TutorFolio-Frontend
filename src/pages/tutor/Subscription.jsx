@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { createPortal } from "react-dom";
 import "./subscription-print.css";
@@ -27,6 +27,19 @@ function Subscription() {
   const [processingPlanId, setProcessingPlanId] = useState(null);
   const [error, setError] = useState("");
   const [successModalData, setSuccessModalData] = useState(null);
+  const printedAtRef = useRef(null);
+  useEffect(() => {
+    const updatePrintedAt = () => {
+      if (printedAtRef.current) {
+        printedAtRef.current.textContent = new Intl.DateTimeFormat(undefined, {
+          dateStyle: "medium", timeStyle: "short",
+        }).format(new Date());
+      }
+    };
+    window.addEventListener("beforeprint", updatePrintedAt);
+    return () => window.removeEventListener("beforeprint", updatePrintedAt);
+  }, []);
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
   // Active theme tracking (light / dark)
   const [theme, setTheme] = useState(() => {
@@ -361,23 +374,7 @@ function Subscription() {
             </p>
           </div>
 
-          {/* Secure Trust Badge */}
-          <div className="inline-flex self-start items-center gap-2 rounded-xl border border-[var(--tf-line)] bg-[#eaf6ff] px-3.5 py-2 text-xs font-medium text-[#1875d1] md:self-auto [[data-theme=dark]_&]:border-blue-500/25 [[data-theme=dark]_&]:bg-blue-900/25 [[data-theme=dark]_&]:text-blue-300">
-            <svg
-              className="w-4 h-4 shrink-0 text-blue-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-              />
-            </svg>
-            <span>Razorpay 256-Bit SSL Encrypted</span>
-          </div>
+
         </div>
 
         {/* Error message */}
@@ -482,14 +479,7 @@ function Subscription() {
                )}
               </div>
 
-              <div className="flex items-center gap-3">
-                <a
-                  href="#pricing-cards"
-                  className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-medium transition-colors cursor-pointer shadow-md shadow-blue-600/20"
-                >
-                  Change Plan
-                </a>
-              </div>
+
             </div>
           </div>
        )}
@@ -724,7 +714,7 @@ function Subscription() {
               No transactions recorded yet. When you upgrade via Razorpay, receipts will appear here.
             </div>
          ) : (
-            <div className="mobile-comparison overflow-x-auto">
+            <div className="mobile-comparison billing-history-scroll max-h-[min(70vh,720px)] overflow-x-auto overflow-y-auto">
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead>
                   <tr className="border-b border-[var(--tf-line)] uppercase text-[11px] tracking-wider text-[var(--tf-muted)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">
@@ -754,7 +744,7 @@ function Subscription() {
                       <td data-label="Payment ID" className="max-w-[120px] truncate py-3.5 font-mono text-[11px] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">
                         {item.paymentId || "—"}
                       </td>
-                      <td data-label="Receipt" className="py-3.5 text-right">
+                      <td data-label="Receipt" className="py-3.5 text-right max-[760px]:text-right">
                         {item.status === "paid" && <button
                           type="button"
                           onClick={() => {
@@ -789,13 +779,29 @@ function Subscription() {
             billing.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {PAYMENT_FAQS.map((faq, idx) => (
-              <div key={idx} className="rounded-2xl border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] p-[18px_20px] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)]">
-                <h4 className="mb-1.5 text-sm font-semibold text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-ink)]">{faq.q}</h4>
-                <p className="text-[13px] leading-[1.55] text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]">{faq.a}</p>
-              </div>
-           ))}
+          <div className="divide-y divide-[var(--tf-line)]">
+            {PAYMENT_FAQS.map((faq, idx) => {
+              const isOpen = openFaqIndex === idx;
+              return (
+                <div key={idx} className="bg-[var(--tf-surface)]">
+                  <button
+                    type="button"
+                    aria-expanded={isOpen}
+                    aria-controls={`billing-faq-answer-${idx}`}
+                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                    className="flex w-full items-center justify-between gap-4 py-4 text-left text-sm font-semibold text-[var(--tf-ink)]"
+                  >
+                    <span>{faq.q}</span>
+                    <span aria-hidden="true" className="shrink-0 text-lg font-normal text-[var(--tf-blue)]">{isOpen ? "−" : "+"}</span>
+                  </button>
+                  {isOpen && (
+                    <p id={`billing-faq-answer-${idx}`} className="pb-4 text-[13px] leading-[1.55] text-[var(--tf-copy)]">
+                      {faq.a}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -870,6 +876,7 @@ function Subscription() {
              )}
             </div>
 
+            <p className="receipt-print-only mb-4 text-xs text-tf-copy">Printed on: <time ref={printedAtRef} /></p>
             <footer className="mb-5 border-t border-tf-line pt-4 text-xs leading-relaxed text-tf-copy">
               Thank you for choosing Tutorfolio. This receipt confirms your subscription payment.
               Keep the payment reference for your records.

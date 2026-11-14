@@ -1,3 +1,4 @@
+import PlatformLoader from "../../components/PlatformLoader";
 import { Pencil } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import api from "../../api/axios";
@@ -428,7 +429,7 @@ function TuitionDetails() {
     return (
       <div className="min-h-[calc(100vh-72px)] bg-[var(--tf-bg)] px-[42px] py-[34px] text-[var(--tf-ink)] [font:14px/1.5_Inter,ui-sans-serif,system-ui,-apple-system,'Segoe_UI',sans-serif] max-[1000px]:px-6 max-[1000px]:py-[26px] max-[760px]:px-4 max-[760px]:py-[22px] max-[560px]:px-[14px] max-[560px]:pb-[38px]">
         <div className="mx-auto flex min-h-[400px] w-full max-w-[1120px] flex-col items-center justify-center">
-          <span className="h-[38px] w-[38px] animate-spin rounded-full border-4 border-[var(--tf-line)] border-t-[var(--tf-blue)]" aria-hidden="true" />
+          <PlatformLoader showLabel={false} />
           <p className="mt-[14px] text-[13px]">Loading tuition details...</p>
         </div>
       </div>

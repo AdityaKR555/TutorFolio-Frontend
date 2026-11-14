@@ -1,3 +1,4 @@
+import { showMessage } from "../components/PlatformDialog";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
@@ -78,7 +79,7 @@ function Login() {
       formData.email.trim() === "" ||
       formData.password.trim() === ""
     ) {
-      alert("Please enter your email and password.");
+      await showMessage("Please enter your email and password.");
       return;
     }
 
@@ -106,7 +107,7 @@ function Login() {
           navigate("/dashboard");
         }
       } else {
-        alert(data.message || "Unable to login.");
+        await showMessage(data.message || "Unable to login.");
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -121,19 +122,19 @@ function Login() {
               .map((item) => item.msg)
               .join("\n");
 
-            alert(messages || "Please enter valid information.");
+            await showMessage(messages || "Please enter valid information.");
           } else {
-            alert("Please enter valid information.");
+            await showMessage("Please enter valid information.");
           }
         } else {
-          alert(data.message || "Something went wrong.");
+          await showMessage(data.message || "Something went wrong.");
         }
       } else if (error.request) {
-        alert(
+        await showMessage(
           "Unable to connect to the server. Please check your internet connection and try again."
         );
       } else {
-        alert("Something went wrong. Please try again.");
+        await showMessage("Something went wrong. Please try again.");
       }
     } finally {
       setLoading(false);
