@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import ExpandableText from "../../components/ExpandableText";
+import "./discover-filters.css";
 
 const blankFilters = {
   city: "",
@@ -91,6 +92,28 @@ export default function DiscoverTutors() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState(blankFilters);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const filtersPanelRef = useRef(null);
+  const filtersButtonRef = useRef(null);
+  useEffect(() => {
+    if (!filtersOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    filtersPanelRef.current?.querySelector("button")?.focus();
+    const onKey = (event) => {
+      if (event.key === "Escape") setFiltersOpen(false);
+      if (event.key === "Tab" && window.matchMedia("(max-width: 760px)").matches) {
+        const items = [...filtersPanelRef.current.querySelectorAll("button, input, select")].filter(el => !el.disabled);
+        const first = items[0], last = items[items.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }
+    };
+    const onResize = () => { if (window.innerWidth > 760) setFiltersOpen(false); };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("resize", onResize);
+    return () => { document.body.style.overflow = previousOverflow; window.removeEventListener("keydown", onKey); window.removeEventListener("resize", onResize); filtersButtonRef.current?.focus(); };
+  }, [filtersOpen]);
   const [options, setOptions] = useState({ cities: [], districts: [], states: [], genders: ["Male", "Female", "Other"] });
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -251,6 +274,7 @@ export default function DiscoverTutors() {
   const submitSearch = async (event) => {
     event?.preventDefault();
     setShowSuggestions(false);
+    setFiltersOpen(false);
     await fetchTutors(1);
   };
 
@@ -301,7 +325,7 @@ export default function DiscoverTutors() {
         </header>
 
         <form onSubmit={submitSearch} className="relative m-0 border-0 bg-transparent p-0 shadow-none">
-          <div className="mb-[18px] rounded-[13px] border border-[var(--tf-line)] bg-white p-[15px] shadow-[0_8px_26px_rgba(32,70,111,0.05)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]">
+          <div className="discovery-search mb-[18px] rounded-[13px] border border-[var(--tf-line)] bg-white p-[15px] shadow-[0_8px_26px_rgba(32,70,111,0.05)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-[10px]">
               <div className="relative flex h-12 min-w-0 items-center gap-[10px] rounded-[9px] border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] px-[14px] text-[var(--tf-muted)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface-soft)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">
                 <label htmlFor="tutor-search" className="sr-only">Search tutors</label>
@@ -339,15 +363,20 @@ export default function DiscoverTutors() {
                   </div>
                 )}
               </div>
-              <button type="submit" className={`${buttonClass} min-h-[46px] px-[19px] text-sm max-[420px]:px-3 max-[420px]:text-xs`} disabled={loading}>Search tutors</button>
+              <button type="submit" className={`${buttonClass} min-h-[46px] px-[19px] text-sm max-[420px]:px-3 max-[420px]:text-xs`} disabled={loading}><span className="hidden min-[761px]:inline">Search tutors</span><span className="min-[761px]:hidden">Search</span></button>
             </div>
           </div>
 
+
+          {filtersOpen && <button type="button" aria-label="Close filters" className="discovery-filters-backdrop" onClick={() => setFiltersOpen(false)} />}
           <div className="mobile-discovery-layout grid grid-cols-1 items-start gap-[18px] min-[901px]:grid-cols-[258px_minmax(0,1fr)] max-[900px]:grid-cols-[220px_minmax(0,1fr)] max-[900px]:gap-[13px] max-[680px]:grid-cols-1">
-            <aside className="sticky top-[18px] rounded-[13px] border border-[var(--tf-line)] bg-white p-[17px] shadow-[0_8px_26px_rgba(32,70,111,0.05)] max-[900px]:p-[14px] max-[680px]:static [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]" aria-label="Tutor filters">
-              <div className="mb-[14px] flex items-start justify-between gap-2">
+            <aside ref={filtersPanelRef} id="tutor-filters-panel" data-open={filtersOpen} role={filtersOpen ? "dialog" : undefined} aria-modal={filtersOpen || undefined} className="discovery-filters-panel sticky top-[18px] rounded-[13px] border border-[var(--tf-line)] bg-white p-[17px] shadow-[0_8px_26px_rgba(32,70,111,0.05)] max-[900px]:p-[14px] max-[680px]:static [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]" aria-label="Tutor filters">
+              <div className="discovery-filters-heading mb-[14px] flex items-start justify-between gap-2">
                 <div><h2 className="tf-section-title m-0">Filters</h2><p className="mt-[3px] text-[11px] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">{filterCount ? `${filterCount} active` : "Refine your search"}</p></div>
                 {filterCount > 0 && <button type="button" className="cursor-pointer border-0 bg-transparent py-0.5 text-[11px] text-[#1875d1] [[data-theme=dark]_&]:text-[#4aa8ee]" onClick={resetFilters}>Clear all</button>}
+                <button type="button" aria-label="Close filters" onClick={() => setFiltersOpen(false)} className="discovery-filters-close shrink-0 items-center justify-center rounded-lg text-tf-copy hover:bg-tf-surface-soft hover:text-tf-ink">
+                  <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="m6 6 12 12M18 6 6 18" /></svg>
+                </button>
               </div>
               <div className="grid grid-cols-1 gap-[11px] max-[680px]:grid-cols-2 max-[420px]:grid-cols-1">
                 <div><label className={labelClass}>City</label>{options.cities.length ? <select className={fieldClass} value={filters.city} onChange={(e) => updateFilter("city", e.target.value)}><option value="">Any city</option>{options.cities.map((v) => <option key={v} value={v}>{v}</option>)}</select> : <input className={fieldClass} value={filters.city} onChange={(e) => updateFilter("city", e.target.value)} placeholder="Enter city" />}</div>
@@ -365,24 +394,25 @@ export default function DiscoverTutors() {
                 <div><label className={labelClass}>Established from</label><input type="number" min="1900" max={new Date().getFullYear()} className={fieldClass} value={filters.min_established_year} onChange={(e) => updateFilter("min_established_year", e.target.value)} placeholder="Year" /></div>
                 <div><label className={labelClass}>Established until</label><input type="number" min="1900" max={new Date().getFullYear()} className={fieldClass} value={filters.max_established_year} onChange={(e) => updateFilter("max_established_year", e.target.value)} placeholder="Year" /></div>
               </div>
-              <div className="mt-3 flex gap-2">
+              <div className="discovery-filters-actions mt-3 flex gap-2">
                 <button type="button" className={`${secondaryButtonClass} flex-1`} onClick={resetFilters}>Clear</button>
                 <button type="submit" className={`${buttonClass} flex-1`}>Apply</button>
               </div>
             </aside>
 
             <section className="min-w-0" aria-label="Tutor search results">
-              <div className="my-[1px] mb-[14px] flex items-center justify-between gap-4 max-[680px]:mt-1 max-[680px]:items-start max-[420px]:flex-col">
+              <div className="discovery-results-toolbar my-[1px] mb-[14px] flex items-center justify-between gap-4 max-[680px]:mt-1 max-[680px]:items-start max-[420px]:flex-col">
                 <p className="m-0 text-[13px] text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]">{loading ? "Searching tutors…" : <><strong>{pagination.total}</strong> {pagination.total === 1 ? "tutor found" : "tutors found"}</>}</p>
-                <div className="flex items-center gap-[9px] max-[680px]:flex-wrap max-[680px]:justify-end max-[420px]:self-end">
-                  <label className="flex items-center gap-[9px] text-xs text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">Sort:
-                    <select className="h-[39px] min-w-[130px] rounded-lg border border-[var(--tf-line)] bg-white px-[10px] text-xs text-[var(--tf-ink)] outline-none focus:border-[#1875d1] focus:ring-[3px] focus:ring-blue-500/10 [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-ink)]" value={sortBy} onChange={(e) => { const value = e.target.value; setSortBy(value); fetchTutors(1, { __sortBy: value }); }}>
+                <div className="discovery-results-controls flex items-center gap-[9px] max-[680px]:flex-wrap max-[680px]:justify-end max-[420px]:self-end">
+                  <button ref={filtersButtonRef} type="button" aria-expanded={filtersOpen} aria-controls="tutor-filters-panel" onClick={() => setFiltersOpen(true)} className="discovery-filters-trigger rounded-xl border border-tf-line bg-tf-surface px-4 py-2.5 text-sm font-semibold text-tf-blue"><svg className="discovery-filter-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/><circle cx="8" cy="6" r="2" fill="var(--tf-sky)"/><circle cx="16" cy="12" r="2" fill="var(--tf-sky)"/><circle cx="8" cy="18" r="2" fill="var(--tf-sky)"/></svg>Filters{filterCount ? ` (${filterCount})` : ""}</button>
+                  <label className="flex items-center gap-[9px] text-xs text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]"><span className="discovery-sort-label">Sort:</span>
+                    <select aria-label="Sort tutors" className="h-[39px] min-w-[130px] rounded-lg border border-[var(--tf-line)] bg-white px-[10px] text-xs text-[var(--tf-ink)] outline-none focus:border-[#1875d1] focus:ring-[3px] focus:ring-blue-500/10 [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-ink)]" value={sortBy} onChange={(e) => { const value = e.target.value; setSortBy(value); fetchTutors(1, { __sortBy: value }); }}>
                       <option value="newest">Newest profiles</option><option value="relevance">Relevance</option><option value="name">Name</option><option value="experience">Experience</option><option value="rating">Rating</option>
                     </select>
                   </label>
                   <div className="flex gap-0.5 rounded-[9px] border border-[var(--tf-line)] bg-white p-[3px] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]" role="group" aria-label="Result layout">
-                    <button type="button" className={`grid h-[31px] w-[33px] place-items-center rounded-md ${viewMode === "grid" ? "bg-[#eaf6ff] text-[#0c5fb7] [[data-theme=dark]_&]:bg-[#193852] [[data-theme=dark]_&]:text-[#8bcdf7]" : "text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]"}`} onClick={() => setViewMode("grid")} aria-label="Grid view" title="Grid view"><svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M2 2h7v7H2zM11 2h7v7h-7zM2 11h7v7H2zM11 11h7v7h-7z" /></svg></button>
-                    <button type="button" className={`grid h-[31px] w-[33px] place-items-center rounded-md ${viewMode === "list" ? "bg-[#eaf6ff] text-[#0c5fb7] [[data-theme=dark]_&]:bg-[#193852] [[data-theme=dark]_&]:text-[#8bcdf7]" : "text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]"}`} onClick={() => setViewMode("list")} aria-label="List view" title="List view"><svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3h2v2H2zM6 3h12v2H6zM2 9h2v2H2zM6 9h12v2H6zM2 15h2v2H2zM6 15h12v2H6z" /></svg></button>
+                    <button type="button" className={`grid h-[31px] w-[33px] place-items-center rounded-md ${viewMode === "grid" ? "bg-[#eaf6ff] text-[#0c5fb7] [[data-theme=dark]_&]:bg-[#193852] [[data-theme=dark]_&]:text-[#8bcdf7]" : "text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]"}`} onClick={() => setViewMode("grid")} aria-pressed={viewMode === "grid"} aria-label="Grid view" title="Grid view"><svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M2 2h7v7H2zM11 2h7v7h-7zM2 11h7v7H2zM11 11h7v7h-7z" /></svg></button>
+                    <button type="button" className={`grid h-[31px] w-[33px] place-items-center rounded-md ${viewMode === "list" ? "bg-[#eaf6ff] text-[#0c5fb7] [[data-theme=dark]_&]:bg-[#193852] [[data-theme=dark]_&]:text-[#8bcdf7]" : "text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]"}`} onClick={() => setViewMode("list")} aria-pressed={viewMode === "list"} aria-label="List view" title="List view"><svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3h2v2H2zM6 3h12v2H6zM2 9h2v2H2zM6 9h12v2H6zM2 15h2v2H2zM6 15h12v2H6z" /></svg></button>
                   </div>
                 </div>
               </div>
@@ -398,7 +428,7 @@ export default function DiscoverTutors() {
               const location = getLocation(tutor);
               const subjects = tutor.teachingSubjects || tutor.subjects;
               return (
-                <article key={tutor.userId ?? tutor.username ?? index} className={`min-w-0 rounded-[13px] border border-[var(--tf-line)] bg-white p-4 shadow-[0_2px_9px_rgba(29,64,101,0.025)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] ${viewMode === "list" ? "grid min-h-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_auto] max-[520px]:grid-cols-1" : "flex min-h-[250px] flex-col"}`}>
+                <article key={tutor.userId ?? tutor.username ?? index} data-view={viewMode} className={`discovery-tutor-card min-w-0 rounded-[13px] border border-[var(--tf-line)] bg-white p-4 shadow-[0_2px_9px_rgba(29,64,101,0.025)] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] ${viewMode === "list" ? "grid min-h-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 min-[1101px]:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_auto] max-[520px]:grid-cols-1" : "flex min-h-[250px] flex-col"}`}>
                   <div className={`flex min-w-0 items-start gap-[13px] ${viewMode === "list" ? "col-start-1 row-start-1" : ""}`}>
                     <Avatar src={tutor.profilePicture || tutor.profile_picture || tutor.profilepicture} name={name} size={viewMode === "list" ? "h-12 w-12 rounded-[14px]" : "h-[58px] w-[58px] rounded-[14px]"} />
                     <div className="grid min-w-0"><h2 className={`my-[2px] mb-1 break-words text-base leading-[1.3] ${viewMode === "list" ? "text-sm" : ""}`}>{name}</h2><span className="overflow-hidden text-xs text-[var(--tf-muted)] text-ellipsis [[data-theme=dark]_&]:text-[var(--tf-muted)]">@{tutor.username || "username unavailable"}</span>{location && <span className="mt-[6px] flex items-center gap-[5px] text-[11px] text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]"><DetailIcon type="location" />{location}</span>}{tutor.averageRating != null && <span className="mt-[6px] text-[11px] text-[#93621a] [[data-theme=dark]_&]:text-[#f3c567]">★ {Number(tutor.averageRating).toFixed(1)} <small className="ml-1 text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">({Number(tutor.totalReviews || 0)} reviews)</small></span>}</div>
@@ -430,9 +460,9 @@ export default function DiscoverTutors() {
         )}
 
         {!loading && pagination.totalPages > 1 && (
-          <div className="mt-[22px] flex items-center justify-between gap-3 rounded-[10px] border border-[var(--tf-line)] bg-white px-3 py-[10px] shadow-[0_8px_26px_rgba(32,70,111,0.05)] max-[420px]:items-start max-[420px]:flex-col [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]">
-            <p className="m-0 text-xs text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">Page <strong className="text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-ink)]">{pagination.page}</strong> of <strong className="text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-ink)]">{pagination.totalPages}</strong></p>
-            <div className="flex gap-[7px] max-[420px]:self-end"><button className="min-h-[34px] rounded-lg border border-[var(--tf-line)] bg-white px-[11px] text-[var(--tf-copy)] disabled:cursor-not-allowed disabled:opacity-45 [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-copy)]" type="button" disabled={pagination.page <= 1} onClick={() => fetchTutors(pagination.page - 1)}>← Previous</button><button className="min-h-[34px] rounded-lg border border-[var(--tf-line)] bg-white px-[11px] text-[var(--tf-copy)] disabled:cursor-not-allowed disabled:opacity-45 [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-copy)]" type="button" disabled={pagination.page >= pagination.totalPages} onClick={() => fetchTutors(pagination.page + 1)}>Next →</button></div>
+          <div className="mt-[22px] flex items-center justify-between gap-3 rounded-[10px] border border-[var(--tf-line)] bg-white px-3 py-[10px] shadow-[0_8px_26px_rgba(32,70,111,0.05)] max-[420px]:gap-2 max-[420px]:px-2 [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]">
+            <p className="m-0 whitespace-nowrap text-xs text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]">Page <strong className="text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-ink)]">{pagination.page}</strong> of <strong className="text-[var(--tf-ink)] [[data-theme=dark]_&]:text-[var(--tf-ink)]">{pagination.totalPages}</strong></p>
+            <div className="flex shrink-0 gap-[7px] max-[420px]:gap-1 max-[420px]:text-xs"><button className="min-h-[34px] rounded-lg border border-[var(--tf-line)] bg-white px-[11px] text-[var(--tf-copy)] disabled:cursor-not-allowed disabled:opacity-45 [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-copy)]" type="button" disabled={pagination.page <= 1} onClick={() => fetchTutors(pagination.page - 1)}>← Previous</button><button className="min-h-[34px] rounded-lg border border-[var(--tf-line)] bg-white px-[11px] text-[var(--tf-copy)] disabled:cursor-not-allowed disabled:opacity-45 [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[var(--tf-surface)] [[data-theme=dark]_&]:text-[var(--tf-copy)]" type="button" disabled={pagination.page >= pagination.totalPages} onClick={() => fetchTutors(pagination.page + 1)}>Next →</button></div>
           </div>
         )}
             </section>

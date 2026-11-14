@@ -1,3 +1,4 @@
+import PlatformLoader from "./PlatformLoader";
 /** Shared empty/loading presentation for platform metric cards. */
 function EmptyIllustration({ kind = "records" }) {
   return (
@@ -21,7 +22,8 @@ function EmptyIllustration({ kind = "records" }) {
 }
 
 export default function KpiState({ empty, loading = false, unavailable = false, label, message, kind, children }) {
-  if (!loading && !unavailable && !empty) return children;
+  if (loading) return <div className="flex min-h-28 items-center justify-center"><PlatformLoader size="small" label={`Loading ${label}…`} /></div>;
+  if (!unavailable && !empty) return children;
   return (
     <div className="kpi-empty-state relative z-10 flex min-h-28 w-full flex-col items-center justify-center gap-1.5 text-center" role={loading ? "status" : undefined}>
       <EmptyIllustration kind={kind} />

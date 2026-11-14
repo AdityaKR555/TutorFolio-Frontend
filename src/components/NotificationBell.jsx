@@ -143,7 +143,7 @@ export default function NotificationBell() {
             : "/conversations"
         );
       } else if (item.type === "website_visit") {
-        navigate("/notifications?tab=visits");
+        navigate(`/notifications?notificationId=${encodeURIComponent(item.notificationId)}`);
       } else {
         navigate("/notifications");
       }

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import ExpandableText from "../ExpandableText";
 import ClassicGallery from "./ClassicGallery";
+import TuitionLogo from "./TuitionLogo";
 
 /* ─── helpers ──────────────────────────────────────────────────────────────── */
 const fd = (src, keys, fb = "") => {
@@ -1443,7 +1444,7 @@ export default function ThemeLuminary({
   experience = [],
   faqs = [],
   gallery = [],
-  username = "",
+  username = "", previewBasePath,
   currentPage = "home",
   onContactClick = () => {},
   onCopyLink = () => {},
@@ -1488,7 +1489,7 @@ export default function ThemeLuminary({
   const whatsappNumber =
     fd(profile, ["whatsapp", "whatsappNumber", "phone"])?.replace(/\D/g, "");
 
-  const basePath = `/tutor/${encodeURIComponent(username || "")}`;
+  const basePath = previewBasePath || `/tutor/${encodeURIComponent(username || "")}`;
 
   /* Route page component switcher */
   let activePageContent = null;
@@ -1570,9 +1571,9 @@ export default function ThemeLuminary({
               </button>
 
               <Link to={basePath} className="flex items-center gap-2.5 min-w-0 group">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
+                <TuitionLogo tuition={tuition} name={academyName} fallback={<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
                   <LuminaryIcon name="crown" className="h-5 w-5" />
-                </div>
+                </div>} />
                 <div className="min-w-0">
                   <span className="block truncate text-sm font-black tracking-tight text-neutral-900 dark:text-white">
                     {academyName}
@@ -1705,15 +1706,15 @@ export default function ThemeLuminary({
           <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-3 sm:px-6">
             <div className="space-y-3">
               <Link to={basePath} className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500 text-white">
+                <TuitionLogo tuition={tuition} name={academyName} className="h-9 w-9" fallback={<div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500 text-white">
                   <LuminaryIcon name="crown" className="h-4 w-4" />
-                </div>
+                </div>} />
                 <span className="text-sm font-black text-neutral-900 dark:text-white">
                   {academyName}
                 </span>
               </Link>
               <p className="text-xs text-neutral-500 leading-relaxed max-w-xs dark:text-neutral-400">
-                A verified premium educational portfolio powered by TutorFolio. Tailored for private masterclasses, distinguished tutors, and high-achieving student cohorts.
+                Discover classes, experience, and student achievements.
               </p>
               <p className="text-[11px] text-neutral-400">
                 © {new Date().getFullYear()} {name}. All rights reserved.
@@ -1738,21 +1739,7 @@ export default function ThemeLuminary({
               </ul>
             </nav>
 
-            <div className="flex flex-col items-start gap-3 sm:items-end">
-              <span className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase">
-                Platform Authentication
-              </span>
-              <a
-                href="https://alpha.tutorfolio.site"
-                target="_blank"
-                rel="noreferrer"
-                className="group inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-neutral-50 px-3.5 py-2 text-xs font-bold text-neutral-800 transition hover:border-amber-400 dark:border-neutral-800 dark:bg-neutral-800/60 dark:text-neutral-200"
-              >
-                <img src="/tf-logo.png" alt="" className="h-4 w-4 object-contain" />
-                <span>TutorFolio Verified</span>
-                <LuminaryIcon name="externalLink" className="h-3.5 w-3.5 text-neutral-400 group-hover:text-amber-500" />
-              </a>
-            </div>
+
           </div>
         </footer>
 

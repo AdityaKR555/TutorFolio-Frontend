@@ -1,3 +1,5 @@
+import { confirmAction } from "../../components/PlatformDialog";
+import PlatformLoader from "../../components/PlatformLoader";
 import KpiState from "../../components/KpiState";
 import React, { useCallback, useEffect, useState } from "react";
 import BatchSummaryArt from "./BatchSummaryArt";
@@ -72,8 +74,8 @@ const pageStyles = {
   tableTitleCopy: "mt-[3px] block text-[10px] leading-[1.6] text-[var(--tf-muted)]",
   tableDates: "mt-[3px] text-[10px] leading-[1.6] text-[var(--tf-muted)]",
   rowActions: "flex gap-[6px]",
-  switch: "relative h-[19px] w-[34px] cursor-pointer rounded-[20px] border-0 bg-slate-300 p-0 transition-colors duration-200 after:absolute after:top-[3px] after:left-[3px] after:h-[13px] after:w-[13px] after:rounded-full after:bg-[var(--tf-surface)] after:transition-[left] after:duration-200 after:content-[''] focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-60",
-  switchOn: "bg-sky-400 after:left-[18px] [[data-theme=dark]_&]:bg-sky-300",
+  switch: "relative h-[19px] w-[34px] cursor-pointer rounded-[20px] border-0 p-0 transition-colors duration-200 after:absolute after:top-[3px] after:left-[3px] after:h-[13px] after:w-[13px] after:rounded-full after:bg-[var(--tf-surface)] after:transition-[left] after:duration-200 after:content-[''] focus-visible:outline-3 focus-visible:outline-[var(--tf-blue)] focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-60",
+  switchOn: "after:left-[18px]",
   empty: "rounded-[13px] border border-dashed border-[var(--tf-line)] bg-[var(--tf-surface)] px-5 py-[42px] text-center text-[var(--tf-copy)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
   emptyTitle: "tf-section-title mt-2 mb-1",
   emptyCopy: "mb-4 text-xs text-[var(--tf-muted)]",
@@ -709,7 +711,7 @@ function Batches() {
   };
 
   const handleDelete = async (batchId) => {
-    const confirmed = window.confirm(
+    const confirmed = await confirmAction(
       "Are you sure you want to delete this batch?"
     );
 
@@ -934,7 +936,7 @@ function Batches() {
     return (
       <div className={pageStyles.page}>
         <div className={pageStyles.loading}>
-          <span className={pageStyles.spinner} />
+          <PlatformLoader showLabel={false} />
           <p className={pageStyles.loadingCopy}>Loading batches...</p>
         </div>
       </div>
@@ -1419,7 +1421,7 @@ function Batches() {
                       <td className={pageStyles.tableCell}>
                         <button
                           type="button"
-                          className={`${pageStyles.switch} ${visible ? pageStyles.switchOn : ""}`}
+                          className={`${pageStyles.switch} batch-visibility-switch ${visible ? pageStyles.switchOn : ""}`}
                           aria-label={`${visible ? "Hide" : "Show"} ${batch.title} on website`}
                           aria-pressed={visible}
                           onClick={() => handleVisibility(batch.batchId, visible)}
@@ -1555,7 +1557,7 @@ function Batches() {
                     <label className={pageStyles.visibilityControl}>
                       <button
                         type="button"
-                        className={`${pageStyles.switch} ${visible ? pageStyles.switchOn : ""}`}
+                        className={`${pageStyles.switch} batch-visibility-switch ${visible ? pageStyles.switchOn : ""}`}
                         aria-label={`${visible ? "Hide" : "Show"} ${batch.title} on website`}
                         aria-pressed={visible}
                         onClick={() => handleVisibility(batch.batchId, visible)}

@@ -1,3 +1,4 @@
+import PlatformLoader from "../../components/PlatformLoader";
 import React, { useEffect, useRef, useState } from "react";
 import api from "../../api/axios";
 import ResumeExtractorModal from "../../components/ResumeExtractorModal";
@@ -707,7 +708,7 @@ function Profile() {
     return (
       <div className="min-h-full bg-[var(--tf-bg)] px-8 pt-[34px] pb-[58px] text-[var(--tf-ink)] [font:14px/1.5_Inter,ui-sans-serif,system-ui,-apple-system,'Segoe_UI',sans-serif] max-[850px]:px-[18px] max-[850px]:pt-6 max-[850px]:pb-10 max-[560px]:px-[14px] max-[560px]:pt-5 max-[560px]:pb-8 [&:where([data-theme=dark] *)]:bg-[var(--tf-bg)] [&:where([data-theme=dark] *)]:text-[var(--tf-ink)]">
         <div className="mx-auto grid min-h-80 place-content-center gap-3 rounded-[13px] border border-[var(--tf-line)] bg-[var(--tf-surface)] text-center text-[var(--tf-copy)] [&:where([data-theme=dark] *)]:bg-[var(--tf-surface)]">
-          <span className="m-auto h-8 w-8 animate-spin rounded-full border-[3px] border-[var(--tf-line)] border-t-[var(--tf-blue)]" />
+          <PlatformLoader showLabel={false} />
           <p className="m-0 text-xs">Loading your profile...</p>
         </div>
       </div>

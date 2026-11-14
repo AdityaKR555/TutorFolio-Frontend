@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import ExpandableText from "../ExpandableText";
 import ClassicGallery from "./ClassicGallery";
+import TuitionLogo from "./TuitionLogo";
 
 /* ─── helpers ──────────────────────────────────────────────────────────────── */
 const fd = (src, keys, fb = "") => {
@@ -1752,7 +1753,7 @@ export default function ThemeMinimal({
   experience = [],
   faqs = [],
   gallery = [],
-  username = "",
+  username = "", previewBasePath,
   currentPage = "home",
   onContactClick,
   onCopyLink,
@@ -1818,7 +1819,7 @@ export default function ThemeMinimal({
     [social]
   );
 
-  const basePath = `/tutor/${encodeURIComponent(username)}`;
+  const basePath = previewBasePath || `/tutor/${encodeURIComponent(username)}`;
 
   /* Mobile navigation drawer state */
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -1896,9 +1897,9 @@ export default function ThemeMinimal({
               </button>
 
               <Link to={basePath} className="flex items-center gap-2.5 no-underline">
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-sky-500 font-bold text-xs text-white shadow-2xs">
+                <TuitionLogo tuition={tuition} name={fd(tuition, ["tuitionName", "tuitionClassName"], name)} className="h-8 w-8" fallback={<span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-sky-500 font-bold text-xs text-white shadow-2xs">
                   {fd(tuition, ["tuitionName", "tuitionClassName"], name).charAt(0).toUpperCase()}
-                </span>
+                </span>} />
                 <span className="truncate text-base font-bold tracking-tight text-neutral-950 dark:text-white">
                   {fd(tuition, ["tuitionName", "tuitionClassName"], name)}
                 </span>
@@ -1961,11 +1962,12 @@ export default function ThemeMinimal({
         <footer className="border-t border-neutral-200/80 bg-white dark:border-neutral-800/80 dark:bg-neutral-900/60">
           <div className="mx-auto grid max-w-5xl gap-8 px-4 py-10 sm:grid-cols-3 sm:px-6">
             <div>
-              <Link to={basePath} className="text-base font-bold text-neutral-950 dark:text-white">
+              <Link to={basePath} className="flex items-center gap-2 text-base font-bold text-neutral-950 dark:text-white">
+                <TuitionLogo tuition={tuition} name={fd(tuition, ["tuitionName", "tuitionClassName"], name)} className="h-9 w-9" />
                 {fd(tuition, ["tuitionName", "tuitionClassName"], name)}
               </Link>
               <p className="mt-2 text-xs text-neutral-500 leading-relaxed max-w-xs">
-                A verified tutor website powered by TutorFolio. Empowering educators with simple, modern portfolios.
+                Explore classes and learn more about your tutor.
               </p>
               <p className="mt-4 text-[11px] text-neutral-400">
                 © {new Date().getFullYear()} {name}. All rights reserved.
@@ -1990,21 +1992,7 @@ export default function ThemeMinimal({
               </ul>
             </nav>
 
-            <div className="flex flex-col items-start gap-2.5 sm:items-end">
-              <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">
-                Platform
-              </span>
-              <a
-                href="https://alpha.tutorfolio.site"
-                target="_blank"
-                rel="noreferrer"
-                className="group inline-flex items-center gap-2 rounded-xl border border-neutral-200 bg-neutral-50 px-3.5 py-2 text-xs font-bold text-neutral-800 transition hover:border-neutral-300 dark:border-neutral-800 dark:bg-neutral-800/60 dark:text-neutral-200"
-              >
-                <img src="/tf-logo.png" alt="" className="h-5 w-5 object-contain" />
-                <span>TutorFolio</span>
-                <Icon name="arrowUpRight" className="h-3.5 w-3.5 text-neutral-400 group-hover:text-neutral-700 dark:group-hover:text-white" />
-              </a>
-            </div>
+
           </div>
         </footer>
       </div>

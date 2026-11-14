@@ -1,3 +1,5 @@
+.receipt-print-only { display: none; }
+
 /* The receipt portal is a direct child of body, separate from billing history. */
 @media print {
   body:has(> .billing-receipt-backdrop) {
@@ -39,6 +41,8 @@
     text-shadow: none !important;
     overflow-wrap: anywhere;
   }
+
+  .billing-receipt-sheet .receipt-print-only { display: block; }
 
   .billing-receipt-sheet .receipt-screen-only {
     display: none !important;

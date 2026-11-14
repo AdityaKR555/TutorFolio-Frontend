@@ -14,18 +14,18 @@ export const getCustomBackground = () => {
 export const BACKGROUND_STORAGE_KEY = "tutorfolio-background";
 
 export const BACKGROUND_OPTIONS = [
-  { id: "cream", name: "Light cream", color: "#fbf9f6", description: "Soft and warm · Current default" },
+  { id: "cream", name: "Light cream", color: "#fbf9f6", description: "Soft and warm" },
   { id: "lavender", name: "Lavender", color: "#eaeafb", description: "A gentle hint of purple" },
-  { id: "white", name: "White", color: "#ffffff", description: "Clean and minimal" },
+  { id: "white", name: "White", color: "#ffffff", description: "Clean and minimal · Default" },
   { id: "custom", name: "Custom", color: "#eaeafb", description: "Choose your own color" },
 ];
 
 export const getBackground = () => {
   try {
     const saved = localStorage.getItem(BACKGROUND_STORAGE_KEY);
-    return BACKGROUND_OPTIONS.some((option) => option.id === saved) ? saved : "cream";
+    return BACKGROUND_OPTIONS.some((option) => option.id === saved) ? saved : "white";
   } catch {
-    return "cream";
+    return "white";
   }
 };
 

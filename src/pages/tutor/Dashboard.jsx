@@ -1,20 +1,41 @@
+import PlatformLoader from "../../components/PlatformLoader";
 import KpiState from "../../components/KpiState";
-import React, { useEffect, useMemo, useState } from "react";
+import "./dashboard-redesign.css";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import api from "../../api/axios";
+import { Link } from "react-router-dom";
+import { MessageCircle, Bell, Eye, Database, Users, Star, Layers3, Award, Gauge } from "lucide-react";
+import { getStoredUser } from "../../utils/auth";
+
+function DashboardMetricCard({ label, value, suffix = "", detail, Icon, helpId, help, helpClassName = "", helpOpen = false, helpRef, onHelpClick }) {
+  return (
+    <article className="dashboard-kpi rounded-2xl border border-tf-line bg-tf-surface p-5">
+      <span ref={helpRef} className={`dashboard-kpi-help${helpOpen ? " is-open" : ""}`}>
+        <button type="button" aria-label={`About ${label}`} aria-expanded={helpOpen} aria-describedby={helpId} onClick={onHelpClick}>ⓘ</button>
+        <span role="tooltip" id={helpId} className={helpClassName}>{help}</span>
+      </span>
+      <div className="dashboard-kpi-heading">
+        <p className="dashboard-kpi-label">{label}</p>
+        <span className="dashboard-kpi-icon"><Icon size={19} aria-hidden="true" /></span>
+      </div>
+      <p className="dashboard-kpi-value"><strong>{value}</strong>{suffix && <span>{suffix}</span>}</p>
+      <p className="dashboard-kpi-detail">{detail}</p>
+    </article>
+  );
+}
 
 function Dashboard() {
   const [dashboard, setDashboard] = useState(null);
+  const [activeBatchSegment, setActiveBatchSegment] = useState(null);
+  const [occupancyHelpOpen, setOccupancyHelpOpen] = useState(false);
+  const occupancyHelpRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
   const getUserId = () => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      return user?.user_id;
-    } catch {
-      return null;
-    }
+    const user = getStoredUser();
+    return user?.userId ?? user?.userid ?? user?.user_id ?? user?.id ?? user?.user?.userId ?? user?.user?.id ?? null;
   };
 
   const fetchDashboard = async (isRefresh = false) => {
@@ -80,6 +101,22 @@ function Dashboard() {
   };
 
   useEffect(() => {
+    if (!occupancyHelpOpen) return undefined;
+    const dismissOnOutsideClick = (event) => {
+      if (!occupancyHelpRef.current?.contains(event.target)) setOccupancyHelpOpen(false);
+    };
+    const dismissOnEscape = (event) => {
+      if (event.key === "Escape") setOccupancyHelpOpen(false);
+    };
+    document.addEventListener("pointerdown", dismissOnOutsideClick);
+    document.addEventListener("keydown", dismissOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", dismissOnOutsideClick);
+      document.removeEventListener("keydown", dismissOnEscape);
+    };
+  }, [occupancyHelpOpen]);
+
+  useEffect(() => {
     fetchDashboard();
   }, []);
 
@@ -107,17 +144,6 @@ function Dashboard() {
     }
 
     return Math.round((Number(value || 0) / total) * 100);
-  };
-
-  const getInitials = () => {
-    const username = user?.username || "Tutor";
-
-    return username
-      .split(" ")
-      .map((word) => word.charAt(0))
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
   };
 
   const buildDonutGradient = (breakdown = []) => {
@@ -150,7 +176,7 @@ function Dashboard() {
       <div className="p-5 sm:p-8">
         <div className="max-w-7xl mx-auto">
           <div className="bg-tf-surface border border-tf-line rounded-3xl min-h-[500px] flex flex-col items-center justify-center">
-            <div className="w-10 h-10 border-4 border-blue-200 dark:border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+            <PlatformLoader showLabel={false} />
 
             <p className="text-tf-copy mt-4 text-sm">Loading dashboard...</p>
           </div>
@@ -209,6 +235,10 @@ function Dashboard() {
 
   const occupancyChart = dashboard?.seatOccupancy || {};
   const occupancyData = occupancyChart?.data || {};
+  const occupancyRate = Number(occupancyData.overallOccupancyRate || 0);
+  const allottedSeats = Number(occupancyData.totalAllottedSeats || 0);
+  const maximumSeats = Number(occupancyData.totalMaximumSeats || 0);
+  const remainingSeats = Number(occupancyData.totalRemainingSeats || 0);
 
   const revenueChart = dashboard?.revenueAnalytics || {};
   const revenueData = revenueChart?.data || {};
@@ -259,14 +289,13 @@ function Dashboard() {
         {/* Header */}
         <div className="mobile-dashboard-heading mb-8 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
           <div>
-            <p className="text-tf-copy text-sm mb-2">Tutor Dashboard</p>
 
             <h1 className="tf-page-title">
               Hello, {user?.username || "Tutor"}
             </h1>
 
             <p className="text-tf-copy mt-2 text-sm sm:text-base">
-              Here's an overview of your tutoring activity and performance.
+              Your tutoring activity at a glance.
             </p>
           </div>
 
@@ -302,204 +331,41 @@ function Dashboard() {
         )}
 
         {/* KPI Cards */}
-        <div className="mobile-dashboard-summary grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
-          {/* Rating */}
-          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5"><KpiState empty={!(Number(kpis.totalReviews) > 0)} label="Average Rating" message="No reviews yet" kind="rating">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-tf-copy text-sm">Average Rating</p>
-
-                <h2 className="text-3xl font-bold text-tf-ink mt-2">
-                  {Number(kpis.averageRating || 0).toFixed(1)}
-                  <span className="text-tf-muted text-lg font-medium">/5</span>
-                </h2>
-              </div>
-
-              <div className="w-11 h-11 rounded-xl bg-yellow-50 dark:bg-yellow-500/10 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-yellow-700 dark:text-yellow-400"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M12 2.5l2.94 5.95 6.56.95-4.75 4.63 1.12 6.54L12 17.48l-5.87 3.09 1.12-6.54L2.5 9.4l6.56-.95L12 2.5z" />
-                </svg>
-              </div>
-            </div>
-
-            <p className="text-tf-muted text-xs mt-3">
-              {formatNumber(kpis.totalReviews)} total reviews
-            </p>
-          </KpiState></div>
-
-          {/* Batches */}
-          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5"><KpiState empty={!(Number(kpis.totalBatches) > 0)} label="Total Batches" message="Your first batch starts here" kind="records">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-tf-copy text-sm">Total Batches</p>
-
-                <h2 className="text-3xl font-bold text-tf-ink mt-2">
-                  {formatNumber(kpis.totalBatches)}
-                </h2>
-              </div>
-
-              <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-blue-700 dark:text-blue-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.8"
-                    d="M4 19.5A2.5 2.5 0 016.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            <p className="text-tf-muted text-xs mt-3">
-              Current + upcoming + completed
-            </p>
-          </KpiState></div>
-
-          {/* Achievements */}
-          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5"><KpiState empty={!(Number(kpis.totalAchievements) > 0)} label="Achievements" message="Your next success story belongs here" kind="rating">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-tf-copy text-sm">Achievements</p>
-
-                <h2 className="text-3xl font-bold text-tf-ink mt-2">
-                  {formatNumber(kpis.totalAchievements)}
-                </h2>
-              </div>
-
-              <div className="w-11 h-11 rounded-xl bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-purple-700 dark:text-purple-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.8"
-                    d="M12 3l2.4 4.9L20 8.7l-4 3.9.9 5.5L12 15.5l-4.9 2.6.9-5.5 5.6-.8L12 3z"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            <p className="text-tf-muted text-xs mt-3">
-              Student success stories
-            </p>
-          </KpiState></div>
-
-          {/* Capacity */}
-          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5"><KpiState empty={!(Number(kpis.totalStudentsCapacity) > 0)} label="Student Capacity" message="Add seats to your batches" kind="people">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-tf-copy text-sm">Student Capacity</p>
-
-                <h2 className="text-3xl font-bold text-tf-ink mt-2">
-                  {formatNumber(kpis.totalStudentsCapacity)}
-                </h2>
-              </div>
-
-              <div className="w-11 h-11 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-cyan-700 dark:text-cyan-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.8"
-                    d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            <p className="text-tf-muted text-xs mt-3">
-              Maximum seats across batches
-            </p>
-          </KpiState></div>
-
-          {/* Enrolled */}
-          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5"><KpiState empty={!(Number(kpis.totalEnrolledStudents) > 0)} label="Enrolled Students" message="Ready for your first student" kind="people">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-tf-copy text-sm">Enrolled Students</p>
-
-                <h2 className="text-3xl font-bold text-tf-ink mt-2">
-                  {formatNumber(kpis.totalEnrolledStudents)}
-                </h2>
-              </div>
-
-              <div className="w-11 h-11 rounded-xl bg-green-50 dark:bg-green-500/10 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-green-700 dark:text-green-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.8"
-                    d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM19 8v6M22 11h-6"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            <p className="text-tf-muted text-xs mt-3">
-              Currently allotted seats
-            </p>
-          </KpiState></div>
-
-          {/* Occupancy */}
-          <div className="bg-tf-surface border border-tf-line rounded-2xl p-5"><KpiState empty={!(Number(occupancyData.totalMaximumSeats) > 0) && !(Number(kpis.totalStudentsCapacity) > 0)} label="Overall Occupancy" message="Add batch capacity to see occupancy" kind="people">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-tf-copy text-sm">Overall Occupancy</p>
-
-                <h2 className="text-3xl font-bold text-tf-ink mt-2">
-                  {Number(occupancyData.overallOccupancyRate || 0).toFixed(1)}
-                  <span className="text-tf-muted text-lg font-medium">%</span>
-                </h2>
-              </div>
-
-              <div className="w-11 h-11 rounded-xl bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-orange-700 dark:text-orange-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.8"
-                    d="M4 20V10M10 20V4M16 20v-7M22 20H2"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            <p className="text-tf-muted text-xs mt-3">
-              {formatNumber(occupancyData.totalRemainingSeats)} seats remaining
-            </p>
-          </KpiState></div>
+        <div className="mobile-dashboard-summary dashboard-kpis grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+          <DashboardMetricCard label="Public review rating" value={Number(kpis.averageRating || 0).toFixed(1)} suffix="/5" detail={Number(kpis.totalReviews || 0) ? `${formatNumber(kpis.totalReviews)} total reviews` : "No public reviews yet"} Icon={Star} helpId="metric-help-public-review-rating" help="Average rating from public tutor reviews. Ratings attached to student achievements are not included." />
+          <DashboardMetricCard label="Total Batches" value={formatNumber(kpis.totalBatches)} detail="Current, upcoming, and completed batches" Icon={Layers3} helpId="metric-help-total-batches" help="Count of all your batches across every status." />
+          <DashboardMetricCard label="Achievements" value={formatNumber(kpis.totalAchievements)} detail="Student success stories" Icon={Award} helpId="metric-help-achievements" help="Number of student achievements recorded on your profile." />
+          <DashboardMetricCard label="Student Capacity" value={formatNumber(kpis.totalStudentsCapacity)} detail="Maximum seats across batches" Icon={Users} helpId="metric-help-student-capacity" help="The maximum number of students your batches can accommodate." />
+          <DashboardMetricCard label="Enrolled Students" value={formatNumber(kpis.totalEnrolledStudents)} detail="Students currently enrolled" Icon={Users} helpId="metric-help-enrolled-students" help="Total enrolled students across your batches." />
+          <DashboardMetricCard label="Overall Occupancy" value={occupancyRate.toFixed(1)} suffix="%" detail={`${formatNumber(remainingSeats)} seats remaining`} Icon={Gauge} helpId="metric-help-percentage-of-batch-capacity-currently-allotted" helpClassName="dashboard-occupancy-help-copy" help={<><strong>How occupancy is calculated</strong><span>Overall occupancy: {occupancyRate.toFixed(1)}% of all batch seats are allotted.</span><span>Calculation: {formatNumber(allottedSeats)} allotted ÷ {formatNumber(maximumSeats)} total seats.</span><span>{formatNumber(remainingSeats)} seats remain available (total seats minus allotted seats).</span>{maximumSeats === 0 && <span>No batch seat capacity is set yet, so the percentage is not meaningful.</span>}</>} helpOpen={occupancyHelpOpen} helpRef={occupancyHelpRef} onHelpClick={(event) => { if (occupancyHelpOpen) event.currentTarget.blur(); setOccupancyHelpOpen((open) => !open); }} />
+          <DashboardMetricCard label="Projected revenue" value={revenueData.totalProjectedRevenue == null ? "Unavailable" : formatCurrency(revenueData.totalProjectedRevenue)} detail="Based on batch enrolments" Icon={Database} helpId="metric-help-projected-revenue" help="Projected revenue based on batch enrolments and configured fees; this is not actual revenue." />
         </div>
 
+        <section aria-labelledby="dashboard-activity-heading" className="mb-6">
+          <div className="mb-3"><h2 id="dashboard-activity-heading" className="text-lg font-bold text-tf-ink">Your website activity</h2><p className="mt-1 text-sm text-tf-copy">Follow up on enquiries and see how visitors engage with your website.</p></div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {[
+              { title: "Open enquiries", entry: dashboard?.activitySummary?.openEnquiries, value: dashboard?.activitySummary?.openEnquiries?.total, description: "Conversations awaiting follow-up", to: "/conversations", action: "Open inbox", Icon: MessageCircle },
+              { title: "Unread notifications", entry: dashboard?.activitySummary?.unreadActivity, value: dashboard?.activitySummary?.unreadActivity?.totalUnread, description: "New activity on your website", to: "/notifications", action: "View notifications", Icon: Bell },
+              { title: "Profile visits", entry: dashboard?.activitySummary?.recentVisits, value: dashboard?.activitySummary?.recentVisits?.total, description: "Total recorded website visits", to: "/notifications?tab=visits", action: "View visits", Icon: Eye },
+            ].map(({ title, entry, value, description, to, action, Icon }) => {
+              const available = entry?.status === 200 && value != null;
+              return <div key={title} className="dashboard-kpi rounded-2xl border border-tf-line bg-tf-surface"><span className="dashboard-kpi-help"><button type="button" aria-label={`About ${title}`} aria-describedby={`activity-help-${title.replaceAll(" ", "-")}`}>ⓘ</button><span role="tooltip" id={`activity-help-${title.replaceAll(" ", "-")}`}>{description}</span></span><Link to={to} className="group flex min-w-0 h-full items-center gap-3 rounded-2xl p-4 transition hover:border-tf-blue focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--tf-blue)]">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-tf-sky text-tf-blue"><Icon size={21} aria-hidden="true" /></span>
+                <span className="min-w-0 flex-1"><span className="block text-xs font-medium text-tf-copy">{title}</span><strong className="mt-0.5 block text-2xl leading-tight text-tf-ink">{available ? formatNumber(value) : "Unavailable"}</strong><span className="mt-1 block text-xs leading-4 text-tf-muted">{available ? description : "Currently unavailable"}</span><span className="mt-2 block text-xs font-semibold text-tf-blue">{action} →</span></span>
+              </Link></div>;
+            })}
+          </div>
+        </section>
+
+        <section className="dashboard-enrolment bg-tf-surface border border-tf-line rounded-2xl p-4 mb-6" aria-labelledby="dashboard-enrolment-title">
+          <h2 id="dashboard-enrolment-title" className="text-lg font-bold text-tf-ink">Batch enrolment</h2>
+          <p className="mt-1 mb-3 text-xs text-tf-muted">Batch capacity and occupancy details</p>
+          {occupancyBatches.length ? <div className="overflow-x-auto"><table className="w-full min-w-[560px] text-left text-xs"><thead className="bg-tf-surface-soft text-tf-copy"><tr><th className="p-2">Batch</th><th className="p-2">Status</th><th className="p-2">Enrolled / capacity</th><th className="p-2">Occupancy</th><th className="p-2">Seats available</th></tr></thead><tbody>{occupancyBatches.map((batch, index) => <tr key={batch.batchId ?? index} className="border-b border-tf-line"><td className="p-2 font-medium">{batch.title}</td><td className="p-2 capitalize">{batch.batchType || "Unknown"}</td><td className="p-2">{formatNumber(batch.allottedSeats)} / {formatNumber(batch.maximumSeats)}</td><td className="p-2">{Number(batch.maximumSeats) > 0 ? `${Number(batch.occupancyRate || 0).toFixed(1)}%` : "No capacity"}</td><td className="p-2">{formatNumber(batch.remainingSeats)}</td></tr>)}</tbody></table></div> : <p className="text-sm text-tf-muted">No batch enrolments yet.</p>}
+        </section>
+
         {/* Row: Batch Distribution + Ratings */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+        <div className="dashboard-batch-rating grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
           {/* Batch Distribution */}
           <section className="bg-tf-surface border border-tf-line rounded-3xl p-5 sm:p-7">
             <div className="mb-6">
@@ -514,59 +380,24 @@ function Dashboard() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-8">
-              {/* Donut */}
-              <div className="relative shrink-0">
-                <div
-                  className="w-44 h-44 rounded-full"
-                  style={{
-                    background: buildDonutGradient(batchBreakdown),
-                  }}
-                />
-
-                <div className="absolute inset-6 bg-tf-surface rounded-full flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold text-tf-ink">
-                    {formatNumber(batchData.total)}
-                  </span>
-
-                  <span className="text-tf-muted text-xs mt-1">
-                    Total Batches
-                  </span>
+              {/* Interactive status segments */}
+              <div className="dashboard-batch-donut relative shrink-0" onMouseLeave={() => setActiveBatchSegment(null)}>
+                <svg viewBox="0 0 200 200" className="h-44 w-44" aria-label="Batch status distribution">
+                  <circle cx="100" cy="100" r="78" fill="none" stroke="var(--tf-line)" strokeWidth="24" />
+                  {batchBreakdown.map((item, index) => {
+                    const total = batchBreakdown.reduce((sum, part) => sum + Number(part.value || 0), 0);
+                    const fraction = total ? Number(item.value || 0) / total : 0;
+                    const offset = total ? batchBreakdown.slice(0, index).reduce((sum, part) => sum + Number(part.value || 0), 0) / total : 0;
+                    const color = ({ upcoming: "#3b82f6", current: "#22c55e", old: "#64748b" })[item.categoryKey] || "#a855f7";
+                    return fraction > 0 && <circle key={item.categoryKey || index} cx="100" cy="100" r="78" fill="none" stroke={color} strokeWidth={activeBatchSegment === index ? 32 : 24} pathLength="100" strokeDasharray={`${fraction * 100} ${100 - fraction * 100}`} strokeDashoffset={-offset * 100} transform="rotate(-90 100 100)" tabIndex="0" role="img" aria-label={`${item.label}: ${formatNumber(item.value)} batches, ${Number(item.percentage || 0).toFixed(0)}%`} onMouseEnter={() => setActiveBatchSegment(index)} onFocus={() => setActiveBatchSegment(index)} onBlur={() => setActiveBatchSegment(null)} className="dashboard-donut-segment" />;
+                  })}
+                </svg>
+                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center" aria-live="polite">
+                  {activeBatchSegment === null ? <><strong className="text-3xl text-tf-ink">{formatNumber(batchData.total)}</strong><span className="text-xs text-tf-muted">Total batches</span></> : <><strong className="text-lg text-tf-ink">{formatNumber(batchBreakdown[activeBatchSegment]?.value)} · {Number(batchBreakdown[activeBatchSegment]?.percentage || 0).toFixed(0)}%</strong><span className="text-xs text-tf-muted">{({upcoming:"Upcoming", current:"Current", old:"Completed"})[batchBreakdown[activeBatchSegment]?.categoryKey] || batchBreakdown[activeBatchSegment]?.label}</span></>}
                 </div>
               </div>
-
-              {/* Legend */}
               <div className="w-full space-y-4">
-                {batchBreakdown.map((item, index) => (
-                  <div
-                    key={item.categoryKey || item.label}
-                    className="flex items-center justify-between gap-4"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span
-                        className="w-3 h-3 rounded-full shrink-0"
-                        style={{
-                          backgroundColor: ["#3b82f6", "#22c55e", "#64748b"][
-                            index % 3
-                          ],
-                        }}
-                      />
-
-                      <span className="text-tf-copy text-sm truncate">
-                        {item.label}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-tf-ink font-medium text-sm">
-                        {formatNumber(item.value)}
-                      </span>
-
-                      <span className="text-tf-muted text-xs">
-                        {Number(item.percentage || 0).toFixed(0)}%
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                {batchBreakdown.map((item, index) => <div key={item.categoryKey || index} className="flex items-center gap-3 text-sm text-tf-copy"><span className="h-3 w-3 shrink-0 rounded-full" style={{backgroundColor: ({upcoming:"#3b82f6", current:"#22c55e", old:"#64748b"})[item.categoryKey] || "#a855f7"}}/>{({upcoming:"Upcoming", current:"Current", old:"Completed"})[item.categoryKey] || item.label}</div>)}
               </div>
             </div>
           </section>
@@ -629,7 +460,7 @@ function Dashboard() {
         </div>
 
         {/* Seat Occupancy */}
-        <section className="bg-tf-surface border border-tf-line rounded-3xl p-5 sm:p-7 mb-6">
+        <section className="dashboard-occupancy bg-tf-surface border border-tf-line rounded-3xl p-5 sm:p-7 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
             <div>
               <h2 className="text-lg sm:text-xl font-semibold text-tf-ink">
@@ -696,9 +527,6 @@ function Dashboard() {
                     />
                   </div>
 
-                  <p className="text-tf-muted text-xs mt-2">
-                    {formatNumber(batch.remainingSeats)} seats remaining
-                  </p>
                 </div>
               ))}
             </div>
@@ -706,7 +534,7 @@ function Dashboard() {
         </section>
 
         {/* Revenue + Achievement Performance */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+        <div className="dashboard-revenue-achievements grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
           {/* Revenue */}
           <section className="bg-tf-surface border border-tf-line rounded-3xl p-5 sm:p-7">
             <div className="mb-6">
@@ -759,6 +587,7 @@ function Dashboard() {
               <div className="mb-6">
                 <p className="text-tf-copy text-sm mb-4">Payment Type</p>
 
+                <div className="dashboard-payment-layout"><div className="dashboard-payment-donut" role="img" aria-label="Distribution of batches by payment type" style={{ background: buildDonutGradient(paymentBreakdown) }}><span><strong>{formatNumber(kpis.totalBatches)}</strong><small>Batches</small></span></div>
                 <div className="space-y-3">
                   {paymentBreakdown.map((item) => (
                     <div
@@ -778,7 +607,7 @@ function Dashboard() {
                       </div>
                     </div>
                   ))}
-                </div>
+                </div></div>
               </div>
             )}
 
@@ -932,7 +761,7 @@ function Dashboard() {
         </div>
 
         {/* Class Distribution */}
-        <section className="bg-tf-surface border border-tf-line rounded-3xl p-5 sm:p-7 mb-6">
+        <section className="dashboard-classes bg-tf-surface border border-tf-line rounded-3xl p-5 sm:p-7 mb-6">
           <div className="mb-6">
             <h2 className="text-lg sm:text-xl font-semibold text-tf-ink">
               {classChart.title || "Batch Offerings by Class"}
@@ -984,26 +813,6 @@ function Dashboard() {
               ))}
             </div>
           )}
-        </section>
-
-        {/* Quick Summary */}
-        <section className="bg-tf-surface border border-tf-line rounded-3xl p-5 sm:p-7 mb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0">
-              <span className="text-tf-ink font-semibold">{getInitials()}</span>
-            </div>
-
-            <div>
-              <h2 className="text-lg font-semibold text-tf-ink">
-                Keep your TutorFolio updated
-              </h2>
-
-              <p className="text-tf-muted text-sm mt-1">
-                Add batches, achievements and profile details to give students a
-                better picture of your teaching.
-              </p>
-            </div>
-          </div>
         </section>
 
         <div className="pb-6" />

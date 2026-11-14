@@ -1,0 +1,38 @@
+ .discovery-filters-trigger, .discovery-filters-close, .discovery-filters-backdrop { display: none; }
+@media (max-width: 760px) {
+  .discovery-filters-trigger { display: inline-flex; }
+  .discovery-filters-backdrop { display: block; position: fixed; inset: 0; z-index: 79; background: rgb(0 0 0 / 45%); border: 0; }
+  .tf-mobile-platform .discovery-filters-panel[aria-label="Tutor filters"] { display: none; }
+  .tf-mobile-platform .discovery-filters-panel[data-open="true"][aria-label="Tutor filters"] { display: block; position: fixed; inset: 0 0 0 auto; z-index: 80; width: min(360px, 92vw); height: 100dvh; overflow-y: auto; overscroll-behavior: contain; border-radius: 18px 0 0 18px; padding: 16px; background: var(--tf-surface); }
+  .discovery-filters-close { display: inline-flex; width: 40px; height: 40px; padding: 7px; border: 0; background: transparent; margin-top: -6px; margin-right: -6px; }
+  .discovery-filters-heading > div:first-child { flex: 1; min-width: 0; }
+  .tf-mobile-platform .discovery-filters-panel[aria-label="Tutor filters"] > .grid { grid-template-columns: minmax(0, 1fr); }
+  .discovery-filters-panel input, .discovery-filters-panel select { min-height: 44px; font-size: 16px; }
+  .discovery-filters-actions { position: sticky; bottom: -16px; background: var(--tf-surface); padding: 12px 0 max(16px, env(safe-area-inset-bottom)); }
+}
+
+.discovery-filter-icon { display: none; }
+@media (max-width: 760px) {
+  .tf-mobile-platform .mobile-discovertutors .discovery-search { padding: 6px; border-radius: 16px; background: var(--tf-surface); }
+  .discovery-search > div { gap: 6px; align-items: center; }
+  .discovery-search > div > div { background: transparent; border: 0; padding-inline: 8px; }
+  .discovery-search input { font-size: 16px; }
+  .discovery-search button[type="submit"] { height: 44px; padding-inline: 18px; font-size: 14px; border-radius: 12px; }
+  .discovery-results-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); align-items: center; gap: 14px 10px; margin-bottom: 16px; }
+  .discovery-results-toolbar .discovery-results-controls { display: contents; }
+  .discovery-results-controls .discovery-filters-trigger { grid-column: 1; grid-row: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 8px; font-size: 14px; white-space: nowrap; background: var(--tf-sky); color: var(--tf-blue); }
+  .discovery-filter-icon { display: block; flex-shrink: 0; }
+  .discovery-results-controls > label { grid-column: 2; grid-row: 1; min-width: 0; }
+  .discovery-results-controls select { width: 100%; min-width: 0; height: 44px; padding-inline: 10px; font-size: 14px; border-radius: 12px; background: var(--tf-surface); }
+  .discovery-sort-label { display: none; }
+  .discovery-results-toolbar > p { grid-column: 1; grid-row: 2; font-size: 13px; }
+  .discovery-results-controls [aria-label="Result layout"] { grid-column: 2; grid-row: 2; justify-self: end; border-radius: 12px; }
+  .discovery-results-controls [aria-label="Result layout"] button { width: 40px; height: 36px; border-radius: 9px; }
+  .tf-mobile-platform .mobile-discovertutors .discovery-tutor-card { padding: 14px; border-radius: 18px; }
+  .discovery-tutor-card[data-view="grid"] { min-height: 0; }
+  .discovery-tutor-card > div:first-child { align-items: center; gap: 12px; }
+  .discovery-tutor-card h2 { font-weight: 700; }
+  .discovery-tutor-card > div:last-child { margin-top: 14px; gap: 8px; }
+  .discovery-tutor-card > div:last-child button { min-height: 44px; border-radius: 12px; font-size: 13px; font-weight: 600; }
+  .discovery-tutor-card > div:last-child button:first-child { background: var(--tf-surface-soft); color: var(--tf-ink); }
+}

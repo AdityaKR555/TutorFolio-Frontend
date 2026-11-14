@@ -22,7 +22,7 @@
 
 :root {
   color-scheme: light;
-  --tf-bg: #fbf9f6;
+  --tf-bg: #ffffff;
   --tf-surface: #ffffff;
   --tf-surface-soft: #f9f7f4;
   --tf-ink: #172b46;
@@ -38,6 +38,12 @@
 }
 
 /* Background preferences apply only to light mode; cards remain white. */
+:root[data-background="cream"]:not([data-theme="dark"]) {
+  --tf-bg: #fbf9f6;
+  --tf-surface-soft: #f9f7f4;
+  --tf-line: #eeece6;
+}
+
 :root[data-background="lavender"]:not([data-theme="dark"]) {
   --tf-bg: #eaeafb;
   --tf-surface-soft: #f5f5fd;

@@ -207,8 +207,8 @@
     position: relative;
     min-height: 40px;
     height: 40px;
-    width: 48px;
-    min-width: 48px;
+    width: 52px;
+    min-width: 52px;
     padding: 0;
     border: 0;
     background: transparent;
@@ -218,13 +218,13 @@
     content: "";
     position: absolute;
     left: 4px;
-    top: 8px;
+    top: 9px;
     width: 40px;
-    height: 24px;
+    height: 22px;
     border-radius: 24px;
     background: var(--tf-line);
   }
-  .tf-mobile-platform .mobile-page button[role="switch"][aria-checked="true"]::before { background: var(--tf-blue); }
+  .tf-mobile-platform .mobile-page button[role="switch"][aria-checked="true"]::before { background-color: var(--tf-blue) !important; }
   .tf-mobile-platform .mobile-page button[role="switch"] > span {
     position: absolute;
     left: 7px;
@@ -269,6 +269,7 @@
   .tf-mobile-platform .mobile-discovertutors article button { font-size: 11px; padding-inline: 8px; }
 
   .tf-mobile-platform .mobile-comparison { overflow: visible; }
+  .tf-mobile-platform .mobile-comparison.billing-history-scroll { max-height: min(70vh, 720px); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; }
   .tf-mobile-platform .mobile-comparison table,
   .tf-mobile-platform .mobile-comparison tbody { display: block; width: 100%; }
   .tf-mobile-platform .mobile-comparison thead { display: none; }

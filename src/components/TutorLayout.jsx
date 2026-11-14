@@ -728,11 +728,14 @@ function TutorLayout() {
           {/* Drawer */}
           <aside className="tf-sidebar absolute bottom-0 left-0 top-0 flex w-[280px] flex-col border-r border-tf-line bg-tf-bg shadow-2xl">
             <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-tf-line px-5">
-              <img
-                src="/tf-logo.png"
-                alt="TutorFolio"
-                className="h-10 max-h-10 w-auto max-w-[135px] object-contain"
-              />
+              <div className="flex min-w-0 items-center gap-2">
+                <img
+                  src="/tf-logo.png"
+                  alt=""
+                  className="h-10 w-10 shrink-0 object-contain"
+                />
+                <span className="text-lg font-bold text-tf-ink">Tutorfolio</span>
+              </div>
 
               <button
                 onClick={closeMobileSidebar}

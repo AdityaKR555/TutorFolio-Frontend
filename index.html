@@ -11,7 +11,7 @@
       }
       // Restore before the first paint and follow changes from other tabs.
       function restoreBackground() {
-        let background = "cream";
+        let background = "white";
         try {
           const saved = localStorage.getItem("tutorfolio-background");
           if (["cream", "lavender", "white", "custom"].includes(saved)) background = saved;
