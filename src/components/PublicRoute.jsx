@@ -1,8 +1,11 @@
 import React, { useLayoutEffect } from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { clearAuthSession, getStoredUser } from "../utils/auth";
 
+import { session as adminSession } from "../admin/api";
+
 function PublicRoute() {
+  const location = useLocation();
   const user = getStoredUser();
 
   useLayoutEffect(() => {
@@ -15,6 +18,9 @@ function PublicRoute() {
       root.dataset.theme = previousTheme || "light";
     };
   }, []);
+
+  if (adminSession()?.accessToken) return <Navigate to="/admin" replace />;
+  if (location.pathname === "/login" && new URLSearchParams(location.search).get("mode") === "admin") return <Outlet />;
 
   // Not logged in → allow public pages
   if (!user) {

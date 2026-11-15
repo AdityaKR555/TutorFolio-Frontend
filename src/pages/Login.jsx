@@ -1,7 +1,8 @@
 import { showMessage } from "../components/PlatformDialog";
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../api/axios";
+import AdminLogin from "../admin/AdminLogin";
 import { setAuthSession } from "../utils/auth";
 
 /* Same fonts and graph-paper pattern as the landing page.
@@ -30,6 +31,8 @@ const inputCls =
   "w-full rounded-lg border border-tf-line bg-[var(--tf-bg)] px-4 py-3 text-tf-ink placeholder:text-tf-copy outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25";
 
 function Login() {
+  const [params] = useSearchParams();
+  const [adminChallenge, setAdminChallenge] = useState(null);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -92,6 +95,7 @@ function Login() {
       });
 
       const data = response.data;
+      if (data?.mfaRequired && data?.challengeId) { setAdminChallenge(data); return; }
 
       if (data.status === 200) {
         setAuthSession(data.data);
@@ -147,6 +151,8 @@ function Login() {
     "Update your subjects, batches and achievements",
   ];
 
+  if (params.get("mode") === "admin" || adminChallenge) return <AdminLogin initialChallenge={adminChallenge} />;
+
   return (
     <div className="mobile-auth tf relative min-h-screen overflow-x-clip bg-[var(--tf-bg)] text-tf-ink antialiased">
       <style>{CSS}</style>
@@ -197,6 +203,8 @@ function Login() {
             <div className="rounded-2xl border border-tf-line bg-[var(--tf-surface)] p-6 shadow-2xl shadow-black/30 sm:p-8">
               <h2 className="tf-d text-3xl font-bold text-tf-ink">Log in</h2>
               <p className="mt-2 text-tf-copy">Sign in to your account.</p>
+
+              <Link to="/login?mode=admin" className="mt-4 inline-block text-sm text-tf-copy underline underline-offset-4">Platform administrator login</Link>
 
               {/* Google Login Button */}
               <button
