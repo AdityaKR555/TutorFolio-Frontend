@@ -1,4 +1,5 @@
 import axios from "axios";
+import { normalizeMediaUrls } from "../utils/media";
 import {
   clearAuthSession,
   getAccessToken,
@@ -30,7 +31,10 @@ api.interceptors.request.use(
 
 // Response interceptor: handle 401 Unauthorized & refresh token
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    response.data = normalizeMediaUrls(response.data, import.meta.env.VITE_MEDIA_PUBLIC_URL, import.meta.env.VITE_MEDIA_LEGACY_BASE_URL);
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
 

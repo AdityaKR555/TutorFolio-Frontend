@@ -2,6 +2,7 @@ import React from "react";
 import { Route, Routes } from "react-router-dom";
 
 import Home from "./Home";
+import AdminApp from "./admin/AdminApp";
 import BackToTop from "./components/BackToTop";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -57,6 +58,7 @@ function App() {
   return (
     <div>
       <Routes>
+        <Route path="/admin/*" element={<AdminApp />} />
         {/* OAuth Callbacks */}
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/auth/google/callback" element={<AuthCallback />} />
