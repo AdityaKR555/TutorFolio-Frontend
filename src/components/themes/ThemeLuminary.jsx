@@ -367,9 +367,9 @@ function SubjectCrestVector({ subjectName = "" }) {
 }
 
 /* ─── Hero Graphic Component ─────────────────────────────────────────────── */
-function LuminaryHeroShowcase({ profile, tuition, name }) {
+function LuminaryHeroShowcase({ profile, tuition, name, yoe, batchesCount, achievementsCount }) {
   const avatarUrl = fd(profile, ["profilePicture", "profileImage", "avatar", "photo", "image"]);
-  const experienceYears = fd(profile, ["experience", "teachingExperience", "yearsOfExperience"], "10+");
+  const displayYoe = yoe || fd(profile, ["teachingYOE", "teaching_yoe", "experience", "teachingExperience", "yearsOfExperience"]);
 
   return (
     <div className="relative mx-auto flex w-full max-w-sm flex-col items-center justify-center lg:max-w-none">
@@ -415,7 +415,7 @@ function LuminaryHeroShowcase({ profile, tuition, name }) {
             <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 p-4 text-center">
               <HeraldicCrestVector className="h-24 w-24 sm:h-28 sm:w-28" />
               <span className="mt-2 text-xs font-semibold tracking-widest text-amber-300 uppercase">
-                Luminary Mentor
+                {name}
               </span>
             </div>
           )}
@@ -434,7 +434,15 @@ function LuminaryHeroShowcase({ profile, tuition, name }) {
           </div>
           <div>
             <p className="text-[10px] uppercase font-semibold text-neutral-400">Track Record</p>
-            <p className="text-xs font-extrabold text-white">{experienceYears} Pedigree</p>
+            <p className="text-xs font-extrabold text-white">
+              {displayYoe
+                ? `${displayYoe} Yrs Pedigree`
+                : batchesCount
+                ? `${batchesCount} Active ${batchesCount === 1 ? "Cohort" : "Cohorts"}`
+                : achievementsCount
+                ? `${achievementsCount} Accolades`
+                : "Verified Faculty"}
+            </p>
           </div>
         </div>
       </div>
@@ -462,13 +470,67 @@ function HomePage({
   phoneCall,
 }) {
   const bio = fd(profile, ["bio", "about", "aboutMe", "description"], "");
-  const location = fd(profile, ["city", "state", "location", "address"], "Available Nationwide & Online");
-  const subjects = list(fd(tuition, ["subjects", "subjectTaught", "courses", "skills"], []));
-  const classesList = list(fd(tuition, ["classes", "grades", "standards", "targetAudience"], []));
-  const experienceYears = fd(profile, ["experience", "teachingExperience", "yearsOfExperience"], "8+");
+  const location =
+    [fd(tuition, ["city"]), fd(tuition, ["district"]), fd(tuition, ["state"])]
+      .filter(Boolean)
+      .join(", ") || fd(profile, ["city", "state", "location", "address"], "");
+  const subjects = list(
+    fd(
+      tuition,
+      [
+        "subjects",
+        "subjectTaught",
+        "teachingSubjects",
+        "teaching_subjects",
+        "courses",
+        "skills",
+      ],
+      []
+    )
+  );
+  const classesList = list(
+    fd(tuition, ["classes", "grades", "standards", "targetAudience"], [])
+  );
+  const yoe = fd(
+    profile,
+    [
+      "teachingYOE",
+      "teaching_yoe",
+      "experience",
+      "teachingExperience",
+      "yearsOfExperience",
+    ],
+    ""
+  );
 
   const topAchievements = (achievements || []).slice(0, 3);
   const activeBatches = (batches || []).slice(0, 3);
+
+  const metricCards = [
+    {
+      label: yoe ? "Teaching Experience" : "Disciplines Offered",
+      value: yoe ? `${yoe} Yrs` : `${subjects.length || 1}`,
+      desc: yoe ? "Verified Pedigree" : "Curricular Breadth",
+    },
+    {
+      label: "Active Cohorts",
+      value: `${batches?.length || 0}`,
+      desc: batches?.length === 1 ? "Active Batch" : "Scheduled Batches",
+    },
+    {
+      label: "Verified Honors",
+      value: `${achievements?.length || 0}`,
+      desc:
+        achievements?.length === 1
+          ? "Student Distinction"
+          : "Student Distinctions",
+    },
+    {
+      label: "Atelier Showcase",
+      value: `${gallery?.length || 0}`,
+      desc: gallery?.length === 1 ? "Class Photo" : "Moments Shared",
+    },
+  ];
 
   return (
     <div className="space-y-16 sm:space-y-24">
@@ -476,7 +538,9 @@ function HomePage({
       <div className="mx-auto flex max-w-2xl items-center justify-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-center text-xs font-medium text-amber-800 dark:bg-amber-400/10 dark:text-amber-300">
         <LuminaryIcon name="sparkles" className="h-3.5 w-3.5 shrink-0 text-amber-500" />
         <span className="truncate">
-          Admissions Open for High-Caliber Academic Cohorts • Limited Enrolment
+          {batches && batches.length > 0
+            ? "Admissions Open for Active Cohorts • Limited Enrolment"
+            : `Official Academic Portfolio • ${name}`}
         </span>
       </div>
 
@@ -512,20 +576,22 @@ function HomePage({
           </div>
 
           {/* Quick Metas (Location & Credentials) */}
-          <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-neutral-500 lg:justify-start dark:text-neutral-400">
+          <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-medium text-neutral-500 lg:justify-start dark:text-neutral-400">
             {location && (
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 dark:border-neutral-800 dark:bg-neutral-900">
                 <LuminaryIcon name="pin" className="h-3.5 w-3.5 text-amber-500" />
                 {location}
               </span>
             )}
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 dark:border-neutral-800 dark:bg-neutral-900">
-              <LuminaryIcon name="crown" className="h-3.5 w-3.5 text-amber-500" />
-              {experienceYears} Years Experience
-            </span>
+            {yoe && (
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 dark:border-neutral-800 dark:bg-neutral-900">
+                <LuminaryIcon name="crown" className="h-3.5 w-3.5 text-amber-500" />
+                {yoe} Years Experience
+              </span>
+            )}
             <span className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 dark:border-neutral-800 dark:bg-neutral-900">
               <LuminaryIcon name="shieldCheck" className="h-3.5 w-3.5 text-amber-500" />
-              100% Verified Faculty
+              Verified Faculty
             </span>
           </div>
 
@@ -566,18 +632,20 @@ function HomePage({
 
         {/* Hero Visual Crest & Avatar Showcase */}
         <div className="lg:col-span-5">
-          <LuminaryHeroShowcase profile={profile} tuition={tuition} name={name} />
+          <LuminaryHeroShowcase
+            profile={profile}
+            tuition={tuition}
+            name={name}
+            yoe={yoe}
+            batchesCount={batches?.length}
+            achievementsCount={achievements?.length}
+          />
         </div>
       </section>
 
       {/* ── Executive Metric Ribbons ── */}
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        {[
-          { label: "Dedication Track", value: `${experienceYears} Yrs`, desc: "Executive Mentorship" },
-          { label: "Active Cohorts", value: `${batches?.length || 4}+`, desc: "Specialized Batches" },
-          { label: "Distinction Rate", value: "98.4%", desc: "Top Decile Performers" },
-          { label: "Proven Honors", value: `${achievements?.length || 12}+`, desc: "Verified Accolades" },
-        ].map((item, i) => (
+        {metricCards.map((item, i) => (
           <div
             key={i}
             className="group relative overflow-hidden rounded-2xl border border-neutral-200 bg-white/70 p-4 sm:p-5 text-center shadow-sm backdrop-blur-md transition hover:border-amber-500/40 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900/60"
@@ -710,13 +778,13 @@ function HomePage({
 
           <div className="grid gap-4 sm:grid-cols-3">
             {activeBatches.map((b, i) => {
-              const bName = fd(b, ["name", "batchName", "title"], `Executive Cohort ${i + 1}`);
-              const bSubject = fd(b, ["subject", "course", "subjectName"], "Advanced Studies");
-              const bTiming = fd(b, ["timing", "schedule", "time", "days"], "Weekday Evenings");
-              const bSeats = fd(b, ["seats", "seatsLeft", "capacity"], "Limited");
+              const bName = fd(b, ["name", "batchName", "title"], `Cohort ${i + 1}`);
+              const bSubject = fd(b, ["subject", "course", "subjectName"], "");
+              const bTiming = fd(b, ["timing", "schedule", "time", "days"], "");
+              const bSeats = fd(b, ["seats", "seatsLeft", "capacity"], "");
               return (
                 <div
-                  key={i}
+                  key={b.batchId ?? b.id ?? i}
                   className="relative flex flex-col justify-between rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition hover:border-amber-500/50 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900/60"
                 >
                   <div>
@@ -724,20 +792,26 @@ function HomePage({
                       <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
                         ● Open for Enrolment
                       </span>
-                      <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                        {bSeats} Seats
-                      </span>
+                      {bSeats && (
+                        <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                          {bSeats} Seats
+                        </span>
+                      )}
                     </div>
                     <h3 className="mt-3 text-base font-extrabold text-neutral-900 dark:text-white">
                       {bName}
                     </h3>
-                    <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-                      {bSubject}
-                    </p>
-                    <div className="mt-3 flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-300">
-                      <LuminaryIcon name="calendar" className="h-3.5 w-3.5 text-amber-500" />
-                      <span>{bTiming}</span>
-                    </div>
+                    {bSubject && (
+                      <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                        {bSubject}
+                      </p>
+                    )}
+                    {bTiming && (
+                      <div className="mt-3 flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-300">
+                        <LuminaryIcon name="calendar" className="h-3.5 w-3.5 text-amber-500" />
+                        <span>{bTiming}</span>
+                      </div>
+                    )}
                   </div>
 
                   <button
@@ -777,24 +851,26 @@ function HomePage({
 
           <div className="grid gap-4 sm:grid-cols-3">
             {topAchievements.map((item, idx) => {
-              const title = fd(item, ["title", "achievement", "name"], "Outstanding Distinction");
+              const title = fd(item, ["title", "achievement", "name"], "Academic Achievement");
               const student = fd(item, ["studentName", "student", "recipient"], "");
-              const score = fd(item, ["score", "grade", "rank", "percentage"], "Top Rank");
+              const score = fd(item, ["score", "grade", "rank", "percentage"], "");
               const desc = fd(item, ["description", "details"], "");
               return (
                 <div
-                  key={idx}
+                  key={item.achievementId ?? item.id ?? idx}
                   className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-amber-500/20 bg-gradient-to-b from-white to-neutral-50/50 p-5 shadow-sm transition hover:border-amber-500/50 hover:shadow-lg dark:from-neutral-900/80 dark:to-neutral-950/90"
                 >
                   <div className="absolute top-0 right-0 p-3 opacity-15 group-hover:opacity-30 transition-opacity">
                     <LuminaryIcon name="trophy" className="h-14 w-14 text-amber-500" />
                   </div>
                   <div>
-                    <div className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
-                      <LuminaryIcon name="star" className="h-2.5 w-2.5" />
-                      <span>{score}</span>
-                    </div>
-                    <h3 className="mt-3 text-base font-extrabold text-neutral-900 dark:text-white">
+                    {score && (
+                      <div className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                        <LuminaryIcon name="star" className="h-2.5 w-2.5" />
+                        <span>{score}</span>
+                      </div>
+                    )}
+                    <h3 className={`${score ? "mt-3" : "mt-1"} text-base font-extrabold text-neutral-900 dark:text-white`}>
                       {title}
                     </h3>
                     {student && (
@@ -865,29 +941,39 @@ function HomePage({
 /* ─── 2. About Page ──────────────────────────────────────────────────────── */
 function AboutPage({ profile, tuition, faqs, name, onContactClick, phoneCall, emailAddress, whatsappNumber }) {
   const bio = fd(profile, ["bio", "about", "aboutMe", "description"], "");
-  const location = fd(profile, ["city", "state", "location", "address"], "");
-  const experienceYears = fd(profile, ["experience", "teachingExperience", "yearsOfExperience"], "10+");
+  const location =
+    [fd(tuition, ["city"]), fd(tuition, ["district"]), fd(tuition, ["state"])]
+      .filter(Boolean)
+      .join(", ") || fd(profile, ["city", "state", "location", "address"], "");
+  const yoe = fd(
+    profile,
+    [
+      "teachingYOE",
+      "teaching_yoe",
+      "experience",
+      "teachingExperience",
+      "yearsOfExperience",
+    ],
+    ""
+  );
   const qualifications = list(fd(profile, ["qualifications", "education", "degrees"], []));
+  const qualification =
+    qualifications.length > 0
+      ? qualifications[0]
+      : fd(profile, ["qualification", "degree"], "");
   const [openFaq, setOpenFaq] = useState(null);
 
-  const faqList = faqs && faqs.length > 0 ? faqs : [
-    {
-      question: "What distinguishes the Luminary Elite methodology?",
-      answer: "Our curriculum emphasizes deep conceptual foundations, personal cognitive diagnostics, and systematic past-paper deconstruction instead of formulaic memorization.",
-    },
-    {
-      question: "How are student batches structured?",
-      answer: "Cohorts are intentionally kept strictly capped to ensure every candidate receives customized inquiry responses, detailed homework reviews, and personalized milestone feedback.",
-    },
-    {
-      question: "Are hybrid or virtual masterclasses available?",
-      answer: "Yes. In addition to in-person atelier sessions, interactive high-definition virtual masterclasses are conducted with real-time digital whiteboarding and session recordings.",
-    },
-    {
-      question: "How can parents monitor academic velocity?",
-      answer: "Bi-weekly diagnostic summaries and benchmark progress reports are dispatched directly to candidates and guardians.",
-    },
-  ];
+  const credentialItems = [
+    qualification
+      ? { label: "Qualification", val: qualification, icon: "crown" }
+      : null,
+    yoe
+      ? { label: "Experience", val: `${yoe} Years`, icon: "sparkles" }
+      : null,
+    location
+      ? { label: "Location", val: location, icon: "pin" }
+      : null,
+  ].filter(Boolean);
 
   return (
     <div className="space-y-12">
@@ -900,7 +986,7 @@ function AboutPage({ profile, tuition, faqs, name, onContactClick, phoneCall, em
           Executive Biography & Pedigree
         </h1>
         <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
-          Decades of academic mastery committed to cultivating intellectual distinction and top-percentile outcomes.
+          Academic mastery committed to cultivating intellectual distinction and top-percentile outcomes.
         </p>
       </div>
 
@@ -914,7 +1000,7 @@ function AboutPage({ profile, tuition, faqs, name, onContactClick, phoneCall, em
             <div>
               <h2 className="text-xl font-extrabold text-neutral-900 dark:text-white">{name}</h2>
               <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                Senior Academic Faculty • {experienceYears} Experience
+                Senior Academic Faculty{yoe ? ` • ${yoe} Years Experience` : ""}
               </p>
             </div>
           </div>
@@ -924,25 +1010,25 @@ function AboutPage({ profile, tuition, faqs, name, onContactClick, phoneCall, em
               <p className="whitespace-pre-line">{bio}</p>
             ) : (
               <p>
-                An accomplished academician whose pedigree spans institutional and private coaching for competitive examinations and board distinction. Renowned for clarifying intricate conceptual frameworks and training students to think with rigorous analytical precision.
+                An accomplished academician committed to guiding students toward conceptual clarity, structured mastery, and competitive distinction.
               </p>
             )}
           </div>
 
-          {/* Key Specialization Pillars */}
-          <div className="grid gap-3 sm:grid-cols-3 pt-2">
-            {[
-              { label: "Teaching Caliber", val: "Tier 1 Mentor", icon: "crown" },
-              { label: "Pedagogy", val: "Inquiry-Based", icon: "sparkles" },
-              { label: "Integrity", val: "Verified Record", icon: "shieldCheck" },
-            ].map((stat, i) => (
-              <div key={i} className="rounded-xl border border-neutral-100 bg-neutral-50 p-3 text-center dark:border-neutral-800 dark:bg-neutral-800/40">
-                <LuminaryIcon name={stat.icon} className="mx-auto h-4 w-4 text-amber-500" />
-                <p className="mt-1 text-xs font-extrabold text-neutral-900 dark:text-white">{stat.val}</p>
-                <p className="text-[10px] text-neutral-500">{stat.label}</p>
-              </div>
-            ))}
-          </div>
+          {/* Key Credentials (Real Data) */}
+          {credentialItems.length > 0 && (
+            <div className="grid gap-3 sm:grid-cols-3 pt-2">
+              {credentialItems.map((stat, i) => (
+                <div key={i} className="rounded-xl border border-neutral-100 bg-neutral-50 p-3 text-center dark:border-neutral-800 dark:bg-neutral-800/40">
+                  <LuminaryIcon name={stat.icon} className="mx-auto h-4 w-4 text-amber-500" />
+                  <p className="mt-1 text-xs font-extrabold text-neutral-900 dark:text-white truncate" title={stat.val}>
+                    {stat.val}
+                  </p>
+                  <p className="text-[10px] text-neutral-500">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ── Fast Contact & Location Sidebar ── */}
@@ -990,64 +1076,97 @@ function AboutPage({ profile, tuition, faqs, name, onContactClick, phoneCall, em
         </div>
       </div>
 
-      {/* ── FAQ Section with Gold Indicator Accordion ── */}
-      <div className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-8 shadow-sm dark:border-neutral-800 dark:bg-neutral-900/60 space-y-6">
-        <div>
-          <span className="text-xs font-extrabold tracking-widest text-amber-600 uppercase dark:text-amber-400">
-            Admissions & Protocol
-          </span>
-          <h2 className="mt-1 text-xl sm:text-2xl font-extrabold text-neutral-900 dark:text-white">
-            Frequently Addressed Questions
-          </h2>
-        </div>
+      {/* ── FAQ Section with Gold Indicator Accordion (Rendered only if tutor added FAQs) ── */}
+      {faqs && faqs.length > 0 && (
+        <div className="rounded-3xl border border-neutral-200 bg-white p-6 sm:p-8 shadow-sm dark:border-neutral-800 dark:bg-neutral-900/60 space-y-6">
+          <div>
+            <span className="text-xs font-extrabold tracking-widest text-amber-600 uppercase dark:text-amber-400">
+              Admissions & Protocol
+            </span>
+            <h2 className="mt-1 text-xl sm:text-2xl font-extrabold text-neutral-900 dark:text-white">
+              Frequently Addressed Questions
+            </h2>
+          </div>
 
-        <div className="space-y-3">
-          {faqList.map((faq, i) => {
-            const q = fd(faq, ["question", "title", "q"], `Inquiry ${i + 1}`);
-            const a = fd(faq, ["answer", "response", "a", "description"], "");
-            const isOpen = openFaq === i;
-            return (
-              <div
-                key={i}
-                className="overflow-hidden rounded-2xl border border-neutral-200 transition dark:border-neutral-800"
-              >
-                <button
-                  type="button"
-                  onClick={() => setOpenFaq(isOpen ? null : i)}
-                  className="flex w-full items-center justify-between gap-4 p-4 text-left transition hover:bg-neutral-50 dark:hover:bg-neutral-800/40"
-                  aria-expanded={isOpen}
+          <div className="space-y-3">
+            {faqs.map((faq, i) => {
+              const q = fd(faq, ["question", "title", "q"], `Inquiry ${i + 1}`);
+              const a = fd(faq, ["answer", "response", "a", "description"], "");
+              const isOpen = openFaq === i;
+              return (
+                <div
+                  key={faq.faqId ?? faq.id ?? i}
+                  className="overflow-hidden rounded-2xl border border-neutral-200 transition dark:border-neutral-800"
                 >
-                  <span className="text-sm font-bold text-neutral-900 dark:text-white">
-                    {q}
-                  </span>
-                  <div
-                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 transition-transform dark:border-neutral-700 dark:text-neutral-400 ${
-                      isOpen ? "rotate-180 bg-amber-500/10 text-amber-600 dark:text-amber-400" : ""
-                    }`}
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(isOpen ? null : i)}
+                    className="flex w-full items-center justify-between gap-4 p-4 text-left transition hover:bg-neutral-50 dark:hover:bg-neutral-800/40"
+                    aria-expanded={isOpen}
                   >
-                    <LuminaryIcon name="chevronDown" className="h-3.5 w-3.5" />
-                  </div>
-                </button>
-                {isOpen && (
-                  <div className="border-t border-neutral-100 bg-neutral-50/70 p-4 text-xs sm:text-sm text-neutral-600 leading-relaxed dark:border-neutral-800/60 dark:bg-neutral-900/40 dark:text-neutral-300">
-                    <p>{a}</p>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                    <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                      {q}
+                    </span>
+                    <div
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 transition-transform dark:border-neutral-700 dark:text-neutral-400 ${
+                        isOpen ? "rotate-180 bg-amber-500/10 text-amber-600 dark:text-amber-400" : ""
+                      }`}
+                    >
+                      <LuminaryIcon name="chevronDown" className="h-3.5 w-3.5" />
+                    </div>
+                  </button>
+                  {isOpen && (
+                    <div className="border-t border-neutral-100 bg-neutral-50/70 p-4 text-xs sm:text-sm text-neutral-600 leading-relaxed dark:border-neutral-800/60 dark:bg-neutral-900/40 dark:text-neutral-300">
+                      <p>{a}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 /* ─── 3. Classes / Masterclasses Page ─────────────────────────────────────── */
 function ClassesPage({ tuition, onContactClick }) {
-  const subjects = list(fd(tuition, ["subjects", "subjectTaught", "courses", "skills"], []));
-  const classesList = list(fd(tuition, ["classes", "grades", "standards", "targetAudience"], []));
-  const teachingMode = fd(tuition, ["mode", "teachingMode", "modeOfTeaching"], "Hybrid (In-Person Atelier & Digital Live)");
-  const feeStructure = fd(tuition, ["fees", "feeStructure", "pricing"], "Available Upon Private Consultation");
+  const subjects = list(
+    fd(
+      tuition,
+      [
+        "subjects",
+        "subjectTaught",
+        "teachingSubjects",
+        "teaching_subjects",
+        "courses",
+        "skills",
+      ],
+      []
+    )
+  );
+  const classesList = list(
+    fd(tuition, ["classes", "grades", "standards", "targetAudience"], [])
+  );
+  const teachingMode = fd(
+    tuition,
+    ["mode", "teachingMode", "modeOfTeaching", "services"],
+    ""
+  );
+  const feeStructure = fd(tuition, ["fees", "feeStructure", "pricing"], "");
+
+  const formatCards = [
+    teachingMode
+      ? { title: "Instruction Modality", desc: teachingMode, icon: "sparkles" }
+      : null,
+    classesList.length > 0
+      ? { title: "Eligible Cohorts", desc: classesList.join(", "), icon: "book" }
+      : null,
+    feeStructure
+      ? { title: "Fee Structure", desc: feeStructure, icon: "crown" }
+      : null,
+  ].filter(Boolean);
 
   return (
     <div className="space-y-12">
@@ -1059,31 +1178,29 @@ function ClassesPage({ tuition, onContactClick }) {
           Curated Masterclasses & Modules
         </h1>
         <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
-          Rigorous academic curricula structured for competitive distinction, syllabus mastery, and accelerated competence.
+          Academic curricula structured for conceptual clarity, syllabus mastery, and accelerated competence.
         </p>
       </div>
 
-      {/* Modes & Format Ribbon */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        {[
-          { title: "Instruction Modality", desc: teachingMode, icon: "sparkles" },
-          { title: "Eligible Cohorts", desc: classesList.join(", ") || "Secondary to Pre-University", icon: "book" },
-          { title: "Investment Structure", desc: feeStructure, icon: "crown" },
-        ].map((card, i) => (
-          <div
-            key={i}
-            className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900/60"
-          >
-            <LuminaryIcon name={card.icon} className="h-5 w-5 text-amber-500" />
-            <h3 className="mt-3 text-xs font-extrabold uppercase tracking-wide text-neutral-400">
-              {card.title}
-            </h3>
-            <p className="mt-1 text-sm font-bold text-neutral-900 dark:text-white">
-              {card.desc}
-            </p>
-          </div>
-        ))}
-      </div>
+      {/* Modes & Format Ribbon (Only shown if real details exist) */}
+      {formatCards.length > 0 && (
+        <div className="grid gap-4 sm:grid-cols-3">
+          {formatCards.map((card, i) => (
+            <div
+              key={i}
+              className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900/60"
+            >
+              <LuminaryIcon name={card.icon} className="h-5 w-5 text-amber-500" />
+              <h3 className="mt-3 text-xs font-extrabold uppercase tracking-wide text-neutral-400">
+                {card.title}
+              </h3>
+              <p className="mt-1 text-sm font-bold text-neutral-900 dark:text-white">
+                {card.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Subject Masterclasses Grid */}
       <div className="space-y-6">
@@ -1168,15 +1285,15 @@ function BatchesPage({ batches, onContactClick }) {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {batches.map((b, i) => {
             const name = fd(b, ["name", "batchName", "title"], `Cohort ${i + 1}`);
-            const subject = fd(b, ["subject", "course", "subjectName"], "Core Curriculum");
-            const timing = fd(b, ["timing", "schedule", "time", "days"], "Scheduled Timetable");
-            const seats = fd(b, ["seats", "seatsLeft", "capacity"], "Strictly Limited");
+            const subject = fd(b, ["subject", "course", "subjectName"], "");
+            const timing = fd(b, ["timing", "schedule", "time", "days"], "");
+            const seats = fd(b, ["seats", "seatsLeft", "capacity"], "");
             const fee = fd(b, ["fees", "fee", "price", "amount"], "");
             const desc = fd(b, ["description", "details"], "");
 
             return (
               <div
-                key={i}
+                key={b.batchId ?? b.id ?? i}
                 className="flex flex-col justify-between rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm transition hover:border-amber-500/50 hover:shadow-lg dark:border-neutral-800 dark:bg-neutral-900/60"
               >
                 <div>
@@ -1185,30 +1302,38 @@ function BatchesPage({ batches, onContactClick }) {
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       Active Cohort
                     </span>
-                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
-                      {seats} Available
-                    </span>
+                    {seats && (
+                      <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                        {seats} Seats Available
+                      </span>
+                    )}
                   </div>
 
                   <h3 className="mt-4 text-lg font-black text-neutral-900 dark:text-white">
                     {name}
                   </h3>
-                  <p className="mt-1 text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                    {subject}
-                  </p>
+                  {subject && (
+                    <p className="mt-1 text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                      {subject}
+                    </p>
+                  )}
 
-                  <div className="mt-4 space-y-2 rounded-2xl border border-neutral-100 bg-neutral-50 p-3.5 text-xs text-neutral-600 dark:border-neutral-800 dark:bg-neutral-800/40 dark:text-neutral-300">
-                    <div className="flex items-center gap-2">
-                      <LuminaryIcon name="calendar" className="h-4 w-4 text-amber-500" />
-                      <span>{timing}</span>
+                  {(timing || fee) && (
+                    <div className="mt-4 space-y-2 rounded-2xl border border-neutral-100 bg-neutral-50 p-3.5 text-xs text-neutral-600 dark:border-neutral-800 dark:bg-neutral-800/40 dark:text-neutral-300">
+                      {timing && (
+                        <div className="flex items-center gap-2">
+                          <LuminaryIcon name="calendar" className="h-4 w-4 text-amber-500" />
+                          <span>{timing}</span>
+                        </div>
+                      )}
+                      {fee && (
+                        <div className="flex items-center gap-2 font-bold text-neutral-900 dark:text-white">
+                          <LuminaryIcon name="crown" className="h-4 w-4 text-amber-500" />
+                          <span>Investment: {fee}</span>
+                        </div>
+                      )}
                     </div>
-                    {fee && (
-                      <div className="flex items-center gap-2 font-bold text-neutral-900 dark:text-white">
-                        <LuminaryIcon name="crown" className="h-4 w-4 text-amber-500" />
-                        <span>Investment: {fee}</span>
-                      </div>
-                    )}
-                  </div>
+                  )}
 
                   {desc && (
                     <p className="mt-4 text-xs text-neutral-600 line-clamp-3 dark:text-neutral-300">
@@ -1290,15 +1415,15 @@ function AchievementsPage({ achievements, onContactClick }) {
       {achievements && achievements.length > 0 ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {achievements.map((item, idx) => {
-            const title = fd(item, ["title", "achievement", "name"], "Academic Honor");
+            const title = fd(item, ["title", "achievement", "name"], "Academic Milestone");
             const student = fd(item, ["studentName", "student", "recipient"], "");
-            const score = fd(item, ["score", "grade", "rank", "percentage"], "Top Rank");
+            const score = fd(item, ["score", "grade", "rank", "percentage"], "");
             const desc = fd(item, ["description", "details"], "");
             const year = fd(item, ["year", "session", "date"], "");
 
             return (
               <div
-                key={idx}
+                key={item.achievementId ?? item.id ?? idx}
                 className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-b from-white to-amber-50/20 p-6 shadow-sm transition hover:border-amber-500/60 hover:shadow-xl dark:from-neutral-900/80 dark:to-neutral-950/90"
               >
                 <div className="absolute top-2 right-2 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -1307,10 +1432,17 @@ function AchievementsPage({ achievements, onContactClick }) {
 
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-black text-amber-800 dark:text-amber-300">
-                      <LuminaryIcon name="star" className="h-3 w-3" />
-                      <span>{score}</span>
-                    </span>
+                    {score ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-black text-amber-800 dark:text-amber-300">
+                        <LuminaryIcon name="star" className="h-3 w-3" />
+                        <span>{score}</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-black text-amber-800 dark:text-amber-300">
+                        <LuminaryIcon name="star" className="h-3 w-3" />
+                        <span>Milestone</span>
+                      </span>
+                    )}
                     {year && (
                       <span className="text-[11px] font-semibold text-neutral-400">
                         {year}
@@ -1353,7 +1485,7 @@ function AchievementsPage({ achievements, onContactClick }) {
             Honors Register Updating
           </h3>
           <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-            Student accomplishments and examination milestones are being curated for this portfolio.
+            Student accomplishments and examination milestones will appear here once published.
           </p>
         </div>
       )}
@@ -1380,13 +1512,13 @@ function ExperiencePage({ experience }) {
       {experience && experience.length > 0 ? (
         <div className="relative mx-auto max-w-3xl space-y-8 before:absolute before:inset-0 before:left-5 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-amber-500 before:via-amber-500/40 before:to-transparent sm:before:left-7">
           {experience.map((exp, i) => {
-            const role = fd(exp, ["role", "title", "designation", "position"], "Senior Academic Faculty");
-            const org = fd(exp, ["organization", "institution", "school", "company"], "Premier Academy");
+            const role = fd(exp, ["role", "title", "designation", "position"], "Academic Experience");
+            const org = fd(exp, ["organization", "institution", "school", "company"], "");
             const duration = fd(exp, ["duration", "period", "years", "time"], "");
             const desc = fd(exp, ["description", "details"], "");
 
             return (
-              <div key={i} className="relative flex items-start gap-4 sm:gap-6">
+              <div key={exp.experienceId ?? exp.id ?? i} className="relative flex items-start gap-4 sm:gap-6">
                 {/* Timeline Crown Node */}
                 <div className="relative flex h-10 w-10 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-2xl border-2 border-amber-500 bg-slate-950 text-amber-400 shadow-lg shadow-amber-500/20">
                   <LuminaryIcon name="crown" className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -1404,9 +1536,11 @@ function ExperiencePage({ experience }) {
                     )}
                   </div>
 
-                  <p className="mt-1 text-xs sm:text-sm font-semibold text-amber-700 dark:text-amber-400">
-                    {org}
-                  </p>
+                  {org && (
+                    <p className="mt-1 text-xs sm:text-sm font-semibold text-amber-700 dark:text-amber-400">
+                      {org}
+                    </p>
+                  )}
 
                   {desc && (
                     <p className="mt-3 text-xs sm:text-sm text-neutral-600 leading-relaxed dark:text-neutral-300">

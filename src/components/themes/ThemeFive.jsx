@@ -13,43 +13,146 @@ function MotionScene() {
   useEffect(() => {
     const container = host.current;
     if (!container || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
-    let disposed = false, renderer, frame = 0, resize, observer;
+    let disposed = false, frame = 0;
     const pointer = { x: 0, y: 0 }, target = { x: 0, y: 0 };
     const pointerSurface = container.parentElement || container;
-    const onPointer = (event) => { if (event.pointerType !== "mouse") return; const rect = pointerSurface.getBoundingClientRect(); target.x = ((event.clientX - rect.left) / rect.width - .5) * 2; target.y = ((event.clientY - rect.top) / rect.height - .5) * 2; };
+    const onPointer = (event) => {
+      if (event.pointerType !== "mouse") return;
+      const rect = pointerSurface.getBoundingClientRect();
+      target.x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
+      target.y = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+    };
     const onLeave = () => { target.x = 0; target.y = 0; };
-    pointerSurface.addEventListener("pointermove", onPointer); pointerSurface.addEventListener("pointerleave", onLeave);
-    import("three").then((THREE) => {
+    pointerSurface.addEventListener("pointermove", onPointer);
+    pointerSurface.addEventListener("pointerleave", onLeave);
+
+    const canvas = document.createElement("canvas");
+    canvas.style.display = "block";
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    container.appendChild(canvas);
+    const ctx = canvas.getContext("2d");
+
+    let width = 0, height = 0;
+    const resize = () => {
+      if (!container.clientWidth || !container.clientHeight) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = container.clientWidth;
+      height = container.clientHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    // Precompute 3D points for kinetic torus knot
+    const numPoints = 140;
+    const knotPoints = [];
+    for (let i = 0; i < numPoints; i++) {
+      const u = (i / numPoints) * Math.PI * 4;
+      const r = 0.8 + 0.35 * Math.cos(3 * u);
+      const x = r * Math.cos(2 * u);
+      const y = r * Math.sin(2 * u);
+      const z = 0.35 * Math.sin(3 * u);
+      knotPoints.push({ x, y, z });
+    }
+
+    // Floating orbital satellite spheres
+    const satellites = [
+      { x: -1.8, y: 1.1, z: 0.2, r: 16, color: "#9da7ff" },
+      { x: 1.9, y: -1.2, z: -0.3, r: 14, color: "#d6ff63" },
+      { x: 1.6, y: 1.3, z: -0.5, r: 10, color: "#414dff" },
+      { x: -1.4, y: -1.4, z: -0.4, r: 12, color: "#ffffff" },
+    ];
+
+    container.classList.add("is-ready");
+
+    let angleX = 0, angleY = 0;
+    const render = (time) => {
       if (disposed) return;
-      try {
-        renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "low-power" });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
-        renderer.setClearColor(0x000000, 0);
-        container.appendChild(renderer.domElement);
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(38, 1, .1, 100); camera.position.z = 9;
-        scene.add(new THREE.HemisphereLight(0xcad6ff, 0x090b1b, 2));
-        const key = new THREE.DirectionalLight(0xffffff, 3); key.position.set(4, 6, 8); scene.add(key);
-        const accent = new THREE.PointLight(0x4d5cff, 28, 25); accent.position.set(-4, 0, 3); scene.add(accent);
-        const group = new THREE.Group(); scene.add(group);
-        const material = new THREE.MeshStandardMaterial({ color: 0x697cff, metalness: .65, roughness: .22 });
-        const white = new THREE.MeshStandardMaterial({ color: 0xf4f3ff, metalness: .3, roughness: .24 });
-        const dark = new THREE.MeshStandardMaterial({ color: 0x15182c, metalness: .7, roughness: .22 });
-        const torusGeometry = new THREE.TorusKnotGeometry(1.35, .36, 180, 18, 2, 3);
-        const knot = new THREE.Mesh(torusGeometry, material); group.add(knot);
-        const sphereGeometry = new THREE.IcosahedronGeometry(.42, 3);
-        const objects = [[-2.35,1.4,-.4,white],[2.3,-1.3,-.5,white],[2.5,1.4,-1,dark],[-2,-1.6,-1,dark]].map(([x,y,z,mat]) => { const mesh = new THREE.Mesh(sphereGeometry, mat); mesh.position.set(x,y,z); group.add(mesh); return mesh; });
-        resize = () => { if (!container.clientWidth || !container.clientHeight) return; camera.aspect = container.clientWidth / container.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(container.clientWidth, container.clientHeight); };
-        resize(); window.addEventListener("resize", resize);
-        let visible = true;
-        const tick = (time) => { if (disposed) return; frame = requestAnimationFrame(tick); if (!visible || document.hidden) return; pointer.x += (target.x - pointer.x) * .035; pointer.y += (target.y - pointer.y) * .035; knot.rotation.x = time * .00011 + pointer.y * .18; knot.rotation.y = time * .00017 + pointer.x * .28; group.rotation.z = pointer.x * .07; objects.forEach((mesh, i) => { mesh.rotation.x = time * .00025 * (i % 2 ? -1 : 1); mesh.position.y += Math.sin(time * .001 + i) * .0015; }); renderer.render(scene, camera); };
-        if ("IntersectionObserver" in window) { observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }); observer.observe(container); }
-        frame = requestAnimationFrame(tick);
-        container.classList.add("is-ready");
-        container._disposeScene = () => { torusGeometry.dispose(); sphereGeometry.dispose(); material.dispose(); white.dispose(); dark.dispose(); };
-      } catch { container.classList.remove("is-ready"); }
-    }).catch(() => {});
-    return () => { disposed = true; cancelAnimationFrame(frame); observer?.disconnect(); window.removeEventListener("resize", resize); pointerSurface.removeEventListener("pointermove", onPointer); pointerSurface.removeEventListener("pointerleave", onLeave); container._disposeScene?.(); delete container._disposeScene; renderer?.dispose(); renderer?.domElement.remove(); };
+      frame = requestAnimationFrame(render);
+      if (document.hidden) return;
+
+      pointer.x += (target.x - pointer.x) * 0.04;
+      pointer.y += (target.y - pointer.y) * 0.04;
+
+      angleX = time * 0.0004 + pointer.y * 0.25;
+      angleY = time * 0.0006 + pointer.x * 0.35;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width * 0.58;
+      const cy = height * 0.48;
+      const scale = Math.min(width, height) * 0.32;
+
+      // Project 3D to 2D
+      const project = (p) => {
+        const cosY = Math.cos(angleY), sinY = Math.sin(angleY);
+        const x1 = p.x * cosY + p.z * sinY;
+        const z1 = -p.x * sinY + p.z * cosY;
+        const cosX = Math.cos(angleX), sinX = Math.sin(angleX);
+        const y2 = p.y * cosX - z1 * sinX;
+        const z2 = p.y * sinX + z1 * cosX;
+        const fov = 3.5;
+        const pz = fov / (fov + z2);
+        return {
+          x: cx + x1 * scale * pz,
+          y: cy + y2 * scale * pz,
+          z: z2,
+          pz,
+        };
+      };
+
+      // Draw knot ribbon / path with dynamic gradient
+      const projected = knotPoints.map(project);
+
+      for (let i = 0; i < projected.length; i++) {
+        const next = projected[(i + 1) % projected.length];
+        const p = projected[i];
+        const alpha = Math.max(0.15, Math.min(0.9, 0.5 + p.z * 0.3));
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(next.y ? next.x : p.x, next.y ? next.y : p.y);
+        ctx.strokeStyle = `rgba(105, 124, 255, ${alpha})`;
+        ctx.lineWidth = Math.max(1.5, 3.5 * p.pz);
+        ctx.lineCap = "round";
+        ctx.stroke();
+
+        // Shimmering node highlight
+        if (i % 6 === 0) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, Math.max(2, 4.5 * p.pz), 0, Math.PI * 2);
+          ctx.fillStyle = i % 12 === 0 ? "#d6ff63" : "#ffffff";
+          ctx.fill();
+        }
+      }
+
+      // Draw satellites
+      satellites.forEach((sat, idx) => {
+        const wobble = Math.sin(time * 0.0015 + idx) * 0.15;
+        const p = project({ x: sat.x, y: sat.y + wobble, z: sat.z });
+        ctx.beginPath();
+        const rad = sat.r * p.pz;
+        ctx.arc(p.x, p.y, Math.max(3, rad), 0, Math.PI * 2);
+        ctx.fillStyle = sat.color;
+        ctx.shadowColor = sat.color;
+        ctx.shadowBlur = 15;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+    };
+
+    frame = requestAnimationFrame(render);
+
+    return () => {
+      disposed = true;
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", resize);
+      pointerSurface.removeEventListener("pointermove", onPointer);
+      pointerSurface.removeEventListener("pointerleave", onLeave);
+      canvas.remove();
+    };
   }, []);
   return <div ref={host} className="five-scene" aria-hidden="true"><div className="five-scene-fallback" /></div>;
 }
