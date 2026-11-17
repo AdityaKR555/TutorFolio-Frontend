@@ -674,7 +674,7 @@ function ThemePreviewMini({ theme, userId, userPlan, isSelected, onApply, disabl
             </div>
           </div>
 
-          <p className="mt-1.5 text-xs text-tf-muted line-clamp-2 leading-relaxed">
+          <p className="mt-1.5 text-xs text-tf-muted line-clamp-2 leading-relaxed hidden md:block">
             {meta.displayDescription}
           </p>
 
@@ -695,7 +695,7 @@ function ThemePreviewMini({ theme, userId, userPlan, isSelected, onApply, disabl
         </div>
 
         {/* Buttons */}
-        <div className="mt-4 flex w-full gap-2">
+        <div className="mt-4 flex flex-col md:flex-row w-full gap-2">
           {theme.previewUrl ? (
             <a
               href={`${theme.previewUrl}/${encodeURIComponent(userId)}`}
@@ -714,7 +714,7 @@ function ThemePreviewMini({ theme, userId, userPlan, isSelected, onApply, disabl
             onClick={onApply}
             disabled={disabled || isSelected}
             aria-label={isSelected ? `${meta.displayTitle} is active` : `Use ${meta.displayTitle}`}
-            className="flex-1 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 transition-colors shadow-xs"
+            className="flex-1 rounded-lg bg-indigo-600 px-3 py-1 md:py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 transition-colors shadow-xs"
           >
             {isSelected ? "Current theme" : "Use theme"}
           </button>
@@ -1038,7 +1038,7 @@ export default function Website() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {[0, 1, 2].map((i) => (
                 <div
                   key={i}
@@ -1057,7 +1057,7 @@ export default function Website() {
               {error ? "Themes could not be loaded. Please refresh to try again." : "No themes are currently available."}
             </p>
           ) : (
-            <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {availableThemes.map((theme) => (
                 <ThemePreviewMini
                   key={theme.themeId}
