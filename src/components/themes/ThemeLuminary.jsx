@@ -377,7 +377,7 @@ function LuminaryHeroShowcase({ profile, tuition, name }) {
       <div className="absolute -inset-4 rounded-full bg-gradient-to-tr from-amber-500/20 via-indigo-600/15 to-amber-300/10 blur-2xl filter dark:from-amber-500/15 dark:via-indigo-500/10 dark:to-amber-200/5" />
 
       {/* Decorative Rotating Ring */}
-      <div className="relative flex h-64 w-64 items-center justify-center sm:h-72 sm:w-72 lg:h-80 lg:w-80">
+      <div className="relative flex h-56 w-56 items-center justify-center sm:h-72 sm:w-72 lg:h-80 lg:w-80">
         <svg
           className="absolute inset-0 h-full w-full animate-[spin_60s_linear_infinite]"
           viewBox="0 0 200 200"
@@ -401,10 +401,10 @@ function LuminaryHeroShowcase({ profile, tuition, name }) {
         </svg>
 
         {/* Secondary Inner Fine Ring */}
-        <div className="absolute inset-3 rounded-full border border-amber-400/30 dark:border-amber-400/20" />
+        <div className="absolute inset-2.5 sm:inset-3 rounded-full border border-amber-400/30 dark:border-amber-400/20" />
 
         {/* Avatar Display */}
-        <div className="relative flex h-52 w-52 items-center justify-center overflow-hidden rounded-full border-2 border-amber-400/50 bg-gradient-to-b from-amber-950/20 to-slate-900 shadow-2xl sm:h-60 sm:w-60 lg:h-68 lg:w-68">
+        <div className="relative flex h-44 w-44 items-center justify-center overflow-hidden rounded-full border-2 border-amber-400/50 bg-gradient-to-b from-amber-950/20 to-slate-900 shadow-2xl sm:h-60 sm:w-60 lg:h-68 lg:w-68">
           {avatarUrl ? (
             <img
               src={avatarUrl}
@@ -530,11 +530,11 @@ function HomePage({
           </div>
 
           {/* Action Callouts */}
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2 lg:justify-start">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 pt-2 lg:justify-start">
             <button
               type="button"
               onClick={onContactClick}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 px-6 text-sm font-bold text-white shadow-lg shadow-amber-600/20 transition hover:from-amber-500 hover:to-amber-600 active:scale-95"
+              className="w-full sm:w-auto inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 px-5 sm:px-6 text-xs sm:text-sm font-bold text-white shadow-lg shadow-amber-600/20 transition hover:from-amber-500 hover:to-amber-600 active:scale-95"
             >
               <LuminaryIcon name="message" className="h-4 w-4" />
               <span>Direct Consultation</span>
@@ -545,7 +545,7 @@ function HomePage({
                 href={`https://wa.me/${whatsappNumber}`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-50 px-4 text-sm font-bold text-emerald-800 transition hover:bg-emerald-100 active:scale-95 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
+                className="flex-1 sm:flex-initial inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-50 px-3.5 sm:px-4 text-xs sm:text-sm font-bold text-emerald-800 transition hover:bg-emerald-100 active:scale-95 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
               >
                 <LuminaryIcon name="whatsapp" className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 <span>WhatsApp</span>
@@ -555,7 +555,7 @@ function HomePage({
             <button
               type="button"
               onClick={onCopyLink}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-neutral-300 bg-white px-4 text-sm font-bold text-neutral-800 transition hover:bg-neutral-50 active:scale-95 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200"
+              className="flex-1 sm:flex-initial inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-neutral-300 bg-white px-3.5 sm:px-4 text-xs sm:text-sm font-bold text-neutral-800 transition hover:bg-neutral-50 active:scale-95 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200"
               title="Share portfolio link"
             >
               <LuminaryIcon name="copy" className="h-4 w-4 text-neutral-500" />
@@ -1463,11 +1463,26 @@ export default function ThemeLuminary({
     }
   });
 
+  const previousDocumentTheme = useRef(null);
   useEffect(() => {
+    const root = document.documentElement;
+    previousDocumentTheme.current = root.getAttribute("data-theme");
+    return () => {
+      if (previousDocumentTheme.current == null) root.removeAttribute("data-theme");
+      else root.setAttribute("data-theme", previousDocumentTheme.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", themeMode);
     try {
       localStorage.setItem("tutorfolio:luminary-mode", themeMode);
     } catch {}
   }, [themeMode]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [currentPage]);
 
   const isDark = themeMode === "dark";
 
@@ -1549,7 +1564,7 @@ export default function ThemeLuminary({
   }
 
   return (
-    <div className={`theme-luminary ${isDark ? "dark" : ""}`}>
+    <div data-theme={themeMode} className={`theme-luminary ${isDark ? "dark" : ""}`}>
       <div className="min-h-screen bg-[#fafaf9] text-neutral-900 transition-colors duration-300 dark:bg-[#0b0f19] dark:text-neutral-100 font-sans selection:bg-amber-500 selection:text-white">
         {/* Subtle Ambient Radial Lighting */}
         <div className="pointer-events-none fixed inset-0 overflow-hidden">
@@ -1558,27 +1573,34 @@ export default function ThemeLuminary({
 
         {/* ── Luxury Header ── */}
         <header className="sticky top-0 z-40 border-b border-neutral-200/80 bg-white/80 backdrop-blur-md dark:border-neutral-800/80 dark:bg-[#0b0f19]/80">
-          <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+          <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-3 sm:px-6">
             {/* Left: Brand / Crest */}
-            <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial mr-2">
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 text-neutral-600 lg:hidden dark:border-neutral-800 dark:text-neutral-300"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-neutral-200 text-neutral-600 lg:hidden dark:border-neutral-800 dark:text-neutral-300"
                 aria-label="Toggle navigation menu"
               >
                 <LuminaryIcon name={mobileMenuOpen ? "close" : "menu"} className="h-5 w-5" />
               </button>
 
-              <Link to={basePath} className="flex items-center gap-2.5 min-w-0 group">
-                <TuitionLogo tuition={tuition} name={academyName} fallback={<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
-                  <LuminaryIcon name="crown" className="h-5 w-5" />
-                </div>} />
+              <Link to={basePath} className="flex items-center gap-2 sm:gap-2.5 min-w-0 group">
+                <TuitionLogo
+                  tuition={tuition}
+                  name={academyName}
+                  className="h-8 w-8 sm:h-9 sm:w-9"
+                  fallback={
+                    <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
+                      <LuminaryIcon name="crown" className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+                    </div>
+                  }
+                />
                 <div className="min-w-0">
-                  <span className="block truncate text-sm font-black tracking-tight text-neutral-900 dark:text-white">
+                  <span className="block truncate text-xs sm:text-sm font-black tracking-tight text-neutral-900 dark:text-white">
                     {academyName}
                   </span>
-                  <span className="block text-[10px] font-bold tracking-widest text-amber-600 uppercase dark:text-amber-400">
+                  <span className="block text-[9px] sm:text-[10px] font-bold tracking-widest text-amber-600 uppercase dark:text-amber-400">
                     LUMINARY ELITE
                   </span>
                 </div>
@@ -1607,10 +1629,10 @@ export default function ThemeLuminary({
             </nav>
 
             {/* Right: Theme Toggle & Direct Enquiry Button */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
               <button
                 type="button"
-                onClick={() => setThemeMode(isDark ? "light" : "dark")}
+                onClick={() => setThemeMode((prev) => (prev === "dark" ? "light" : "dark"))}
                 className="flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-700 transition hover:bg-neutral-50 active:scale-95 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"
                 aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
                 title={`Switch to ${isDark ? "light" : "dark"} mode`}
@@ -1637,56 +1659,73 @@ export default function ThemeLuminary({
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setMobileMenuOpen(false)}
             />
-            <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] border-r border-neutral-200 bg-white p-5 shadow-2xl dark:border-neutral-800 dark:bg-[#0b0f19]">
-              <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-white">
-                    <LuminaryIcon name="crown" className="h-4 w-4" />
+            <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] flex flex-col justify-between border-r border-neutral-200 bg-white p-5 shadow-2xl dark:border-neutral-800 dark:bg-[#0b0f19]">
+              <div>
+                <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-white">
+                      <LuminaryIcon name="crown" className="h-4 w-4" />
+                    </div>
+                    <span className="font-extrabold text-sm text-neutral-900 dark:text-white">
+                      Menu
+                    </span>
                   </div>
-                  <span className="font-extrabold text-sm text-neutral-900 dark:text-white">
-                    Menu
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 dark:text-neutral-400"
+                    aria-label="Close menu"
+                  >
+                    <LuminaryIcon name="close" className="h-5 w-5" />
+                  </button>
                 </div>
+
+                <div className="mt-4 space-y-1">
+                  {pageLinks.map((link) => {
+                    const isActive = currentPage === link.id;
+                    const path = link.id === "home" ? basePath : `${basePath}/${link.id}`;
+                    return (
+                      <Link
+                        key={link.id}
+                        to={path}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold transition ${
+                          isActive
+                            ? "bg-amber-500/10 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300"
+                            : "text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                        }`}
+                      >
+                        <LuminaryIcon name={link.icon} className="h-4 w-4 text-amber-500" />
+                        <span>{link.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-6 border-t border-neutral-200 pt-4 dark:border-neutral-800 space-y-3">
                 <button
                   type="button"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                  aria-label="Close menu"
+                  onClick={() => setThemeMode((prev) => (prev === "dark" ? "light" : "dark"))}
+                  className="flex w-full items-center justify-between rounded-xl border border-neutral-200 bg-neutral-50 px-3.5 py-2.5 text-xs font-bold text-neutral-800 transition hover:bg-neutral-100 active:scale-95 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                  aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
                 >
-                  <LuminaryIcon name="close" className="h-5 w-5" />
+                  <span className="flex items-center gap-2">
+                    <LuminaryIcon name={isDark ? "sun" : "moon"} className="h-4 w-4 text-amber-500" />
+                    <span>Theme: {isDark ? "Dark Mode" : "Light Mode"}</span>
+                  </span>
+                  <span className="rounded-lg bg-neutral-200/60 px-2 py-0.5 text-[10px] uppercase font-bold text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+                    {isDark ? "Dark" : "Light"}
+                  </span>
                 </button>
-              </div>
 
-              <div className="mt-4 space-y-1">
-                {pageLinks.map((link) => {
-                  const isActive = currentPage === link.id;
-                  const path = link.id === "home" ? basePath : `${basePath}/${link.id}`;
-                  return (
-                    <Link
-                      key={link.id}
-                      to={path}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs font-bold transition ${
-                        isActive
-                          ? "bg-amber-500/10 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300"
-                          : "text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
-                      }`}
-                    >
-                      <LuminaryIcon name={link.icon} className="h-4 w-4 text-amber-500" />
-                      <span>{link.label}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-
-              <div className="mt-8 border-t border-neutral-200 pt-4 dark:border-neutral-800">
                 <button
                   type="button"
                   onClick={() => {
                     setMobileMenuOpen(false);
                     onContactClick();
                   }}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-600 py-2.5 text-xs font-bold text-white shadow-md shadow-amber-600/20"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-600 py-2.5 text-xs font-bold text-white shadow-md shadow-amber-600/20 active:scale-95 transition"
                 >
                   <LuminaryIcon name="message" className="h-4 w-4" />
                   <span>Direct Consultation</span>
