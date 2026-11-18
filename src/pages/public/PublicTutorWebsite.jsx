@@ -3,7 +3,7 @@ import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useStat
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import api from "../../api/axios";
 import VisitorChatWidget from "../../components/VisitorChatWidget";
-import { ThemeClassic, ThemeMinimal, ThemeLuminary, ThemeAurora } from "../../components/themes/index.js";
+import { ThemeClassic, ThemeMinimal, ThemeLuminary, ThemeAurora, ThemeGlass } from "../../components/themes/index.js";
 import TuitionLogo from "../../components/themes/TuitionLogo";
 import "../../components/themes/theme-standards.css";
 const ThemeFive = lazy(() => import("../../components/themes/ThemeFive"));
@@ -60,6 +60,10 @@ const THEME_MAP = {
   theme_minimal: ThemeMinimal,
   theme_modern: ThemeMinimal,
   theme_bold: ThemeLuminary,
+  glass: ThemeGlass,
+  theme_glass: ThemeGlass,
+  theme6: ThemeGlass,
+  theme_6: ThemeGlass,
 };
 const DEFAULT_THEME = "classic";
 
@@ -117,9 +121,10 @@ export default function PublicTutorWebsite() {
       const payload = unwrap(body);
       const root = isPreview ? payload.website : payload;
       if (isPreview) {
-        if (!THEME_MAP[payload.theme?.themeId]) throw new Error("This theme does not have a supported preview yet.");
-        setThemeId(payload.theme.themeId);
-        setThemeInfo(payload.theme);
+        const pTid = String(payload.theme?.themeId || payload.theme?.id || previewThemeId || "").trim().toLowerCase();
+        if (!THEME_MAP[pTid]) throw new Error("This theme does not have a supported preview yet.");
+        setThemeId(pTid);
+        setThemeInfo(payload.theme || { themeId: pTid });
       }
       const normalized = normalizeWebsite(root);
       if (!Object.keys(normalized.profile).length && (root.username || root.firstName || root.profilePicture)) normalized.profile = root;
@@ -131,7 +136,7 @@ export default function PublicTutorWebsite() {
           const themeResponse = await api.get(requestedTheme ? `/themes/${encodeURIComponent(requestedTheme)}` : tutorId ? `/themes/current/${tutorId}` : `/themes/${DEFAULT_THEME}`, { timeout: 8000 });
           const data = themeResponse?.data?.data;
           const theme = data?.theme || data;
-          const tid = theme?.themeId;
+          const tid = String(theme?.themeId || theme?.id || "").trim().toLowerCase();
           if (tid && THEME_MAP[tid]) { setThemeId(tid); setThemeInfo(theme); }
           else { setThemeId(DEFAULT_THEME); setThemeInfo(null); }
         } catch {
@@ -204,9 +209,10 @@ export default function PublicTutorWebsite() {
   if (error || !website) return <ErrorScreen error={error} onRetry={fetchWebsite} />;
 
   /* pick theme component (fall back to Classic if unknown) */
-  const ThemeComponent = THEME_MAP[themeId] ?? ThemeClassic;
+  const activeKey = String(themeId || "").trim().toLowerCase();
+  const ThemeComponent = THEME_MAP[activeKey] ?? ThemeClassic;
   const isFreeTheme = Array.isArray(themeInfo?.planAvailability) && themeInfo.planAvailability.some((plan) => String(plan).trim().toLowerCase() === "free");
-  const needsSharedIdentity = ![ThemeClassic, ThemeMinimal, ThemeLuminary, ThemeAurora, ThemeFive].includes(ThemeComponent);
+  const needsSharedIdentity = ![ThemeClassic, ThemeMinimal, ThemeLuminary, ThemeAurora, ThemeFive, ThemeGlass].includes(ThemeComponent);
 
   const themeProps = {
     profile,

@@ -4,3 +4,4 @@ export { default as ThemeClassic } from './ThemeClassic';
 export { default as ThemeMinimal } from './ThemeMinimal';
 export { default as ThemeLuminary } from './ThemeLuminary';
 export { default as ThemeAurora } from './ThemeAurora';
+export { default as ThemeGlass } from './ThemeGlass';

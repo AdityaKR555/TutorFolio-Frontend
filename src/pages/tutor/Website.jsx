@@ -476,6 +476,103 @@ function MotionStudioPreviewArt({ primary = "#414dff", secondary = "#d6ff63", bg
   );
 }
 
+function GlassPreviewArt({ primary = "#b45309", secondary = "#54a880", bg = "#ebe4d8" }) {
+  // Frosted "glass" surface used for every card in this mini preview
+  const glass = {
+    background: "rgba(255, 255, 255, 0.55)",
+    border: "1px solid rgba(255, 255, 255, 0.8)",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.95), 0 8px 14px -10px rgba(80,55,20,0.45)",
+    backdropFilter: "blur(6px)",
+    WebkitBackdropFilter: "blur(6px)",
+  };
+
+  return (
+    <div
+      className="relative h-28 sm:h-36 w-full select-none overflow-hidden p-2 sm:p-2.5 transition-transform duration-300 group-hover:scale-[1.01]"
+      style={{ backgroundColor: bg }}
+    >
+      {/* Ambient colour orbs the glass appears to refract */}
+      <div
+        className="pointer-events-none absolute -top-8 -left-6 h-24 sm:h-32 w-24 sm:w-32 rounded-full blur-2xl opacity-80"
+        style={{ background: "radial-gradient(circle, rgba(245,158,11,0.6) 0%, transparent 70%)" }}
+      />
+      <div
+        className="pointer-events-none absolute top-4 -right-8 h-24 sm:h-32 w-24 sm:w-32 rounded-full blur-2xl opacity-70"
+        style={{ background: "radial-gradient(circle, rgba(244,114,94,0.55) 0%, transparent 70%)" }}
+      />
+      <div
+        className="pointer-events-none absolute -bottom-10 left-10 h-24 sm:h-28 w-24 sm:w-28 rounded-full blur-2xl opacity-70"
+        style={{ background: `radial-gradient(circle, ${secondary} 0%, transparent 70%)` }}
+      />
+
+      {/* Floating glass pill navbar */}
+      <div
+        className="relative mb-2 flex h-4 sm:h-5 items-center justify-between rounded-full px-2"
+        style={glass}
+      >
+        <div className="flex items-center gap-1">
+          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: primary }} />
+          <div className="h-1 w-8 sm:w-10 rounded-sm bg-stone-800/80" />
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="h-0.5 w-4 sm:w-5 rounded bg-stone-500/60" />
+          <div className="h-0.5 w-4 sm:w-5 rounded bg-stone-500/60" />
+          <div className="h-2.5 sm:h-3 w-7 sm:w-9 rounded-full bg-stone-900" />
+        </div>
+      </div>
+
+      {/* Hero: text + glass portrait */}
+      <div className="relative grid grid-cols-12 items-center gap-2">
+        <div className="col-span-8 flex flex-col gap-1">
+          <div
+            className="inline-flex w-fit items-center gap-1 rounded-full px-1.5 py-0.5 text-[6px] sm:text-[7px] font-bold tracking-wider uppercase"
+            style={{ background: "rgba(217,119,6,0.15)", color: primary }}
+          >
+            <span className="h-1 w-1 rounded-full" style={{ backgroundColor: primary }} />
+            Frosted glass
+          </div>
+          <div className="h-2 sm:h-2.5 w-24 sm:w-32 rounded-xs bg-stone-900" />
+          <div className="h-1 sm:h-1.5 w-16 sm:w-20 rounded-xs bg-stone-500/60" />
+          <div className="mt-1 flex items-center gap-1">
+            <div className="h-3 sm:h-4 w-12 sm:w-16 rounded-full bg-stone-900 flex items-center justify-center">
+              <div className="h-0.5 w-7 rounded-full bg-white/90" />
+            </div>
+            <div className="h-3 sm:h-4 w-9 sm:w-11 rounded-full" style={glass} />
+          </div>
+        </div>
+
+        <div className="col-span-4 flex justify-end">
+          <div
+            className="relative flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-2xl p-1"
+            style={glass}
+          >
+            <div
+              className="flex h-full w-full items-center justify-center rounded-xl text-[10px] sm:text-xs font-bold"
+              style={{ background: "rgba(217,119,6,0.18)", color: primary }}
+            >
+              G
+            </div>
+            <span
+              className="absolute -bottom-1 -left-2 h-3 w-6 sm:h-3.5 sm:w-8 rounded-full"
+              style={glass}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Glass stat strip */}
+      <div className="relative mt-2 grid grid-cols-3 gap-1">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="rounded-lg px-1 py-0.5 text-center" style={glass}>
+            <div className="mx-auto h-1.5 w-4 rounded-sm bg-stone-800/80" />
+            <div className="mx-auto mt-0.5 h-0.5 w-6 rounded bg-stone-500/50" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function GenericPreviewArt({ primary = "#4F46E5", secondary = "#818CF8", bg = "#F8FAFC" }) {
   return (
     <div
@@ -509,7 +606,27 @@ function getThemeMeta(theme) {
   const id = String(theme?.themeId || theme?.id || "").toLowerCase();
   const rawTitle = String(theme?.title || "").toLowerCase();
 
-  // 1. Luminary Elite (Theme 3)
+  // 0. Glass (Theme 6) - signature frosted palette: warm terracotta, frosted sage, and linen chalk
+  if (
+    id.includes("glass") ||
+    id.includes("theme6") ||
+    id.includes("theme_6") ||
+    rawTitle.includes("glass") ||
+    rawTitle.includes("theme 6")
+  ) {
+    return {
+      type: "glass",
+      displayTitle: theme?.title && !theme.title.toLowerCase().includes("theme 6") ? theme.title : "Glass Theme",
+      displayDescription: theme?.description || "iOS-style frosted glass with soft ambient colour, floating translucent panels, and a light/dark mode toggle.",
+      primaryColor: "#b45309",
+      secondaryColor: "#54a880",
+      backgroundColor: "#ebe4d8",
+      styleTag: "FROSTED",
+      tagClasses: "bg-orange-500/15 text-orange-700 dark:text-orange-300 border border-orange-500/30",
+    };
+  }
+
+  // 1. Luminary Elite (Theme 3) - signature luxury gold & obsidian midnight palette
   if (
     id.includes("luminary") ||
     id.includes("elite") ||
@@ -523,15 +640,15 @@ function getThemeMeta(theme) {
       type: "luminary",
       displayTitle: theme?.title && !theme.title.toLowerCase().includes("theme 3") ? theme.title : "Luminary Elite",
       displayDescription: theme?.description || "Haute-couture dark & gold aesthetic with heraldic crests, ambient radial glows, and luxury pedigree showcases.",
-      primaryColor: theme?.primaryColor && theme.primaryColor !== "#4F46E5" ? theme.primaryColor : "#d97706",
-      secondaryColor: theme?.secondaryColor && theme.secondaryColor !== "#818CF8" ? theme.secondaryColor : "#fbbf24",
-      backgroundColor: theme?.backgroundColor && theme.backgroundColor !== "#F8FAFC" ? theme.backgroundColor : "#090d16",
+      primaryColor: "#d97706",
+      secondaryColor: "#fbbf24",
+      backgroundColor: "#090d16",
       styleTag: "PAID EXCLUSIVE",
       tagClasses: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30",
     };
   }
 
-  // 2. Aurora (Theme 4)
+  // 2. Aurora (Theme 4) - signature cosmic violet & electric lime palette
   if (
     id.includes("aurora") ||
     id.includes("theme4") ||
@@ -543,15 +660,15 @@ function getThemeMeta(theme) {
       type: "aurora",
       displayTitle: theme?.title && !theme.title.toLowerCase().includes("theme 4") ? theme.title : "Aurora",
       displayDescription: theme?.description || "Atmospheric cosmic dark canvas with violet glows, organic planetary orbits, and electric lime accents.",
-      primaryColor: theme?.primaryColor && theme.primaryColor !== "#4F46E5" ? theme.primaryColor : "#c8fc78",
-      secondaryColor: theme?.secondaryColor && theme.secondaryColor !== "#818CF8" ? theme.secondaryColor : "#743de3",
-      backgroundColor: theme?.backgroundColor && theme.backgroundColor !== "#F8FAFC" ? theme.backgroundColor : "#111022",
+      primaryColor: "#c8fc78",
+      secondaryColor: "#743de3",
+      backgroundColor: "#111022",
       styleTag: "COSMIC",
       tagClasses: "bg-lime-500/15 text-lime-700 dark:text-lime-300 border border-lime-500/30",
     };
   }
 
-  // 3. Motion Studio (Theme 5)
+  // 3. Motion Studio (Theme 5) - signature electric blue & neon marquee lime on studio black
   if (
     id.includes("motion") ||
     id.includes("studio") ||
@@ -565,37 +682,37 @@ function getThemeMeta(theme) {
       type: "motion_studio",
       displayTitle: theme?.title && !theme.title.toLowerCase().includes("theme 5") ? theme.title : "Motion Studio",
       displayDescription: theme?.description || "High-energy kinetic editorial layout with electric blue accents, marquee tickers, and bold studio motion.",
-      primaryColor: theme?.primaryColor && theme.primaryColor !== "#4F46E5" ? theme.primaryColor : "#414dff",
-      secondaryColor: theme?.secondaryColor && theme.secondaryColor !== "#818CF8" ? theme.secondaryColor : "#d6ff63",
-      backgroundColor: theme?.backgroundColor && theme.backgroundColor !== "#F8FAFC" ? theme.backgroundColor : "#101116",
+      primaryColor: "#414dff",
+      secondaryColor: "#d6ff63",
+      backgroundColor: "#101116",
       styleTag: "KINETIC",
       tagClasses: "bg-blue-600/15 text-blue-700 dark:text-blue-300 border border-blue-500/30",
     };
   }
 
-  // 4. Modern Minimal
+  // 4. Modern Minimal - signature crisp monochrome & studio emerald
   if (id.includes("minimal") || rawTitle.includes("minimal") || id.includes("modern")) {
     return {
       type: "minimal",
       displayTitle: theme?.title || "Modern Minimal",
       displayDescription: theme?.description || "Clean, content-first Swiss layout with subtle borders, refined monospace accents, and breathable whitespace.",
-      primaryColor: theme?.primaryColor && theme.primaryColor !== "#4F46E5" ? theme.primaryColor : "#0f172a",
-      secondaryColor: theme?.secondaryColor && theme.secondaryColor !== "#818CF8" ? theme.secondaryColor : "#10b981",
-      backgroundColor: theme?.backgroundColor && theme.backgroundColor !== "#F8FAFC" ? theme.backgroundColor : "#ffffff",
+      primaryColor: "#0f172a",
+      secondaryColor: "#10b981",
+      backgroundColor: "#ffffff",
       styleTag: "MODERN",
       tagClasses: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30",
     };
   }
 
-  // 5. Classic Academic
+  // 5. Classic Academic - signature university royal navy & cobalt
   if (id.includes("classic") || rawTitle.includes("classic") || rawTitle.includes("academic")) {
     return {
       type: "classic",
       displayTitle: theme?.title || "Classic Academic",
       displayDescription: theme?.description || "Traditional university-grade structure with prominent credential badges, syllabus highlights, and trusted blue accents.",
-      primaryColor: theme?.primaryColor && theme.primaryColor !== "#4F46E5" ? theme.primaryColor : "#1e40af",
-      secondaryColor: theme?.secondaryColor && theme.secondaryColor !== "#818CF8" ? theme.secondaryColor : "#3b82f6",
-      backgroundColor: theme?.backgroundColor && theme.backgroundColor !== "#F8FAFC" ? theme.backgroundColor : "#f8fafc",
+      primaryColor: "#1e40af",
+      secondaryColor: "#3b82f6",
+      backgroundColor: "#f8fafc",
       styleTag: "ACADEMIC",
       tagClasses: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30",
     };
@@ -640,6 +757,8 @@ function ThemePreviewMini({ theme, userId, userPlan, isSelected, onApply, disabl
           <AuroraPreviewArt primary={p} secondary={s} bg={bg} />
         ) : meta.type === "motion_studio" ? (
           <MotionStudioPreviewArt primary={p} secondary={s} bg={bg} />
+        ) : meta.type === "glass" ? (
+          <GlassPreviewArt primary={p} secondary={s} bg={bg} />
         ) : (
           <GenericPreviewArt primary={p} secondary={s} bg={bg} />
         )}
@@ -755,10 +874,13 @@ export default function Website() {
     try {
       const themesRes = await api.get("/themes", { params: { userId } });
       const themesData = checkApiResponse(themesRes, "Unable to fetch themes.");
-      const rawThemes = themesData?.themes || [];
+      const rawThemes = (themesData?.themes || []).map((t) => ({
+        ...t,
+        themeId: t.themeId || t.id,
+      }));
       const themes = [...rawThemes];
 
-      // Ensure all 5 themes are always available (Classic Academic, Modern Minimal, Luminary Elite, Aurora, and Motion Studio)
+      // Ensure all 6 themes are always available (Classic Academic, Modern Minimal, Luminary Elite, Aurora, Motion Studio, and Glass)
       const DEFAULT_THEMES_FALLBACK = [
         {
           themeId: "classic",
@@ -768,7 +890,7 @@ export default function Website() {
           secondaryColor: "#3b82f6",
           backgroundColor: "#f8fafc",
           planAvailability: ["free", "pro", "elite"],
-          previewUrl: "/themes/preview/classic",
+          previewUrl: "/theme-preview/classic",
         },
         {
           themeId: "minimal",
@@ -778,7 +900,7 @@ export default function Website() {
           secondaryColor: "#10b981",
           backgroundColor: "#ffffff",
           planAvailability: ["free", "pro", "elite"],
-          previewUrl: "/themes/preview/minimal",
+          previewUrl: "/theme-preview/minimal",
         },
         {
           themeId: "luminary_elite",
@@ -788,7 +910,7 @@ export default function Website() {
           secondaryColor: "#fbbf24",
           backgroundColor: "#090d16",
           planAvailability: ["pro", "elite"],
-          previewUrl: "/themes/preview/luminary_elite",
+          previewUrl: "/theme-preview/luminary_elite",
         },
         {
           themeId: "aurora",
@@ -798,7 +920,7 @@ export default function Website() {
           secondaryColor: "#743de3",
           backgroundColor: "#111022",
           planAvailability: ["pro", "elite"],
-          previewUrl: "/themes/preview/aurora",
+          previewUrl: "/theme-preview/aurora",
         },
         {
           themeId: "motion_studio",
@@ -808,18 +930,29 @@ export default function Website() {
           secondaryColor: "#d6ff63",
           backgroundColor: "#101116",
           planAvailability: ["pro", "elite"],
-          previewUrl: "/themes/preview/motion_studio",
+          previewUrl: "/theme-preview/motion_studio",
+        },
+        {
+          themeId: "glass",
+          title: "Glass Theme",
+          description: "iOS-style frosted glass with soft ambient colour, floating translucent panels, and a light/dark mode toggle.",
+          primaryColor: "#b45309",
+          secondaryColor: "#54a880",
+          backgroundColor: "#ebe4d8",
+          planAvailability: ["pro", "elite"],
+          previewUrl: "/theme-preview/glass",
         },
       ];
 
       DEFAULT_THEMES_FALLBACK.forEach((fallback) => {
         const isPresent = themes.some((t) => {
-          const id = String(t.themeId || "").toLowerCase();
+          const id = String(t.themeId || t.id || "").toLowerCase();
           return (
             id === fallback.themeId ||
             (fallback.themeId === "luminary_elite" && (id === "theme_3" || id === "theme3" || id === "elite" || id === "vibrant_slate" || id === "bold_educator")) ||
             (fallback.themeId === "aurora" && (id === "theme4" || id === "theme_4")) ||
-            (fallback.themeId === "motion_studio" && (id === "theme5" || id === "theme_5"))
+            (fallback.themeId === "motion_studio" && (id === "theme5" || id === "theme_5")) ||
+            (fallback.themeId === "glass" && (id === "theme6" || id === "theme_6" || id === "glass"))
           );
         });
         if (!isPresent) {
@@ -830,7 +963,9 @@ export default function Website() {
       setAvailableThemes(themes);
       setActiveThemeId(
         themes.find((theme) => theme.isSelected)?.themeId ||
-          themesData?.selectedThemeId || "",
+          themes.find((theme) => theme.isSelected)?.id ||
+          themesData?.selectedThemeId ||
+          themesData?.themeId || "",
       );
       setUserPlan(themesData?.userPlan || "free");
       const verified = themesData?.isEmailVerified;
@@ -853,8 +988,8 @@ export default function Website() {
 
   /* Apply theme */
   const handleApplyTheme = async (themeId) => {
-    const targetTheme = availableThemes.find((theme) => theme.themeId === themeId);
-    if (!userId || saving || emailVerified !== true || themeId === activeThemeId || !targetTheme ||
+    const targetTheme = availableThemes.find((theme) => (theme.themeId || theme.id) === themeId);
+    if (!userId || saving || emailVerified !== true || (activeThemeId && (themeId === activeThemeId || targetTheme?.themeId === activeThemeId)) || !targetTheme ||
         targetTheme.isPlanAllowed === false) return;
     setSaving(true);
     setError("");
@@ -862,10 +997,10 @@ export default function Website() {
     try {
       const res = await api.post("/themes/select", {
         userId: Number(userId),
-        themeId: targetTheme.themeId,
+        themeId: targetTheme.themeId || targetTheme.id || themeId,
       });
       const selected = checkApiResponse(res, "Unable to select theme.");
-      setActiveThemeId(selected?.themeId || targetTheme.themeId);
+      setActiveThemeId(selected?.themeId || selected?.id || targetTheme.themeId || targetTheme.id || themeId);
       setSuccess(
         `Theme "${selected?.theme?.title || targetTheme.title}" applied! Your website now uses this look.`,
       );
