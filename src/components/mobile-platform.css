@@ -222,9 +222,15 @@
     width: 40px;
     height: 22px;
     border-radius: 24px;
-    background: var(--tf-line);
+    background: #cbd5e1;
+    transition: background-color 0.2s ease;
   }
-  .tf-mobile-platform .mobile-page button[role="switch"][aria-checked="true"]::before { background-color: var(--tf-blue) !important; }
+  [data-theme="dark"] .tf-mobile-platform .mobile-page button[role="switch"]::before {
+    background: #475569;
+  }
+  .tf-mobile-platform .mobile-page button[role="switch"][aria-checked="true"]::before {
+    background-color: var(--tf-blue, #2563eb) !important;
+  }
   .tf-mobile-platform .mobile-page button[role="switch"] > span {
     position: absolute;
     left: 7px;
@@ -232,8 +238,13 @@
     width: 18px;
     height: 18px;
     transform: translateX(0);
+    translate: none !important;
+    transition: transform 0.2s ease;
   }
-  .tf-mobile-platform .mobile-page button[role="switch"][aria-checked="true"] > span { transform: translateX(16px); }
+  .tf-mobile-platform .mobile-page button[role="switch"][aria-checked="true"] > span {
+    transform: translateX(16px);
+    translate: none !important;
+  }
 
   .tf-mobile-platform .mobile-conversations .mobile-heading > div:last-child {
     grid-column: 1 / -1;

@@ -61,8 +61,9 @@ const pageStyles = {
   tags: "mt-3 flex flex-wrap gap-[6px]",
   tag: "rounded-full bg-tf-sky px-3 py-1.5 text-xs font-medium text-tf-blue",
   cardFooter: "mobile-card-footer mt-auto flex flex-wrap items-center gap-2 border-t border-tf-line pt-4",
-  visibilityToggle: "relative inline-flex h-6 w-10 shrink-0 items-center rounded-full bg-slate-300 p-[3px] focus-visible:outline-2 focus-visible:outline-[var(--tf-blue)] disabled:opacity-50",
-  visibilityToggleOn: "bg-[var(--tf-blue)]",
+  visibilityToggle: "relative inline-flex h-6 w-10 shrink-0 cursor-pointer items-center rounded-full p-[3px] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed",
+  visibilityToggleOn: "bg-blue-600",
+  visibilityToggleOff: "bg-slate-300 dark:bg-slate-600",
   empty: "rounded-[13px] border border-dashed border-[var(--tf-line)] bg-[var(--tf-surface)] px-5 py-[42px] text-center text-[var(--tf-copy)] [[data-theme=dark]_&]:bg-[var(--tf-surface)]",
   emptyIcon: "mx-auto grid h-[58px] w-[58px] place-items-center rounded-2xl bg-[var(--tf-sky)] text-[var(--tf-blue)] [[data-theme=dark]_&]:bg-[var(--tf-sky)]",
   emptyTitle: "tf-section-title mt-3 mb-1",
@@ -1418,9 +1419,9 @@ function Achievements() {
                       role="switch"
                       aria-checked={visible}
                       aria-label={`Visible on website: ${achievement.title}`}
-                      className={`${pageStyles.visibilityToggle} ${visible ? pageStyles.visibilityToggleOn : ""}`}
+                      className={`${pageStyles.visibilityToggle} ${visible ? pageStyles.visibilityToggleOn : pageStyles.visibilityToggleOff}`}
                     >
-                      <span aria-hidden="true" className={`achievement-switch-thumb h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-transform ${visible ? "translate-x-4" : "translate-x-0"}`} />
+                      <span aria-hidden="true" className={`h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-transform max-[760px]:translate-none ${visible ? "translate-x-4" : "translate-x-0"}`} />
                     </button>
                     <span className="achievement-visibility-label mr-auto text-xs text-tf-copy">{visibilityId === achievement.achievementId ? "Updating..." : visible ? "Visible on website" : "Hidden from website"}</span>
 
