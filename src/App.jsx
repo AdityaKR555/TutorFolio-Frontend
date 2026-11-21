@@ -1,5 +1,7 @@
-import React from "react";
-import { Route, Routes } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useWebsiteHost } from "./utils/websiteHostContext";
+import { getTutorWebsiteUrl } from "./utils/websiteUrls";
+import { Route, Routes, useParams, useLocation } from "react-router-dom";
 
 import Home from "./Home";
 import AdminApp from "./admin/AdminApp";
@@ -54,7 +56,25 @@ function ComingSoon({ title }) {
   );
 }
 
+function LegacyTutorRedirect() {
+  const { username, section } = useParams();
+  const location = useLocation();
+  const target = getTutorWebsiteUrl(username);
+  useEffect(() => {
+    if (target) window.location.replace(`${target}${section ? `/${encodeURIComponent(section)}` : '/'}${location.search}${location.hash}`);
+  }, [target, section, location.search, location.hash]);
+  return <p className="p-8">{target ? 'Opening tutor website…' : 'Tutor website not found.'}</p>;
+}
+
 function App() {
+  const websiteHost = useWebsiteHost();
+  if (websiteHost.kind === 'tutor') return <div><Routes>
+    <Route path="/" element={<PublicTutorWebsite hostUsername={websiteHost.username} />} />
+    <Route path="/:section" element={<PublicTutorWebsite hostUsername={websiteHost.username} />} />
+    <Route path="/tutor/:username" element={<LegacyTutorRedirect />} />
+    <Route path="/tutor/:username/:section" element={<LegacyTutorRedirect />} />
+    <Route path="*" element={<p className="p-8">Page not found.</p>} />
+  </Routes><BackToTop /></div>;
   return (
     <div>
       <Routes>
@@ -127,8 +147,8 @@ function App() {
         {/* Public tutor website */}
         <Route path="/theme-preview/:previewThemeId/:previewUserId" element={<PublicTutorWebsite />} />
         <Route path="/theme-preview/:previewThemeId/:previewUserId/:section" element={<PublicTutorWebsite />} />
-        <Route path="/tutor/:username" element={<PublicTutorWebsite />} />
-        <Route path="/tutor/:username/:section" element={<PublicTutorWebsite />} />
+        <Route path="/tutor/:username" element={<LegacyTutorRedirect />} />
+        <Route path="/tutor/:username/:section" element={<LegacyTutorRedirect />} />
       </Routes>
       <BackToTop />
     </div>

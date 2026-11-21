@@ -1,3 +1,6 @@
+import { socialBrandColors } from "../../components/socialBrandPaths";
+import { Share2 } from "lucide-react";
+import SocialIcon from "../../components/SocialIcon";
 import { CONTACT_NUMBERS, contactNumber, contactIconSettings } from "../../utils/contactIcons";
 import PlatformLoader from "../../components/PlatformLoader";
 import React, { useEffect, useRef, useState } from "react";
@@ -17,13 +20,13 @@ const initialSocialLinks = {
 };
 
 const socialPlatforms = [
-  { key: "facebook", label: "Facebook", mark: "f" },
-  { key: "instagram", label: "Instagram", mark: "◎" },
-  { key: "whatsapp", label: "WhatsApp", mark: "◉" },
-  { key: "telegram", label: "Telegram", mark: "➤" },
-  { key: "linkedin", label: "LinkedIn", mark: "in" },
-  { key: "youtube", label: "YouTube", mark: "▶" },
-  { key: "x", label: "X profile", mark: "𝕏" },
+  { key: "facebook", label: "Facebook" },
+  { key: "instagram", label: "Instagram" },
+  { key: "whatsapp", label: "WhatsApp" },
+  { key: "telegram", label: "Telegram" },
+  { key: "linkedin", label: "LinkedIn" },
+  { key: "youtube", label: "YouTube" },
+  { key: "x", label: "X profile" },
 ];
 
 function getSafeProfileUrl(value) {
@@ -1067,14 +1070,14 @@ function Profile() {
 
           <section className="tf-card min-w-0 p-5 shadow-sm max-[560px]:p-4">
             <div className="mb-[19px] flex items-start gap-3 [&_h2]:mt-0 [&_h2]:mb-[3px] [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_h2]:text-[var(--tf-ink)] [&_p]:m-0 [&_p]:text-[11px] [&_p]:text-[var(--tf-muted)]">
-              <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] bg-[var(--tf-sky)] text-[17px] font-bold text-[var(--tf-blue)]" aria-hidden="true">◎</span>
+              <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] bg-[var(--tf-sky)] text-[17px] font-bold text-[var(--tf-blue)]" aria-hidden="true"><Share2 className="h-4 w-4" /></span>
               <div><h2>Social profiles</h2><p>Help students connect with your teaching community.</p></div>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-[14px] [&>div]:grid [&>div]:min-w-0 [&>div]:content-start [&>div]:gap-1.5 max-[560px]:grid-cols-1">
-              {socialPlatforms.map(({ key, label, mark }) => (
+              {socialPlatforms.map(({ key, label }) => (
                 <div key={key}>
                   <label className={labelClass} htmlFor={`social-${key}`}>
-                    <span className={`inline-grid h-6 w-6 shrink-0 place-items-center rounded-[7px] bg-[var(--tf-sky)] text-xs font-bold text-[var(--tf-blue)] ${key === "facebook" ? "text-[#1877f2]" : key === "instagram" ? "text-[#c13584]" : key === "whatsapp" ? "text-[#128c7e]" : key === "telegram" ? "text-[#229ed9]" : key === "linkedin" ? "text-[#0a66c2]" : key === "youtube" ? "text-[#e62117]" : "text-[var(--tf-ink)]"}`}>{mark}</span>{label}
+                    <span className={`inline-grid h-6 w-6 shrink-0 place-items-center rounded-[7px] bg-[var(--tf-sky)] text-xs font-bold text-[var(--tf-blue)] ${key === "facebook" ? "text-[#1877f2]" : key === "instagram" ? "text-[#c13584]" : key === "whatsapp" ? "text-[#128c7e]" : key === "telegram" ? "text-[#229ed9]" : key === "linkedin" ? "text-[#0a66c2]" : key === "youtube" ? "text-[#e62117]" : "text-[var(--tf-ink)]"}`}><SocialIcon platform={key} className="h-4 w-4" style={{ color: socialBrandColors[key] }} /></span>{label}
                   </label>
                   <input
                     id={`social-${key}`}
@@ -1193,9 +1196,9 @@ function Profile() {
 
               <ProfileViewSection title="Social profiles" subtitle="Your public social links.">
                 <div className="flex flex-wrap gap-2">
-                  {socialPlatforms.filter(({ key }) => socialLinks[key].trim()).map(({ key, label, mark }) => {
+                  {socialPlatforms.filter(({ key }) => socialLinks[key].trim()).map(({ key, label }) => {
                     const safeUrl = getSafeProfileUrl(socialLinks[key]);
-                    const content = <><span className={`inline-grid h-6 w-6 shrink-0 place-items-center rounded-[7px] bg-[var(--tf-sky)] text-xs font-bold text-[var(--tf-blue)] ${key === "facebook" ? "text-[#1877f2]" : key === "instagram" ? "text-[#c13584]" : key === "whatsapp" ? "text-[#128c7e]" : key === "telegram" ? "text-[#229ed9]" : key === "linkedin" ? "text-[#0a66c2]" : key === "youtube" ? "text-[#e62117]" : "text-[var(--tf-ink)]"}`}>{mark}</span>{label}</>;
+                    const content = <><span className={`inline-grid h-6 w-6 shrink-0 place-items-center rounded-[7px] bg-[var(--tf-sky)] text-xs font-bold text-[var(--tf-blue)] ${key === "facebook" ? "text-[#1877f2]" : key === "instagram" ? "text-[#c13584]" : key === "whatsapp" ? "text-[#128c7e]" : key === "telegram" ? "text-[#229ed9]" : key === "linkedin" ? "text-[#0a66c2]" : key === "youtube" ? "text-[#e62117]" : "text-[var(--tf-ink)]"}`}><SocialIcon platform={key} className="h-4 w-4" style={{ color: socialBrandColors[key] }} /></span>{label}</>;
                     return safeUrl ? (
                       <a key={key} className="inline-flex items-center gap-[7px] rounded-lg border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] px-[9px] py-1.5 text-[10px] text-[var(--tf-copy)] hover:text-[var(--tf-blue)] [&:where([data-theme=dark] *)]:bg-[var(--tf-surface-soft)]" href={safeUrl} target="_blank" rel="noreferrer">
                         {content}

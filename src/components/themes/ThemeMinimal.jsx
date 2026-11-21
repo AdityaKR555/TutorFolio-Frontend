@@ -1,3 +1,5 @@
+import SocialIcon from "../SocialIcon";
+import { getTutorNavigationBase } from "../../utils/websiteUrls";
 import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -796,14 +798,14 @@ function StatCard({ value, label, icon, accent = "indigo" }) {
 
 /* ─── Social Row ──────────────────────────────────────────────────────────── */
 const socialMeta = {
-  youtube: ["YouTube", "#ef4444", "▶"],
-  instagram: ["Instagram", "#db2777", "◎"],
-  facebook: ["Facebook", "#2563eb", "f"],
-  linkedin: ["LinkedIn", "#0284c7", "in"],
-  telegram: ["Telegram", "#0891b2", "➤"],
-  whatsapp: ["WhatsApp", "#059669", "◉"],
-  x: ["X", "#171717", "𝕏"],
-  twitter: ["X", "#171717", "𝕏"],
+  youtube: ["YouTube", "#ef4444"],
+  instagram: ["Instagram", "#db2777"],
+  facebook: ["Facebook", "#2563eb"],
+  linkedin: ["LinkedIn", "#0284c7"],
+  telegram: ["Telegram", "#0891b2"],
+  whatsapp: ["WhatsApp", "#059669"],
+  x: ["X", "#171717"],
+  twitter: ["X", "#171717"],
 };
 
 function SocialRow({ links }) {
@@ -811,7 +813,7 @@ function SocialRow({ links }) {
   return (
     <div className="flex flex-wrap items-center gap-2.5">
       {links.map(([key, url]) => {
-        const [label, color, mark] = socialMeta[key.toLowerCase()] || [key, "#737373", "↗"];
+        const [label, color] = socialMeta[key.toLowerCase()] || [key, "#737373"];
         return (
           <a
             key={key}
@@ -819,10 +821,11 @@ function SocialRow({ links }) {
             target="_blank"
             rel="noopener noreferrer"
             title={label}
+            aria-label={label}
             className="group flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200/80 bg-white font-bold text-sm text-neutral-800 shadow-2xs transition-all hover:-translate-y-0.5 hover:shadow-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
           >
-            <span style={{ color }} className="transition-transform group-hover:scale-110">
-              {mark}
+            <span style={{ color: ["x", "twitter"].includes(key.toLowerCase()) ? undefined : color }} className="transition-transform group-hover:scale-110">
+              <SocialIcon platform={key} className="h-5 w-5" />
             </span>
           </a>
         );
@@ -841,7 +844,7 @@ function FloatingContact({ profile }) {
       rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
       aria-label={action.actionLabel} title={action.actionLabel}
       className={`relative flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-500 ${action.type === "whatsapp" ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"}`}>
-      {action.type === "whatsapp" ? <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.4-.2-3 .8.8-2.9-.3-.5A8 8 0 1 1 12 20Zm4.4-5.8c-.2-.1-1.4-.7-1.6-.7s-.4-.1-.5.1l-.8 1c-.1.1-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.2-.3.2-.5.6-1 .1-.2.1-.3 0-.5L9.7 8.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.6.6-.9 1.3-.8 2.1 0 1.2.9 2.4 1 2.6.2.2 1.8 2.8 4.3 3.8 1.6.6 2.3.7 3.1.5.5-.1 1.4-.6 1.6-1.2.2-.6.2-1.1.1-1.2-.1-.2-.3-.3-.8-.5Z" /></svg> : <Icon name="phone" className="h-5 w-5" />}
+      {action.type === "whatsapp" ? <SocialIcon platform="whatsapp" className="h-6 w-6" /> : <Icon name="phone" className="h-5 w-5" />}
     </a>)}
   </aside>;
 }
@@ -1411,7 +1414,7 @@ function AboutPage({ name, profile, tuition, socialLinks, faqs, onContactClick, 
                 className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-300 transition hover:bg-emerald-500/20"
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
-                  <Icon name="message" className="h-4.5 w-4.5" />
+                  <SocialIcon platform="whatsapp" className="h-4.5 w-4.5" />
                 </span>
                 <div className="min-w-0">
                   <p className="text-[10px] text-emerald-400/80">WhatsApp</p>
@@ -1794,7 +1797,7 @@ export default function ThemeMinimal({
     [social]
   );
 
-  const basePath = previewBasePath || `/tutor/${encodeURIComponent(username)}`;
+  const basePath = previewBasePath || getTutorNavigationBase(username);
 
   /* Mobile navigation drawer state */
   const [mobileNavOpen, setMobileNavOpen] = useState(false);

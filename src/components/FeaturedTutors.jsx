@@ -1,3 +1,4 @@
+import { getTutorWebsiteUrl } from "../utils/websiteUrls";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -22,7 +23,7 @@ export default function FeaturedTutors() {
     return () => controller.abort();
   }, [attempt]);
 
-  const visibleTutors = tutors.filter(tutor => !failedPhotos.includes(tutor.username));
+  const visibleTutors = tutors.filter(tutor => !failedPhotos.includes(tutor.username) && getTutorWebsiteUrl(tutor.username));
 
   return <section id="meet-tutors" className="border-y border-tf-line bg-tf-surface-soft/60 px-5 py-20 sm:px-8 lg:py-24">
     <div className="mx-auto max-w-6xl">
@@ -35,7 +36,7 @@ export default function FeaturedTutors() {
         : !visibleTutors.length ? <div className="rounded-2xl border border-tf-line bg-white p-8 text-center"><p className="font-semibold text-tf-ink">Great teaching stories are on their way.</p><p className="mt-2 text-sm text-tf-copy">Create your profile and be among the first tutors featured here.</p></div>
         : <div className={`grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 ${visibleTutors.length <= 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}>{visibleTutors.map((tutor,index)=> {
           const name = [tutor.firstName,tutor.lastName].filter(Boolean).join(" ") || tutor.username;
-          return <Link data-reveal="card" key={tutor.username} to={`/tutor/${encodeURIComponent(tutor.username)}`} className="featured-tutor group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-tf-line bg-white transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600 motion-reduce:transform-none" style={{animationDelay:`${Math.min(index,7)*65}ms`, "--reveal-delay": `${Math.min(index, 5) * 100}ms`}}>
+          return <Link data-reveal="card" key={tutor.username} to={getTutorWebsiteUrl(tutor.username)} className="featured-tutor group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-tf-line bg-white transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600 motion-reduce:transform-none" style={{animationDelay:`${Math.min(index,7)*65}ms`, "--reveal-delay": `${Math.min(index, 5) * 100}ms`}}>
             <div className="aspect-[4/3] overflow-hidden bg-blue-50"><img src={tutor.profilePicture} alt={name} loading="lazy" onError={() => setFailedPhotos(current => current.includes(tutor.username) ? current : [...current, tutor.username])} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" /></div>
             <div className="flex flex-1 flex-col p-4"><h3 className="truncate text-base font-semibold text-tf-ink">{name}</h3><p className="mt-1 truncate text-xs text-blue-600">{tutor.tuitionName || "Independent tutor"}</p>{tutor.teachingSubjects && <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-tf-copy">{tutor.teachingSubjects}</p>}
               <p className="mt-3 truncate text-xs text-tf-muted">{[tutor.city,tutor.state].filter(Boolean).join(", ") || "Explore their teaching profile"}</p><span className="mt-auto pt-4 text-xs font-semibold text-blue-600">View profile <span aria-hidden="true">↗</span></span>

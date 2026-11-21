@@ -1,3 +1,5 @@
+import SocialIcon from "../SocialIcon";
+import { getTutorNavigationBase } from "../../utils/websiteUrls";
 import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -167,7 +169,7 @@ export default function ThemeFive({ profile = {}, tuition = {}, batches = [], ac
   const location = useLocation();
   const mainRef = useRef(null);
   const cursorRef = useRef(null);
-  const base = previewBasePath || `/tutor/${encodeURIComponent(username)}`;
+  const base = previewBasePath || getTutorNavigationBase(username);
   const href = (page) => page === "home" ? base : `${base}/${page}`;
   const name = [value(profile,["firstName","first_name"]),value(profile,["lastName","last_name"])].filter(Boolean).join(" ") || value(profile,["username"],"Tutor");
   const brand = value(tuition,["tuitionName","tuitionClassName"],name);
@@ -234,7 +236,7 @@ export default function ThemeFive({ profile = {}, tuition = {}, batches = [], ac
         rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
         className={`five-contact-icon ${action.type === "whatsapp" ? "is-whatsapp" : "is-phone"}`}
         aria-label={action.actionLabel} title={action.actionLabel}>
-        {action.type === "whatsapp" ? <svg aria-hidden="true" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M3 21l1.6-4.9A9 9 0 1 1 8 19.5L3 21Z" /><path d="M9 9c0 3 3 6 6 6l1.5-1.5-2-1-1 .8a4 4 0 0 1-2-2l.8-1-1-2L9 9Z" /></svg> : <Phone size={22} aria-hidden="true" />}
+        {action.type === "whatsapp" ? <SocialIcon platform="whatsapp" className="h-6 w-6" /> : <Phone size={22} aria-hidden="true" />}
       </a>)}
     </aside>}
     <footer className="five-footer"><Link to={base} className="five-brand"><TuitionLogo tuition={tuition} name={brand} className="five-logo" fallback={<span className="five-logo-fallback">{brand.charAt(0).toUpperCase()}</span>}/><span>{brand}</span></Link><nav aria-label="Footer navigation">{pages.map(([id,label]) => <Link key={id} to={href(id)}>{label}</Link>)}</nav><span>© {new Date().getFullYear()} {name}</span></footer></div>;

@@ -42,3 +42,21 @@ matching unsigned legacy URLs in API responses, including gallery, profile, batc
 and achievement fields. Signed URLs and other hosts/buckets remain unchanged.
 Restart Vite after changing these variables and rebuild/redeploy for production.
 This compatibility fix does not modify database values or bucket permissions.
+
+## Tutor website subdomains
+
+The frontend loads platform domains and reserved names from `GET /website/domains`.
+Tutor websites render at `username.<platform-domain>`; exact platform hosts open the
+platform app. All six themes keep navigation on the tutor host. Legacy
+`/tutor/username` links redirect in the browser on configured production hosts;
+local development uses `username.localhost:5173` as well. An unavailable registry
+blocks production host routing instead of guessing a tenant.
+
+Set an absolute `VITE_API_BASE_URL` for each deployment. The backend's
+`TUTOR_WEBSITE_DOMAINS` lists root domains and its `tuition.platform_subdomains`
+table controls reserved names and platform environments. Apply the backend's
+`local/db_changes_tutor_subdomains_21112026.md` before deployment, audit existing
+usernames, and provision wildcard DNS, frontend host routing and HTTPS for every
+environment, including nested tutor hosts. This change does not provision hosting.
+
+Run `node scripts/test-website-domains.mjs` for hostname and URL checks.

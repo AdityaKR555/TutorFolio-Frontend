@@ -1,3 +1,5 @@
+import SocialIcon from "../SocialIcon";
+import { getTutorNavigationBase } from "../../utils/websiteUrls";
 import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
@@ -26,7 +28,7 @@ function AchievementCard({ item }) {
 export default function ThemeAurora({ profile = {}, tuition = {}, achievements = [], batches = [], experience = [], faqs = [], gallery = [], username = "", previewBasePath, currentPage = "home", onContactClick }) {
   const contactActions = getContactActions(profile);
   const homeRef = useRef(null);
-  const base = previewBasePath || `/tutor/${encodeURIComponent(username)}`;
+  const base = previewBasePath || getTutorNavigationBase(username);
   const href = (page) => page === "home" ? base : `${base}/${page}`;
   const name = [get(profile, ["firstName", "first_name"]), get(profile, ["lastName", "last_name"])].filter(Boolean).join(" ") || get(profile, ["username"], "Tutor");
   const brand = get(tuition, ["tuitionName", "tuitionClassName"], name);
@@ -76,7 +78,7 @@ export default function ThemeAurora({ profile = {}, tuition = {}, achievements =
         rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
         className={`aurora-contact-icon ${action.type === "whatsapp" ? "is-whatsapp" : "is-phone"}`}
         aria-label={action.actionLabel} title={action.actionLabel}>
-        {action.type === "whatsapp" ? <svg aria-hidden="true" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M3 21l1.6-4.9A9 9 0 1 1 8 19.5L3 21Z" /><path d="M9 9c0 3 3 6 6 6l1.5-1.5-2-1-1 .8a4 4 0 0 1-2-2l.8-1-1-2L9 9Z" /></svg> : <Phone size={22} aria-hidden="true" />}
+        {action.type === "whatsapp" ? <SocialIcon platform="whatsapp" className="h-6 w-6" /> : <Phone size={22} aria-hidden="true" />}
       </a>)}
     </aside>}
     <footer className="aurora-footer"><div><Link className="aurora-brand" to={base}><TuitionLogo tuition={tuition} name={brand} className="h-10 w-10" fallback={<span className="aurora-brand-mark"><Sparkles size={19}/></span>}/>{brand}</Link><p>Making room for bright ideas and bigger possibilities.</p></div><div className="aurora-footer-links">{pages.slice(1,5).map(([id,label]) => <Link key={id} to={href(id)}>{label}</Link>)}</div></footer>

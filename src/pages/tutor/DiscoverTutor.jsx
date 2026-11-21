@@ -1,5 +1,5 @@
+import { getTutorWebsiteUrl } from "../../utils/websiteUrls";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import ExpandableText from "../../components/ExpandableText";
 
@@ -75,7 +75,6 @@ function InfoChip({ children }) {
 }
 
 export default function DiscoverTutors() {
-  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState(blankFilters);
   const [options, setOptions] = useState({ cities: [], districts: [], states: [], genders: ["Male", "Female", "Other"] });
@@ -398,7 +397,7 @@ export default function DiscoverTutors() {
                   {tutor.about && <ExpandableText lines={3} className="mt-2 text-sm leading-6 text-tf-copy">{tutor.about}</ExpandableText>}
                   <div className="mt-4 flex flex-wrap gap-2"><InfoChip>{tutor.qualification}</InfoChip><InfoChip>{tutor.teachingYOE !== null && tutor.teachingYOE !== undefined ? `${tutor.teachingYOE} yrs experience` : ""}</InfoChip><InfoChip>{tutor.averageRating !== null && tutor.averageRating !== undefined ? `★ ${Number(tutor.averageRating).toFixed(1)}` : ""}</InfoChip></div>
                   {subjects && <p className="mt-4 line-clamp-2 text-xs leading-5 text-tf-copy"><span className="font-semibold text-tf-copy">Subjects: </span>{subjects}</p>}
-                  <div className="mt-auto flex gap-2 pt-5"><button type="button" onClick={() => openTutorDetails(tutor)} className="flex-1 rounded-xl border border-blue-500/20 px-3 py-2.5 text-sm font-semibold text-tf-copy transition hover:bg-blue-500/10">Quick view</button><button type="button" onClick={() => tutor.username && navigate(`/tutor/${encodeURIComponent(tutor.username)}`)} disabled={!tutor.username} className={`${buttonClass} flex-1 px-3 py-2.5`}>Portfolio <span aria-hidden="true">↗</span></button></div>
+                  <div className="mt-auto flex gap-2 pt-5"><button type="button" onClick={() => openTutorDetails(tutor)} className="flex-1 rounded-xl border border-blue-500/20 px-3 py-2.5 text-sm font-semibold text-tf-copy transition hover:bg-blue-500/10">Quick view</button><button type="button" onClick={() => getTutorWebsiteUrl(tutor.username) && window.location.assign(getTutorWebsiteUrl(tutor.username))} disabled={!getTutorWebsiteUrl(tutor.username)} className={`${buttonClass} flex-1 px-3 py-2.5`}>Portfolio <span aria-hidden="true">↗</span></button></div>
                 </article>
               );
             })}
@@ -421,7 +420,7 @@ export default function DiscoverTutors() {
             <div className="mb-5 flex items-start justify-between gap-4"><div><p className="mb-1 text-xs font-semibold uppercase tracking-wider text-blue-400">Tutor preview</p><h2 id="tutor-quick-view-title" className="text-xl font-bold text-tf-ink">{getTutorName(selectedTutor)}</h2></div><button type="button" onClick={() => setSelectedTutor(null)} className="rounded-lg p-2 text-tf-copy hover:bg-blue-500/10 hover:text-tf-ink" aria-label="Close preview">✕</button></div>
             {detailLoading ? <div className="py-12 text-center text-sm text-tf-copy">Loading tutor profile…</div> : <><div className="flex items-center gap-4"><Avatar src={selectedTutor.profilePicture || selectedTutor.profile_picture || selectedTutor.profilepicture} name={getTutorName(selectedTutor)} size="h-16 w-16"/><div className="min-w-0"><p className="text-sm text-tf-copy">@{selectedTutor.username}</p><p className="mt-1 text-sm text-tf-copy">{getLocation(selectedTutor) || "Location not provided"}</p>{selectedTutor.tuitionName && <p className="mt-1 text-sm text-tf-blue">{selectedTutor.tuitionName}</p>}</div></div><div className="mt-5 grid grid-cols-2 gap-3">{[["Qualification", selectedTutor.qualification], ["Experience", selectedTutor.teachingYOE != null ? `${selectedTutor.teachingYOE} years` : "Not provided"], ["Rating", selectedTutor.averageRating != null ? `★ ${Number(selectedTutor.averageRating).toFixed(1)}` : "Not rated"], ["Reviews", selectedTutor.totalReviews ?? "No reviews yet"]].map(([label, value]) => <div key={label} className="rounded-xl border border-blue-500/10 bg-[var(--tf-bg)] p-3"><p className="text-xs text-tf-copy">{label}</p><p className="mt-1 text-sm font-semibold text-tf-ink">{value || "Not provided"}</p></div>)}</div>{selectedTutor.about && <div className="mt-5"><h3 className="mb-2 text-sm font-semibold text-tf-ink">About</h3><ExpandableText lines={5} className="text-sm leading-6 text-tf-copy" preserveWhitespace>{selectedTutor.about}</ExpandableText></div>}{selectedTutor.teachingSubjects && <div className="mt-4"><h3 className="mb-2 text-sm font-semibold text-tf-ink">Teaching subjects</h3><ExpandableText lines={3} className="text-sm text-tf-copy">{selectedTutor.teachingSubjects}</ExpandableText></div>}</>}
             {detailError && <p role="alert" className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-200">{detailError}</p>}
-            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end"><button type="button" onClick={() => setSelectedTutor(null)} className="rounded-xl border border-blue-500/20 px-4 py-2.5 text-sm font-semibold text-tf-copy hover:bg-blue-500/10">Close</button><button type="button" disabled={!selectedTutor.username} onClick={() => navigate(`/tutor/${encodeURIComponent(selectedTutor.username)}`)} className={buttonClass}>Open public website ↗</button></div>
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end"><button type="button" onClick={() => setSelectedTutor(null)} className="rounded-xl border border-blue-500/20 px-4 py-2.5 text-sm font-semibold text-tf-copy hover:bg-blue-500/10">Close</button><button type="button" disabled={!getTutorWebsiteUrl(selectedTutor.username)} onClick={() => window.location.assign(getTutorWebsiteUrl(selectedTutor.username))} className={buttonClass}>Open public website ↗</button></div>
           </section>
         </div>
       )}

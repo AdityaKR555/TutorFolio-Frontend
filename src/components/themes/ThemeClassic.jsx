@@ -1,3 +1,5 @@
+import SocialIcon from "../SocialIcon";
+import { getTutorNavigationBase } from "../../utils/websiteUrls";
 import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./classic-visuals.css";
@@ -226,22 +228,22 @@ function KpiIllustration({ type }) {
 }
 
 const socialDesign = {
-  youtube: ["YouTube", "#ef4444", "▶", "Watch & learn"],
-  instagram: ["Instagram", "#db2777", "◎", "Moments & inspiration"],
-  facebook: ["Facebook", "#2563eb", "f", "Join the community"],
-  linkedin: ["LinkedIn", "#0284c7", "in", "Connect professionally"],
-  telegram: ["Telegram", "#0891b2", "➤", "Stay in the loop"],
-  whatsapp: ["WhatsApp", "#059669", "◉", "Keep in touch"],
-  x: ["X", "#475569", "𝕏", "Follow the conversation"],
-  twitter: ["X / Twitter", "#475569", "𝕏", "Follow the conversation"],
+  youtube: ["YouTube", "#ef4444", "Watch & learn"],
+  instagram: ["Instagram", "#db2777", "Moments & inspiration"],
+  facebook: ["Facebook", "#2563eb", "Join the community"],
+  linkedin: ["LinkedIn", "#0284c7", "Connect professionally"],
+  telegram: ["Telegram", "#0891b2", "Stay in the loop"],
+  whatsapp: ["WhatsApp", "#059669", "Keep in touch"],
+  x: ["X", "#475569", "Follow the conversation"],
+  twitter: ["X / Twitter", "#475569", "Follow the conversation"],
 };
 function SocialSection({ links }) {
   if (!links.length) return null;
   return <section aria-labelledby="classic-social-heading" className="mt-10 rounded-3xl border border-sky-100 bg-white p-6 dark:border-slate-800 dark:bg-slate-900 sm:p-9">
     <h2 id="classic-social-heading" className="mb-6 text-3xl font-semibold tracking-tight">Let’s stay connected.</h2>
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{links.map(([key, url]) => {
-      const [label, color, mark, description] = socialDesign[key.toLowerCase()] || [key, "#0284c7", "↗", "Explore my channel"];
-      return <a key={key} href={url} target="_blank" rel="noopener noreferrer" style={{ "--social-color": color }} className="classic-social-card group relative flex min-w-0 items-center gap-4 overflow-hidden rounded-2xl border border-slate-200 p-5 transition hover:-translate-y-1 hover:shadow-md focus-visible:outline-2 focus-visible:outline-sky-600 dark:border-slate-700"><span aria-hidden="true" className="classic-social-orbit"/><span aria-hidden="true" className="relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-3xl font-bold text-white shadow-sm" style={{ background: color }}>{mark}</span><div className="relative min-w-0 flex-1"><h3 className="truncate text-lg font-semibold capitalize">{label}</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{description}</p></div><span className="relative text-slate-400"><Icon name="arrow" className="h-5 w-5 -rotate-45"/><span className="sr-only">Opens in a new tab</span></span></a>;
+      const [label, color, description] = socialDesign[key.toLowerCase()] || [key, "#0284c7", "Explore my channel"];
+      return <a key={key} href={url} target="_blank" rel="noopener noreferrer" style={{ "--social-color": color }} className="classic-social-card group relative flex min-w-0 items-center gap-4 overflow-hidden rounded-2xl border border-slate-200 p-5 transition hover:-translate-y-1 hover:shadow-md focus-visible:outline-2 focus-visible:outline-sky-600 dark:border-slate-700"><span aria-hidden="true" className="classic-social-orbit"/><span aria-hidden="true" className="relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-3xl font-bold text-white shadow-sm" style={{ background: color }}><SocialIcon platform={key} className="h-7 w-7" /></span><div className="relative min-w-0 flex-1"><h3 className="truncate text-lg font-semibold capitalize">{label}</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{description}</p></div><span className="relative text-slate-400"><Icon name="arrow" className="h-5 w-5 -rotate-45"/><span className="sr-only">Opens in a new tab</span></span></a>;
     })}</div>
   </section>;
 }
@@ -255,7 +257,7 @@ function FloatingContact({ profile }) {
       rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
       aria-label={action.actionLabel} title={action.actionLabel}
       className={`relative flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-600 ${action.type === "whatsapp" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-sky-700 hover:bg-sky-800"}`}>
-      {action.type === "whatsapp" ? <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.4-.2-3 .8.8-2.9-.3-.5A8 8 0 1 1 12 20Zm4.4-5.8c-.2-.1-1.4-.7-1.6-.7s-.4-.1-.5.1l-.8 1c-.1.1-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.2-.3.2-.5.6-1 .1-.2.1-.3 0-.5L9.7 8.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.6.6-.9 1.3-.8 2.1 0 1.2.9 2.4 1 2.6.2.2 1.8 2.8 4.3 3.8 1.6.6 2.3.7 3.1.5.5-.1 1.4-.6 1.6-1.2.2-.6.2-1.1.1-1.2-.1-.2-.3-.3-.8-.5Z" /></svg> : <Icon name="phone" className="h-5 w-5" />}
+      {action.type === "whatsapp" ? <SocialIcon platform="whatsapp" className="h-6 w-6" /> : <Icon name="phone" className="h-5 w-5" />}
     </a>)}
   </aside>;
 }
@@ -399,7 +401,7 @@ export default function ThemeClassic({ profile = {}, tuition = {}, achievements 
   const services = list(fd(tuition, ["services"]));
   const social = fd(profile, ["socialMedia"], {});
   const socialLinks = useMemo(() => Object.entries(social || {}).filter(([, value]) => typeof value === "string" && value.trim()).map(([label, value]) => [label, asUrl(value.trim())]).filter(([, url]) => { try { const parsed = new URL(url); return ["http:", "https:"].includes(parsed.protocol) && parsed.hostname.includes("."); } catch { return false; } }), [social]);
-  const basePath = previewBasePath || `/tutor/${encodeURIComponent(username)}`;
+  const basePath = previewBasePath || getTutorNavigationBase(username);
   const isDark = mode === "dark";
 
   let content;
@@ -426,7 +428,7 @@ export default function ThemeClassic({ profile = {}, tuition = {}, achievements 
         <div className="classic-footer-grid mx-auto grid max-w-[1600px] gap-7 px-5 py-8 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.1fr_1.25fr_1.2fr] lg:gap-8 lg:px-8">
           <Link to={basePath} className="classic-footer-brand flex min-w-0 items-start gap-3 text-slate-950 dark:text-white"><TuitionLogo tuition={tuition} name={fd(tuition, ["tuitionName", "tuitionClassName"], name)} className="h-9 w-9"/><span className="pt-0.5 text-xl font-bold tracking-tight">{fd(tuition, ["tuitionName", "tuitionClassName"], name)}</span></Link>
           <div className="classic-footer-explore lg:border-l lg:border-sky-100 lg:pl-7 dark:lg:border-slate-700"><h2 className="text-xs font-semibold text-slate-950 dark:text-white">Explore</h2><nav aria-label="Footer pages" className="mt-3"><ul className="m-0 flex list-none flex-col gap-2 p-0 text-xs">{pageLinks.filter((page) => page.id !== "home").map((page) => <li key={page.id}><Link to={`${basePath}/${page.id}`} className="inline-flex text-slate-600 transition hover:text-sky-700 dark:text-slate-300 dark:hover:text-sky-300">{page.label}</Link></li>)}</ul></nav></div>
-          <div className="min-w-0 lg:border-l lg:border-sky-100 lg:pl-7 dark:lg:border-slate-700"><h2 className="text-xs font-semibold text-slate-950 dark:text-white">Contact</h2><div className="mt-3 space-y-2 text-xs text-slate-600 dark:text-slate-300">{fd(profile, ["email"]) && <a className="flex items-center gap-2 break-all hover:text-sky-700 dark:hover:text-sky-300" href={`mailto:${profile.email}`}><Icon name="mail" className="h-4 w-4 shrink-0"/>{profile.email}</a>}{fd(profile, ["mobileNo", "mobile_no"]) && <a className="flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-300" href={`tel:${fd(profile, ["mobileNo", "mobile_no"])}`}><Icon name="phone" className="h-4 w-4 shrink-0"/>{fd(profile, ["mobileNo", "mobile_no"])}</a>}<Link to={`${basePath}/about#about-contact`} className="inline-flex items-center gap-2 font-semibold text-sky-700 dark:text-sky-300">Message the tutor<Icon name="arrow" className="h-3.5 w-3.5"/></Link></div></div>
+          <div className="min-w-0 lg:border-l lg:border-sky-100 lg:pl-7 dark:lg:border-slate-700"><h2 className="text-xs font-semibold text-slate-950 dark:text-white">Contact</h2><div className="mt-3 space-y-2 text-xs text-slate-600 dark:text-slate-300">{fd(profile, ["email"]) && <a className="flex items-center gap-2 break-all hover:text-sky-700 dark:hover:text-sky-300" href={`mailto:${profile.email}`}><Icon name="mail" className="h-4 w-4 shrink-0"/>{profile.email}</a>}{fd(profile, ["mobileNo", "mobile_no"]) && <a className="flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-300" href={`tel:${fd(profile, ["mobileNo", "mobile_no"])}`}><Icon name="phone" className="h-4 w-4 shrink-0"/>{fd(profile, ["mobileNo", "mobile_no"])}</a>}<button type="button" onClick={onContactClick} className="inline-flex items-center gap-2 font-semibold text-sky-700 dark:text-sky-300">Message the tutor<Icon name="arrow" className="h-3.5 w-3.5"/></button></div></div>
         </div><div className="border-t border-slate-100 px-5 py-4 dark:border-slate-800"><p className="mx-auto max-w-[1536px] text-xs text-slate-400">© {new Date().getFullYear()} {name}. All rights reserved.</p></div>
       </footer>
     </div>
