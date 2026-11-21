@@ -1,3 +1,8 @@
+import TuitionLogo from "./TuitionLogo";
+import { getWebsiteTitle } from "../../utils/websiteIdentity";
+import SocialIcon from "../SocialIcon";
+import { getTutorNavigationBase } from "../../utils/websiteUrls";
+import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./classic-visuals.css";
 import ClassicGallery from "./ClassicGallery";
@@ -40,7 +45,7 @@ function Icon({ name, className = "h-5 w-5" }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
 
-function AdaptiveNav({ basePath, currentPage }) {
+function AdaptiveNav({ basePath, currentPage, tuition, brand }) {
   const navRef = useRef(null);
   const measureRef = useRef(null);
   const menuRef = useRef(null);
@@ -103,7 +108,7 @@ function AdaptiveNav({ basePath, currentPage }) {
       {visiblePages.map((page) => <Link key={page.id} to={page.id === "home" ? basePath : `${basePath}/${page.id}`} aria-current={currentPage === page.id ? "page" : undefined} className={navClass(page)}>{page.label}</Link>)}
       {overflowPages.length > 0 && <div className="relative shrink-0" ref={menuRef}>
         <button type="button" aria-label="More pages" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)} className="flex h-9 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900"><Icon name="more"/></button>
-        {menuOpen && <div role="menu" aria-label="More pages" className="absolute right-0 top-full z-50 mt-2 min-w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-700 dark:bg-slate-900">{overflowPages.map((page) => <Link key={page.id} role="menuitem" to={page.id === "home" ? basePath : `${basePath}/${page.id}`} onClick={() => setMenuOpen(false)} className={`block rounded-lg px-3 py-2.5 text-sm ${currentPage === page.id ? "bg-sky-100 font-semibold text-sky-900 dark:bg-sky-950 dark:text-sky-100" : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"}`}>{page.label}</Link>)}</div>}
+        {menuOpen && <div role="menu" aria-label="More pages" className="absolute right-0 top-full z-50 mt-2 min-w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-700 dark:bg-slate-900"><Link to={basePath} onClick={() => setMenuOpen(false)} className="mb-1 flex items-center gap-2 border-b border-slate-200 px-3 py-3 dark:border-slate-700"><TuitionLogo tuition={tuition} name={brand} className="h-8 w-8"/><span className="min-w-0 break-words font-semibold">{brand}</span></Link>{overflowPages.map((page) => <Link key={page.id} role="menuitem" to={page.id === "home" ? basePath : `${basePath}/${page.id}`} onClick={() => setMenuOpen(false)} className={`block rounded-lg px-3 py-2.5 text-sm ${currentPage === page.id ? "bg-sky-100 font-semibold text-sky-900 dark:bg-sky-950 dark:text-sky-100" : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"}`}>{page.label}</Link>)}</div>}
       </div>}
     </nav>
     <div ref={measureRef} aria-hidden="true" className="pointer-events-none fixed -left-[10000px] top-0 -z-10 flex w-max gap-1 whitespace-nowrap opacity-0">{pageLinks.map((page) => <span key={page.id} className={navClass("")}>{page.label}</span>)}</div>
@@ -116,14 +121,7 @@ function Avatar({ src, name, className = "" }) {
   return <div aria-label={name} className={`flex items-center justify-center bg-sky-100 font-semibold text-sky-800 dark:bg-sky-900 dark:text-sky-200 ${className}`}>{name?.trim()?.[0]?.toUpperCase() || "T"}</div>;
 }
 
-function TuitionLogo({ tuition, name, className = "h-9 w-9" }) {
-  const src = fd(tuition, ["logo", "logoUrl", "logo_url", "tuitionLogo", "tuition_logo"]);
-  const [failedSrc, setFailedSrc] = useState("");
-  if (src && failedSrc !== src) {
-    return <img src={src} alt={`${name || "Tuition"} logo`} onError={() => setFailedSrc(src)} className={`${className} shrink-0 rounded-lg border border-sky-100 bg-white object-contain p-0.5 dark:border-slate-700 dark:bg-slate-900`} />;
-  }
-  return <span aria-hidden="true" className={`flex ${className} shrink-0 items-center justify-center rounded-lg bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-100`}><Icon name="book" className="h-5 w-5" /></span>;
-}
+
 
 function PageHeading({ title, description }) {
   return <div className="mb-10 max-w-3xl"><h1 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">{title}</h1>{description && <p className="mt-3 text-base leading-7 text-slate-600 dark:text-slate-300">{description}</p>}</div>;
@@ -225,35 +223,37 @@ function KpiIllustration({ type }) {
 }
 
 const socialDesign = {
-  youtube: ["YouTube", "#ef4444", "▶", "Watch & learn"],
-  instagram: ["Instagram", "#db2777", "◎", "Moments & inspiration"],
-  facebook: ["Facebook", "#2563eb", "f", "Join the community"],
-  linkedin: ["LinkedIn", "#0284c7", "in", "Connect professionally"],
-  telegram: ["Telegram", "#0891b2", "➤", "Stay in the loop"],
-  whatsapp: ["WhatsApp", "#059669", "◉", "Keep in touch"],
-  x: ["X", "#475569", "𝕏", "Follow the conversation"],
-  twitter: ["X / Twitter", "#475569", "𝕏", "Follow the conversation"],
+  youtube: ["YouTube", "#ef4444", "Watch & learn"],
+  instagram: ["Instagram", "#db2777", "Moments & inspiration"],
+  facebook: ["Facebook", "#2563eb", "Join the community"],
+  linkedin: ["LinkedIn", "#0284c7", "Connect professionally"],
+  telegram: ["Telegram", "#0891b2", "Stay in the loop"],
+  whatsapp: ["WhatsApp", "#059669", "Keep in touch"],
+  x: ["X", "#475569", "Follow the conversation"],
+  twitter: ["X / Twitter", "#475569", "Follow the conversation"],
 };
 function SocialSection({ links }) {
   if (!links.length) return null;
   return <section aria-labelledby="classic-social-heading" className="mt-10 rounded-3xl border border-sky-100 bg-white p-6 dark:border-slate-800 dark:bg-slate-900 sm:p-9">
     <h2 id="classic-social-heading" className="mb-6 text-3xl font-semibold tracking-tight">Let’s stay connected.</h2>
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{links.map(([key, url]) => {
-      const [label, color, mark, description] = socialDesign[key.toLowerCase()] || [key, "#0284c7", "↗", "Explore my channel"];
-      return <a key={key} href={url} target="_blank" rel="noopener noreferrer" style={{ "--social-color": color }} className="classic-social-card group relative flex min-w-0 items-center gap-4 overflow-hidden rounded-2xl border border-slate-200 p-5 transition hover:-translate-y-1 hover:shadow-md focus-visible:outline-2 focus-visible:outline-sky-600 dark:border-slate-700"><span aria-hidden="true" className="classic-social-orbit"/><span aria-hidden="true" className="relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-3xl font-bold text-white shadow-sm" style={{ background: color }}>{mark}</span><div className="relative min-w-0 flex-1"><h3 className="truncate text-lg font-semibold capitalize">{label}</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{description}</p></div><span className="relative text-slate-400"><Icon name="arrow" className="h-5 w-5 -rotate-45"/><span className="sr-only">Opens in a new tab</span></span></a>;
+      const [label, color, description] = socialDesign[key.toLowerCase()] || [key, "#0284c7", "Explore my channel"];
+      return <a key={key} href={url} target="_blank" rel="noopener noreferrer" style={{ "--social-color": color }} className="classic-social-card group relative flex min-w-0 items-center gap-4 overflow-hidden rounded-2xl border border-slate-200 p-5 transition hover:-translate-y-1 hover:shadow-md focus-visible:outline-2 focus-visible:outline-sky-600 dark:border-slate-700"><span aria-hidden="true" className="classic-social-orbit"/><span aria-hidden="true" className="relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-3xl font-bold text-white shadow-sm" style={{ background: color }}><SocialIcon platform={key} className="h-7 w-7" /></span><div className="relative min-w-0 flex-1"><h3 className="truncate text-lg font-semibold capitalize">{label}</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{description}</p></div><span className="relative text-slate-400"><Icon name="arrow" className="h-5 w-5 -rotate-45"/><span className="sr-only">Opens in a new tab</span></span></a>;
     })}</div>
   </section>;
 }
 
-function FloatingContact({ profile, socialLinks }) {
-  const phone = String(fd(profile, ["mobileNo", "mobile_no"])).trim().replace(/[^+\d]/g, "");
-  const whatsappNumber = String(fd(profile, ["whatsappNo", "whatsapp_no"])).replace(/\D/g, "");
-  const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber}` : socialLinks.find(([key]) => key.toLowerCase() === "whatsapp")?.[1];
-  if (!phone && !whatsappUrl) return null;
-  const buttonClass = "flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-600";
+function FloatingContact({ profile }) {
+  const actions = getContactActions(profile);
+  if (!actions.length) return null;
   return <aside aria-label="Contact tutor" className="fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 flex flex-col gap-3 sm:right-6">
-    {whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="Contact tutor on WhatsApp (opens in a new tab)" title="WhatsApp tutor" className={`${buttonClass} bg-emerald-600 hover:bg-emerald-700`}><svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.4-.2-3 .8.8-2.9-.3-.5A8 8 0 1 1 12 20Zm4.4-5.8c-.2-.1-1.4-.7-1.6-.7s-.4-.1-.5.1l-.8 1c-.1.1-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.2-.3.2-.5.6-1 .1-.2.1-.3 0-.5L9.7 8.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.6.6-.9 1.3-.8 2.1 0 1.2.9 2.4 1 2.6.2.2 1.8 2.8 4.3 3.8 1.6.6 2.3.7 3.1.5.5-.1 1.4-.6 1.6-1.2.2-.6.2-1.1.1-1.2-.1-.2-.3-.3-.8-.5Z"/></svg></a>}
-    {phone && <a href={`tel:${phone}`} aria-label="Call tutor" title="Call tutor" className={`${buttonClass} bg-sky-700 hover:bg-sky-800`}><Icon name="phone" className="h-6 w-6"/></a>}
+    {actions.map((action) => <a key={action.field} href={action.href}
+      target={action.type === "whatsapp" ? "_blank" : undefined}
+      rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
+      aria-label={action.actionLabel} title={action.actionLabel}
+      className={`relative flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-600 ${action.type === "whatsapp" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-sky-700 hover:bg-sky-800"}`}>
+      {action.type === "whatsapp" ? <SocialIcon platform="whatsapp" className="h-6 w-6" /> : <Icon name="phone" className="h-5 w-5" />}
+    </a>)}
   </aside>;
 }
 
@@ -267,7 +267,7 @@ function HomePage({ socialLinks, name, profile, tuition, subjects, batches, achi
       {[[subjects.length || "Personal", "Subjects offered", "books"], [experience ? `${experience} years` : batches.length, experience ? "Teaching experience" : "Published batches", "journey"], [achievements.length, "Student stories", "trophy"]].map(([value, label, type]) => <div key={type} className="flex items-center justify-between gap-2 overflow-hidden rounded-2xl border border-sky-100 bg-gradient-to-br from-white to-sky-50/70 p-5 dark:border-slate-700 dark:from-slate-900 dark:to-sky-950/40"><div><p className="text-2xl font-semibold text-sky-800 dark:text-sky-200">{value}</p><p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{label}</p></div><KpiIllustration type={type}/></div>)}
     </section>
     <SocialSection links={socialLinks}/>
-    <FloatingContact profile={profile} socialLinks={socialLinks}/>
+
 
     <div className="relative left-1/2 mt-12 w-[calc(100vw-2rem)] -translate-x-1/2 space-y-8 sm:w-[calc(100vw-3rem)] lg:w-[calc(100vw-4rem)]">
       <section className="rounded-3xl border border-sky-100 bg-white px-5 py-8 dark:border-slate-800 dark:bg-slate-900 sm:p-10 lg:p-12">
@@ -396,7 +396,7 @@ export default function ThemeClassic({ profile = {}, tuition = {}, achievements 
   const services = list(fd(tuition, ["services"]));
   const social = fd(profile, ["socialMedia"], {});
   const socialLinks = useMemo(() => Object.entries(social || {}).filter(([, value]) => typeof value === "string" && value.trim()).map(([label, value]) => [label, asUrl(value.trim())]).filter(([, url]) => { try { const parsed = new URL(url); return ["http:", "https:"].includes(parsed.protocol) && parsed.hostname.includes("."); } catch { return false; } }), [social]);
-  const basePath = previewBasePath || `/tutor/${encodeURIComponent(username)}`;
+  const basePath = previewBasePath || getTutorNavigationBase(username);
   const isDark = mode === "dark";
 
   let content;
@@ -412,17 +412,18 @@ export default function ThemeClassic({ profile = {}, tuition = {}, achievements 
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       <header className="sticky top-0 z-40 border-b border-sky-100 bg-white/95 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/95">
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-x-5 gap-y-3 px-4 pt-3 sm:px-6 lg:flex-nowrap lg:px-8 lg:py-4">
-          <Link to={basePath} className="flex min-w-0 max-w-[60%] shrink-0 items-center gap-2.5 lg:max-w-[25%]"><TuitionLogo tuition={tuition} name={fd(tuition, ["tuitionName", "tuitionClassName"], name)} className="h-9 w-9"/><span className="truncate text-lg font-bold tracking-tight text-slate-950 dark:text-white sm:text-xl">{fd(tuition, ["tuitionName", "tuitionClassName"], name)}</span></Link>
-          <AdaptiveNav basePath={basePath} currentPage={currentPage}/>
+          <Link to={basePath} className="flex min-w-0 max-w-[60%] shrink-0 items-center gap-2.5 lg:max-w-[25%]"><TuitionLogo tuition={tuition} name={getWebsiteTitle(tuition, profile)} className="h-9 w-9"/><span className="truncate text-lg font-bold tracking-tight text-slate-950 dark:text-white sm:text-xl">{getWebsiteTitle(tuition, profile)}</span></Link>
+          <AdaptiveNav basePath={basePath} currentPage={currentPage} tuition={tuition} brand={getWebsiteTitle(tuition, profile)}/>
           <div className="flex shrink-0 items-center gap-2"><button type="button" onClick={() => setMode(isDark ? "light" : "dark")} aria-label={`Switch to ${isDark ? "light" : "dark"} mode`} className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-sky-50 hover:text-sky-700 dark:text-slate-300 dark:hover:bg-slate-800"><Icon name={isDark ? "sun" : "moon"} className="h-4 w-4"/></button><button type="button" onClick={onContactClick} aria-label="Open TutorFolio messenger" className="inline-flex h-10 items-center gap-2 rounded-lg bg-sky-700 px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800 sm:px-4"><Icon name="message" className="h-4 w-4"/><span className="hidden sm:inline">Message</span></button></div>
         </div>
       </header>
       <main className="mx-auto min-h-[70vh] max-w-7xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8 lg:py-12">{content}</main>
+      <FloatingContact profile={profile} />
       <footer className="classic-footer mt-6 border-t border-sky-100 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="classic-footer-grid mx-auto grid max-w-[1600px] gap-7 px-5 py-8 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.1fr_1.25fr_1.2fr] lg:gap-8 lg:px-8">
-          <Link to={basePath} className="classic-footer-brand flex min-w-0 items-start gap-3 text-slate-950 dark:text-white"><TuitionLogo tuition={tuition} name={fd(tuition, ["tuitionName", "tuitionClassName"], name)} className="h-9 w-9"/><span className="pt-0.5 text-xl font-bold tracking-tight">{fd(tuition, ["tuitionName", "tuitionClassName"], name)}</span></Link>
+          <Link to={basePath} className="classic-footer-brand flex min-w-0 items-start gap-3 text-slate-950 dark:text-white"><TuitionLogo tuition={tuition} name={getWebsiteTitle(tuition, profile)} className="h-9 w-9"/><span className="pt-0.5 text-xl font-bold tracking-tight">{getWebsiteTitle(tuition, profile)}</span></Link>
           <div className="classic-footer-explore lg:border-l lg:border-sky-100 lg:pl-7 dark:lg:border-slate-700"><h2 className="text-xs font-semibold text-slate-950 dark:text-white">Explore</h2><nav aria-label="Footer pages" className="mt-3"><ul className="m-0 flex list-none flex-col gap-2 p-0 text-xs">{pageLinks.filter((page) => page.id !== "home").map((page) => <li key={page.id}><Link to={`${basePath}/${page.id}`} className="inline-flex text-slate-600 transition hover:text-sky-700 dark:text-slate-300 dark:hover:text-sky-300">{page.label}</Link></li>)}</ul></nav></div>
-          <div className="min-w-0 lg:border-l lg:border-sky-100 lg:pl-7 dark:lg:border-slate-700"><h2 className="text-xs font-semibold text-slate-950 dark:text-white">Contact</h2><div className="mt-3 space-y-2 text-xs text-slate-600 dark:text-slate-300">{fd(profile, ["email"]) && <a className="flex items-center gap-2 break-all hover:text-sky-700 dark:hover:text-sky-300" href={`mailto:${profile.email}`}><Icon name="mail" className="h-4 w-4 shrink-0"/>{profile.email}</a>}{fd(profile, ["mobileNo", "mobile_no"]) && <a className="flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-300" href={`tel:${fd(profile, ["mobileNo", "mobile_no"])}`}><Icon name="phone" className="h-4 w-4 shrink-0"/>{fd(profile, ["mobileNo", "mobile_no"])}</a>}<Link to={`${basePath}/about#about-contact`} className="inline-flex items-center gap-2 font-semibold text-sky-700 dark:text-sky-300">Message the tutor<Icon name="arrow" className="h-3.5 w-3.5"/></Link></div></div>
+          <div className="min-w-0 lg:border-l lg:border-sky-100 lg:pl-7 dark:lg:border-slate-700"><h2 className="text-xs font-semibold text-slate-950 dark:text-white">Contact</h2><div className="mt-3 space-y-2 text-xs text-slate-600 dark:text-slate-300">{fd(profile, ["email"]) && <a className="flex items-center gap-2 break-all hover:text-sky-700 dark:hover:text-sky-300" href={`mailto:${profile.email}`}><Icon name="mail" className="h-4 w-4 shrink-0"/>{profile.email}</a>}{fd(profile, ["mobileNo", "mobile_no"]) && <a className="flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-300" href={`tel:${fd(profile, ["mobileNo", "mobile_no"])}`}><Icon name="phone" className="h-4 w-4 shrink-0"/>{fd(profile, ["mobileNo", "mobile_no"])}</a>}<button type="button" onClick={onContactClick} className="inline-flex items-center gap-2 font-semibold text-sky-700 dark:text-sky-300">Message the tutor<Icon name="arrow" className="h-3.5 w-3.5"/></button></div></div>
         </div><div className="border-t border-slate-100 px-5 py-4 dark:border-slate-800"><p className="mx-auto max-w-[1536px] text-xs text-slate-400">© {new Date().getFullYear()} {name}. All rights reserved.</p></div>
       </footer>
     </div>

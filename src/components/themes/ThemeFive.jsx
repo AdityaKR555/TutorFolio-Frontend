@@ -1,6 +1,10 @@
+import { getWebsiteTitle } from "../../utils/websiteIdentity";
+import SocialIcon from "../SocialIcon";
+import { getTutorNavigationBase } from "../../utils/websiteUrls";
+import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ArrowDown, ArrowRight, ArrowUpRight, Menu } from "lucide-react";
+import { Phone, ArrowDown, ArrowRight, ArrowUpRight, Menu } from "lucide-react";
 import TuitionLogo from "./TuitionLogo";
 import "./theme-five.css";
 
@@ -161,14 +165,15 @@ function EntryCard({ title, text, image, meta, anchor, to, index }) {
   return to ? <Link className="five-entry-link" to={to} aria-label={`View ${title}`}>{card}</Link> : card;
 }
 export default function ThemeFive({ profile = {}, tuition = {}, batches = [], achievements = [], gallery = [], experience = [], faqs = [], username = "", previewBasePath, currentPage = "home", onContactClick }) {
+  const contactActions = getContactActions(profile);
   const [menuOpen, setMenuOpen] = React.useState(false);
   const location = useLocation();
   const mainRef = useRef(null);
   const cursorRef = useRef(null);
-  const base = previewBasePath || `/tutor/${encodeURIComponent(username)}`;
+  const base = previewBasePath || getTutorNavigationBase(username);
   const href = (page) => page === "home" ? base : `${base}/${page}`;
   const name = [value(profile,["firstName","first_name"]),value(profile,["lastName","last_name"])].filter(Boolean).join(" ") || value(profile,["username"],"Tutor");
-  const brand = value(tuition,["tuitionName","tuitionClassName"],name);
+  const brand = getWebsiteTitle(tuition, profile);
   const subjects = array(value(tuition,["teachingSubjects","teaching_subjects"]));
   const intro = value(profile,["about","description"]);
   const picture = value(profile,["profilePicture","profile_picture","profilePhoto","avatar"]);
@@ -213,7 +218,7 @@ export default function ThemeFive({ profile = {}, tuition = {}, batches = [], ac
   }, [home]);
   const batchCards = (items) => items.map((item,i) => { const id = item.batchId ?? item.id ?? i; const anchor = `batch-${id}`; return <EntryCard key={id} index={i} anchor={home ? undefined : anchor} to={home ? `${href("batches")}#${anchor}` : undefined} title={value(item,["title","batchName"],"Learning group")} text={item.description} image={value(item,["imageUrl","image_url","batchImageUrl","batchImage"])} meta={value(item,["batchType","type"],"Batch")}/>; });
   const achievementCards = (items) => items.map((item,i) => { const id = item.achievementId ?? item.id ?? i; const anchor = `achievement-${id}`; return <EntryCard key={id} index={i} anchor={home ? undefined : anchor} to={home ? `${href("achievements")}#${anchor}` : undefined} title={value(item,["title","achievementTitle"],"Student achievement")} text={item.studentReview || item.description} image={value(item,["achievementImageUrl","achievement_image_url","imageUrl","image_url"])} meta={item.studentName || "Student story"}/>; });
-  return <div className="five-theme">{home && <div ref={cursorRef} className="five-cursor" aria-hidden="true"><span/></div>}<header className="five-header"><Link to={base} className="five-brand"><TuitionLogo tuition={tuition} name={brand} className="five-logo" fallback={<span className="five-logo-fallback">{brand.charAt(0).toUpperCase()}</span>}/><span>{brand}</span></Link><nav className={menuOpen ? "five-nav is-open" : "five-nav"} aria-label="Tutor website navigation">{pages.map(([id,label]) => <Link key={id} to={href(id)} onClick={() => setMenuOpen(false)} aria-current={currentPage === id ? "page" : undefined}>{label}</Link>)}</nav><button type="button" className="five-contact" onClick={onContactClick}>Let's talk <ArrowUpRight size={16}/></button><button type="button" className="five-menu" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label={menuOpen ? "Close navigation" : "Open navigation"}><Menu size={22}/></button></header>
+  return <div className="five-theme">{home && <div ref={cursorRef} className="five-cursor" aria-hidden="true"><span/></div>}<header className="five-header"><Link to={base} className="five-brand"><TuitionLogo tuition={tuition} name={brand} className="five-logo" /><span>{brand}</span></Link><nav className={menuOpen ? "five-nav is-open" : "five-nav"} aria-label="Tutor website navigation"><Link to={base} onClick={() => setMenuOpen(false)} className="five-mobile-identity"><TuitionLogo tuition={tuition} name={brand} className="h-9 w-9"/><span>{brand}</span></Link>{pages.map(([id,label]) => <Link key={id} to={href(id)} onClick={() => setMenuOpen(false)} aria-current={currentPage === id ? "page" : undefined}>{label}</Link>)}</nav><button type="button" className="five-contact" onClick={onContactClick}>Let's talk <ArrowUpRight size={16}/></button><button type="button" className="five-menu" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label={menuOpen ? "Close navigation" : "Open navigation"}><Menu size={22}/></button></header>
     <main ref={mainRef}>{home ? <><section className="five-hero"><MotionScene/><div className="five-hero-content"><p className="five-kicker">A SPACE TO LEARN & GROW <span>✳</span></p><h1>Ideas become<br/><em>possibilities.</em></h1><p className="five-intro">{intro || `Discover a new way to learn with ${name}.`}</p><div className="five-hero-actions"><Link to={href("classes")} className="five-button">Explore classes <ArrowUpRight size={18}/></Link><Link to={href("about")} className="five-link-button">Meet your tutor <ArrowRight size={18}/></Link></div></div><a href="#five-learning" className="five-scroll">SCROLL TO EXPLORE <ArrowDown size={15}/></a><span className="five-hero-index" aria-hidden="true">01 / LEARN</span></section>
       <section id="five-learning" className="five-marquee" aria-label="Subjects offered"><div>{[...subjects,...subjects].map((subject,i) => <span key={`${subject}-${i}`}>{subject} <b>✳</b></span>)}{subjects.length === 0 && <span>LEARN <b>✳</b> GROW <b>✳</b> DISCOVER <b>✳</b></span>}</div></section>
       <section className="five-section five-about"><div className="five-section-label"><span>01 / THE EDUCATOR</span><span>THE PERSON BEHIND THE LESSONS</span></div><div className="five-about-layout"><div><h2>Good teaching.<br/><em>Real progress.</em></h2><p>{intro || `Get to know ${name} and explore the classes they offer.`}</p><Link to={href("about")} className="five-outline">About {name.split(" ")[0]} <ArrowUpRight size={18}/></Link></div><div className="five-portrait">{picture ? <img src={picture} alt={name} loading="lazy"/> : <span>{name.charAt(0).toUpperCase()}</span>}<div><small>YOUR EDUCATOR</small><strong>{name}</strong>{value(profile,["qualification"]) && <span>{value(profile,["qualification"])}</span>}</div></div></div></section>
@@ -226,5 +231,14 @@ export default function ThemeFive({ profile = {}, tuition = {}, batches = [], ac
         {currentPage === "achievements" && <div className="five-grid">{achievements.length ? achievementCards(achievements) : <p>Achievements will appear here when shared.</p>}</div>}
         {currentPage === "experience" && <div className="five-timeline">{experience.length ? experience.map((item,i) => <article key={item.experienceId ?? item.id ?? i}><span>{item.startDate || ""} {item.isCurrent ? "— Present" : item.endDate ? `— ${item.endDate}` : ""}</span><h2>{value(item,["title"],"Experience")}</h2><p>{item.description}</p></article>) : <p>Experience will appear here when shared.</p>}</div>}
         {currentPage === "gallery" && <div className="five-gallery">{gallery.filter((item) => value(item,["fileUrl","url","imageUrl","src"])).length ? gallery.filter((item) => value(item,["fileUrl","url","imageUrl","src"])).map((item,i) => <img key={item.fileId ?? item.id ?? i} src={value(item,["fileUrl","url","imageUrl","src"])} alt={value(item,["title","originalFilename"],`Gallery photo ${i+1}`)} loading="lazy"/>) : <p>Photos will appear here when shared.</p>}</div>}</section>}</main>
-    <footer className="five-footer"><Link to={base} className="five-brand"><TuitionLogo tuition={tuition} name={brand} className="five-logo" fallback={<span className="five-logo-fallback">{brand.charAt(0).toUpperCase()}</span>}/><span>{brand}</span></Link><nav aria-label="Footer navigation">{pages.map(([id,label]) => <Link key={id} to={href(id)}>{label}</Link>)}</nav><span>© {new Date().getFullYear()} {name}</span></footer></div>;
+    {contactActions.length > 0 && <aside aria-label="Contact tutor" className="five-contact-icons">
+      {contactActions.map((action) => <a key={action.field} href={action.href}
+        target={action.type === "whatsapp" ? "_blank" : undefined}
+        rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
+        className={`five-contact-icon ${action.type === "whatsapp" ? "is-whatsapp" : "is-phone"}`}
+        aria-label={action.actionLabel} title={action.actionLabel}>
+        {action.type === "whatsapp" ? <SocialIcon platform="whatsapp" className="h-6 w-6" /> : <Phone size={22} aria-hidden="true" />}
+      </a>)}
+    </aside>}
+    <footer className="five-footer"><Link to={base} className="five-brand"><TuitionLogo tuition={tuition} name={brand} className="five-logo" /><span>{brand}</span></Link><nav aria-label="Footer navigation">{pages.map(([id,label]) => <Link key={id} to={href(id)}>{label}</Link>)}</nav><span>© {new Date().getFullYear()} {name}</span></footer></div>;
 }

@@ -1,3 +1,5 @@
+import { recoverGalleryImage } from "../../utils/galleryDelivery";
+import { getTutorNavigationBase } from "../../utils/websiteUrls";
 import PlatformLoader from "../../components/PlatformLoader";
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -93,8 +95,9 @@ function ErrorScreen({ error, onRetry }) {
 }
 
 /* ─── main component ────────────────────────────────────────────────────────── */
-export default function PublicTutorWebsite() {
-  const { username = "", section = "", previewThemeId, previewUserId } = useParams();
+export default function PublicTutorWebsite({ hostUsername }) {
+  const { username: pathUsername = "", section = "", previewThemeId, previewUserId } = useParams();
+  const username = hostUsername || pathUsername;
   const isPreview = Boolean(previewThemeId && previewUserId);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -192,8 +195,8 @@ export default function PublicTutorWebsite() {
   const navigatePage = (page) => {
     const base = isPreview
       ? `/theme-preview/${encodeURIComponent(previewThemeId)}/${encodeURIComponent(previewUserId)}`
-      : `/tutor/${encodeURIComponent(username)}`;
-    navigate(page === "home" ? base : `${base}/${page}`);
+      : hostUsername ? "" : `/tutor/${encodeURIComponent(username)}`;
+    navigate(page === "home" ? (base || "/") : `${base}/${page}`);
   };
   const navigateLegacySection = (tab) => navigatePage(({ overview: "home", tuition: "classes", faqs: "about", contact: "about" })[tab] || tab);
 
@@ -205,6 +208,7 @@ export default function PublicTutorWebsite() {
   };
 
   /* ── render ── */
+  if (hostUsername && section && ![...validPages, "faqs", "contact"].includes(section)) return <ErrorScreen error="This page could not be found." onRetry={() => navigatePage("home")} />;
   if (loading) return <LoadingScreen />;
   if (error || !website) return <ErrorScreen error={error} onRetry={fetchWebsite} />;
 
@@ -223,12 +227,12 @@ export default function PublicTutorWebsite() {
     faqs,
     gallery,
     username,
-    previewBasePath: isPreview ? `/theme-preview/${encodeURIComponent(previewThemeId)}/${encodeURIComponent(previewUserId)}` : undefined,
+    previewBasePath: isPreview ? `/theme-preview/${encodeURIComponent(previewThemeId)}/${encodeURIComponent(previewUserId)}` : getTutorNavigationBase(username),
     currentPage,
     activeTab: ({ home: "overview", classes: "tuition" })[currentPage] || currentPage,
     onPageChange: navigatePage,
     onTabChange: navigateLegacySection,
-    onContactClick: () => { if (!isPreview) setChatOpen(true); },
+    onContactClick: () => setChatOpen(true),
     onCopyLink: copyLink,
     copyMessage,
     sectionLoading: false,
@@ -236,7 +240,7 @@ export default function PublicTutorWebsite() {
   };
 
   return (
-    <div className="mobile-public-portfolio">
+    <div className="mobile-public-portfolio" onErrorCapture={(event) => recoverGalleryImage(event, gallery, api.defaults.baseURL)}>
       {isPreview && (
         <div className="sticky top-0 z-50 flex items-center justify-between gap-3 bg-indigo-600 px-4 py-3 text-sm text-white">
           <span>Theme preview. Your live website has not changed.</span>
@@ -247,7 +251,7 @@ export default function PublicTutorWebsite() {
       <Suspense fallback={<LoadingScreen />}><ThemeComponent {...themeProps} /></Suspense>
       {needsSharedIdentity && <TuitionLogo tuition={tuition} name={fd(tuition, ["tuitionName", "tuitionClassName"], name)} className="tf-theme-identity-logo" fallback={null} />}
       {isFreeTheme && <footer className="tf-theme-credit"><div className="tf-theme-credit-inner"><div className="tf-theme-credit-brand"><img src="/tf-logo.png" alt="" /><span>This website is built by <a className="tf-theme-credit-name" href="https://alpha.tutorfolio.site" target="_blank" rel="noopener noreferrer">TutorFolio</a></span></div><a className="tf-theme-credit-action" href="https://alpha.tutorfolio.site" target="_blank" rel="noopener noreferrer">Get your own free website now <span aria-hidden="true">↗</span></a></div></footer>}
-      {!isPreview && <VisitorChatWidget tutorId={tutorId} tutorName={name} open={chatOpen} onClose={() => setChatOpen(false)} />}
+      <VisitorChatWidget key={`${isPreview ? "preview" : "live"}:${tutorId}`} preview={isPreview} theme={activeKey} tutorId={tutorId} tutorName={name} open={chatOpen} onClose={() => setChatOpen(false)} />
     </div>
   );
 }

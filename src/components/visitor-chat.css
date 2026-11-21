@@ -1,0 +1,102 @@
+/* Public chat tokens are independent of the dashboard's modal styles. */
+.visitor-chat {
+  --vc-bg:#f0f9ff;--vc-surface:#fff;--vc-ink:#0f172a;--vc-copy:#475569;--vc-muted:#64748b;
+  --vc-line:#cbdfea;--vc-accent:#0369a1;--vc-on-accent:#fff;--vc-radius:20px;--vc-control:10px;
+  --vc-font:ui-sans-serif,system-ui,sans-serif;
+  color:var(--vc-ink);font-family:var(--vc-font);color-scheme:light;
+}
+:root[data-theme="dark"] .visitor-chat[data-chat-theme="classic"] {
+  --vc-bg:#020617;--vc-surface:#0f172a;--vc-ink:#f1f5f9;--vc-copy:#cbd5e1;--vc-muted:#94a3b8;--vc-line:#334155;--vc-accent:#38bdf8;--vc-on-accent:#082f49;color-scheme:dark;
+}
+.visitor-chat[data-chat-theme="minimal"] {--vc-bg:#fafafa;--vc-surface:#fff;--vc-ink:#171717;--vc-copy:#525252;--vc-muted:#737373;--vc-line:#e5e5e5;--vc-accent:#4f46e5;--vc-on-accent:#fff;--vc-radius:16px;--vc-control:8px}
+:root[data-theme="dark"] .visitor-chat[data-chat-theme="minimal"] {--vc-bg:#0a0a0a;--vc-surface:#171717;--vc-ink:#fafafa;--vc-copy:#d4d4d4;--vc-muted:#a3a3a3;--vc-line:#404040;--vc-accent:#a5b4fc;--vc-on-accent:#1e1b4b}
+.visitor-chat[data-chat-theme="luminary"] {--vc-bg:#faf7f0;--vc-surface:#fffdf8;--vc-ink:#292524;--vc-copy:#57534e;--vc-muted:#78716c;--vc-line:#e7dcc8;--vc-accent:#92400e;--vc-on-accent:#fff;--vc-radius:18px;--vc-control:8px}
+:root[data-theme="dark"] .visitor-chat[data-chat-theme="luminary"] {--vc-bg:#0c0a09;--vc-surface:#1c1917;--vc-ink:#fafaf9;--vc-copy:#e7e5e4;--vc-muted:#a8a29e;--vc-line:#514232;--vc-accent:#fbbf24;--vc-on-accent:#292014}
+.visitor-chat[data-chat-theme="luminary"] h2 {font-family:Georgia,"Times New Roman",serif;letter-spacing:-.025em}
+.visitor-chat[data-chat-theme="aurora"] {--vc-bg:#111022;--vc-surface:#201a34;--vc-ink:#f7f5ff;--vc-copy:#d1cae3;--vc-muted:#b5accb;--vc-line:#4c3e65;--vc-accent:#c8fc78;--vc-on-accent:#171328;--vc-radius:28px;--vc-control:14px;color-scheme:dark}
+.visitor-chat[data-chat-theme="aurora"] .vc-panel {background:radial-gradient(ellipse at top right,#6d3daf35,transparent 65%),var(--vc-surface);box-shadow:0 24px 100px #0008,0 0 48px #9f79ed18}
+.visitor-chat[data-chat-theme="motion"] {--vc-bg:#f0f0ec;--vc-surface:#fff;--vc-ink:#171820;--vc-copy:#51525e;--vc-muted:#686976;--vc-line:#c6c6ce;--vc-accent:#414dff;--vc-on-accent:#fff;--vc-radius:2px;--vc-control:3px;color-scheme:light}
+.visitor-chat[data-chat-theme="motion"] .vc-panel {border:2px solid #171820;box-shadow:9px 9px 0 #171820}
+.visitor-chat[data-chat-theme="motion"] .vc-header {background:#101116;color:#fff;--vc-copy:#c3c4ce;--vc-ink:#fff;--vc-accent:#d6ff63;--vc-line:#ffffff45}
+.visitor-chat[data-chat-theme="motion"] h2 {letter-spacing:-.045em;font-size:1.6rem}
+.visitor-chat[data-chat-theme="glass"] {--vc-bg:#eef3fa;--vc-surface:#ffffffdb;--vc-ink:#142439;--vc-copy:#52667c;--vc-muted:#63768b;--vc-line:#b9cadf;--vc-accent:#0062c4;--vc-on-accent:#fff;--vc-radius:30px;--vc-control:16px;--vc-font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif}
+:root[data-theme="dark"] .visitor-chat[data-chat-theme="glass"] {--vc-bg:#101d30;--vc-surface:#192b43eb;--vc-ink:#edf4ff;--vc-copy:#c1d1e6;--vc-muted:#a4b9d4;--vc-line:#46607e;--vc-accent:#83c4ff;--vc-on-accent:#10243e}
+.visitor-chat[data-chat-theme="glass"] .vc-panel {backdrop-filter:blur(32px) saturate(145%);-webkit-backdrop-filter:blur(32px) saturate(145%);box-shadow:inset 0 1px 0 #ffffff60,0 28px 90px #061c3e40}
+.visitor-chat .vc-panel {border-color:var(--vc-line);border-radius:var(--vc-radius);background-color:var(--vc-surface);max-height:92dvh}
+.visitor-chat .vc-line {border-color:var(--vc-line)}
+.visitor-chat .vc-bg {background-color:var(--vc-bg)}
+.visitor-chat .vc-surface {background-color:var(--vc-surface)}
+.visitor-chat .vc-ink {color:var(--vc-ink)}
+.visitor-chat .vc-copy {color:var(--vc-copy)}
+.visitor-chat .vc-muted {color:var(--vc-muted)}
+.visitor-chat .vc-accent-text {color:var(--vc-accent)}
+.visitor-chat .vc-accent-bg {background:var(--vc-accent);color:var(--vc-on-accent)}
+.visitor-chat .vc-field {color:var(--vc-ink);background:var(--vc-bg);border:1px solid var(--vc-line);border-radius:var(--vc-control);font:inherit;font-size:14px}
+.visitor-chat .vc-field::placeholder {color:var(--vc-muted);opacity:1}
+.visitor-chat .vc-field:focus-visible {outline:2px solid var(--vc-accent);outline-offset:2px}
+.visitor-chat .vc-button {border-radius:var(--vc-control);background:var(--vc-accent);color:var(--vc-on-accent)}
+.visitor-chat .vc-button:hover:not(:disabled) {filter:brightness(.94)}
+.visitor-chat .vc-button:focus-visible,.visitor-chat .vc-close:focus-visible {outline:2px solid var(--vc-accent);outline-offset:3px}
+.visitor-chat .vc-close {border-radius:var(--vc-control);color:var(--vc-copy);border-color:var(--vc-line)}
+.visitor-chat .vc-close:hover {background:var(--vc-bg)}
+.visitor-chat .vc-bubble {border-radius:var(--vc-control)}
+.visitor-chat .vc-sent-meta {color:inherit;opacity:.78}
+@media(max-width:639px){.visitor-chat .vc-panel{border-bottom-left-radius:0;border-bottom-right-radius:0;max-height:94dvh;padding-bottom:env(safe-area-inset-bottom)}.visitor-chat[data-chat-theme="motion"] .vc-panel{box-shadow:none}}
+
+.visitor-chat .vc-bubble button{color:inherit;text-decoration:underline;text-underline-offset:3px}
+
+/* Status surfaces use the selected website palette, not dashboard dark classes. */
+.visitor-chat {--vc-danger:#b42336;--vc-success:#166534;--vc-warning:#92400e}
+:root[data-theme="dark"] .visitor-chat:is([data-chat-theme="classic"],[data-chat-theme="minimal"],[data-chat-theme="luminary"],[data-chat-theme="glass"]),
+.visitor-chat[data-chat-theme="aurora"] {--vc-danger:#fda4af;--vc-success:#86efac;--vc-warning:#fcd34d}
+.visitor-chat .vc-error {color:var(--vc-danger);border-color:color-mix(in srgb,var(--vc-danger) 35%,var(--vc-line));background:color-mix(in srgb,var(--vc-danger) 8%,var(--vc-surface))}
+.visitor-chat .vc-success {color:var(--vc-success);border-color:color-mix(in srgb,var(--vc-success) 35%,var(--vc-line));background:color-mix(in srgb,var(--vc-success) 8%,var(--vc-surface))}
+.visitor-chat .vc-notice {color:var(--vc-warning);border-color:color-mix(in srgb,var(--vc-warning) 35%,var(--vc-line));background:color-mix(in srgb,var(--vc-warning) 8%,var(--vc-surface))}
+.visitor-chat .vc-status {color:var(--vc-ink);background:color-mix(in srgb,var(--vc-accent) 12%,var(--vc-surface));border:1px solid var(--vc-line)}
+.visitor-chat .vc-required {color:var(--vc-danger)}
+.visitor-chat .vc-header {flex-shrink:0}
+.visitor-chat .vc-history {min-height:0}
+.visitor-chat .vc-compose {background:var(--vc-surface)}
+.visitor-chat .vc-panel:focus {outline:none}
+@media(max-height:650px){.visitor-chat .vc-panel{overflow-y:auto}.visitor-chat .vc-history{overflow:visible;flex:none}.visitor-chat .vc-compose{flex-shrink:0}}
+@media(prefers-reduced-motion:reduce){.visitor-chat *{scroll-behavior:auto!important;transition:none!important}}
+
+.visitor-chat .vc-button{white-space:nowrap;flex-shrink:0}
+.visitor-chat .vc-field{min-width:0}
+
+/* Native top-layer modal remains above sticky/filtered theme elements. */
+dialog.visitor-chat{margin:0;width:100vw;max-width:none;height:100dvh;max-height:none;border:0}
+dialog.visitor-chat::backdrop{background:transparent}
+
+/* Reference layout shared by live websites and previews; palette tokens stay theme-owned. */
+.visitor-chat .vc-panel{max-width:680px;overflow-y:auto}
+.visitor-chat .vc-header{padding:24px 28px}
+.visitor-chat .vc-title{margin:0;font-size:28px;line-height:1.25}
+.visitor-chat .vc-subtitle{margin:10px 0 0;font-size:16px;line-height:1.5}
+.visitor-chat .vc-browser-note{margin:12px 0 0;font-size:14px;line-height:1.5}
+.visitor-chat .vc-preview-note{margin:8px 0 0;font-size:12px;line-height:1.5}
+.visitor-chat .vc-compose{padding:24px 28px}
+.visitor-chat .vc-start .vc-compose{border-top:0}
+.visitor-chat .vc-compose label{margin-bottom:8px;font-size:14px;font-weight:600}
+.visitor-chat .vc-compose>div:first-child{gap:20px;margin-bottom:20px}
+.visitor-chat .vc-field{padding:13px 16px;font-size:16px;line-height:1.5}
+.visitor-chat .vc-message{display:block;min-height:140px}
+.visitor-chat .vc-actions{margin-top:24px}
+.visitor-chat .vc-actions .vc-button{min-width:140px;padding:12px 24px;font-size:16px}
+.visitor-chat .vc-footer{margin:0 24px;padding:16px 4px 20px;font-size:13px;line-height:1.5;text-align:left;flex-shrink:0}
+@media(max-width:639px){
+ .visitor-chat .vc-header,.visitor-chat .vc-compose{padding:20px}
+ .visitor-chat .vc-title{font-size:24px}
+ .visitor-chat .vc-subtitle{font-size:15px}
+ .visitor-chat .vc-footer{margin:0 16px;padding:14px 4px 18px}
+ .visitor-chat .vc-actions{margin-top:20px}
+}
+@media(min-width:640px) and (max-height:780px){
+ .visitor-chat .vc-header,.visitor-chat .vc-compose{padding:20px 24px}
+ .visitor-chat .vc-title{font-size:26px}
+ .visitor-chat .vc-subtitle,.visitor-chat .vc-browser-note{margin-top:8px}
+ .visitor-chat .vc-compose>div:first-child{gap:16px;margin-bottom:16px}
+ .visitor-chat .vc-message{min-height:120px;height:120px}
+ .visitor-chat .vc-actions{margin-top:16px}
+ .visitor-chat .vc-footer{padding:12px 4px 16px}
+}

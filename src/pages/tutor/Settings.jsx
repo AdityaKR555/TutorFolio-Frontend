@@ -3,7 +3,7 @@ import api from "../../api/axios";
 import SystemThemeSettings from "../../components/SystemThemeSettings";
 import { setAuthSession } from "../../utils/auth";
 
-const USERNAME_REGEX = /^[a-zA-Z0-9_.-]+$/;
+const USERNAME_REGEX = /^(?!xn--)[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/i;
 
 const getStoredUser = () => {
   try {
@@ -246,7 +246,7 @@ function Settings() {
       localResult = {
         status: "invalid",
         message:
-          "Use 3–30 characters: letters, numbers, dots, underscores or hyphens.",
+          "Use 3–30 characters: letters, numbers or hyphens; start and end with a letter or number.",
       };
     }
 
@@ -329,7 +329,7 @@ function Settings() {
       setUsernameAvailability({
         status: "invalid",
         message:
-          "Use 3–30 characters: letters, numbers, dots, underscores or hyphens.",
+          "Use 3–30 characters: letters, numbers or hyphens; start and end with a letter or number.",
       });
       return;
     }
@@ -399,7 +399,7 @@ function Settings() {
     ) {
       notify(
         "error",
-        "Username must be 3–30 characters and can contain letters, numbers, dots, underscores and hyphens."
+        "Username must be 3–30 characters and can contain letters, numbers or hyphens; start and end with a letter or number."
       );
       return;
     }
@@ -801,7 +801,7 @@ function Settings() {
                       Check availability
                     </button>
                   </div>
-                  <span className="text-[10px] text-[var(--tf-muted)]">Use 3 to 30 letters, numbers, dots, underscores, or hyphens.</span>
+                  <span className="text-[10px] text-[var(--tf-muted)]">Use 3 to 30 letters, numbers or hyphens; start and end with a letter or number.</span>
                   <span className={`min-h-[14px] text-[10px] text-[var(--tf-muted)] ${availabilityColor}`} aria-live="polite">{usernameAvailability.message}</span>
                 </div>
                 <div className="mt-[14px] flex justify-end gap-2">

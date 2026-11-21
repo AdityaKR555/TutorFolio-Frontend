@@ -1,5 +1,5 @@
+import { getTutorWebsiteUrl } from "../../utils/websiteUrls";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import ExpandableText from "../../components/ExpandableText";
 import "./discover-filters.css";
@@ -89,7 +89,6 @@ function DetailIcon({ type }) {
 }
 
 export default function DiscoverTutors() {
-  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState(blankFilters);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -450,7 +449,7 @@ export default function DiscoverTutors() {
                       {subjects && <p className="mb-[15px] overflow-hidden text-ellipsis whitespace-nowrap text-[11px] leading-[1.5] text-[var(--tf-muted)] [[data-theme=dark]_&]:text-[var(--tf-muted)]"><strong className="text-[var(--tf-copy)] [[data-theme=dark]_&]:text-[var(--tf-copy)]">Subjects:</strong> {subjects}</p>}
                     </>
                   )}
-                  <div className={`grid grid-cols-2 gap-[9px] ${viewMode === "list" ? "col-start-2 row-start-1 mt-0 self-center min-[1101px]:col-start-3 min-[1101px]:row-start-1 max-[520px]:col-start-1 max-[520px]:row-start-3 max-[520px]:w-full" : "mt-auto"}`}><button type="button" onClick={() => openTutorDetails(tutor)} className={secondaryButtonClass}>Quick view</button><button type="button" onClick={() => tutor.username && navigate(`/tutor/${encodeURIComponent(tutor.username)}`)} disabled={!tutor.username} className={buttonClass}>Portfolio <span aria-hidden="true">↗</span></button></div>
+                  <div className={`grid grid-cols-2 gap-[9px] ${viewMode === "list" ? "col-start-2 row-start-1 mt-0 self-center min-[1101px]:col-start-3 min-[1101px]:row-start-1 max-[520px]:col-start-1 max-[520px]:row-start-3 max-[520px]:w-full" : "mt-auto"}`}><button type="button" onClick={() => openTutorDetails(tutor)} className={secondaryButtonClass}>Quick view</button><button type="button" onClick={() => getTutorWebsiteUrl(tutor.username) && window.location.assign(getTutorWebsiteUrl(tutor.username))} disabled={!getTutorWebsiteUrl(tutor.username)} className={buttonClass}>Portfolio <span aria-hidden="true">↗</span></button></div>
                 </article>
               );
             })}
@@ -491,7 +490,7 @@ export default function DiscoverTutors() {
               </>
             )}
             {detailError && <p role="alert" className="mt-[14px] rounded-[9px] border border-[var(--tf-line)] bg-[#fff2f3] px-3 py-[10px] text-xs text-[#b93849] [[data-theme=dark]_&]:border-[var(--tf-line)] [[data-theme=dark]_&]:bg-[#45232d] [[data-theme=dark]_&]:text-[#ff9aa4]">{detailError}</p>}
-            <div className="mt-5 flex justify-end gap-2"><button type="button" onClick={() => setSelectedTutor(null)} className={secondaryButtonClass}>Close</button><button type="button" disabled={!selectedTutor.username} onClick={() => navigate(`/tutor/${encodeURIComponent(selectedTutor.username)}`)} className={buttonClass}>View portfolio ↗</button></div>
+            <div className="mt-5 flex justify-end gap-2"><button type="button" onClick={() => setSelectedTutor(null)} className={secondaryButtonClass}>Close</button><button type="button" disabled={!getTutorWebsiteUrl(selectedTutor.username)} onClick={() => window.location.assign(getTutorWebsiteUrl(selectedTutor.username))} className={buttonClass}>View portfolio ↗</button></div>
           </section>
         </div>
       )}

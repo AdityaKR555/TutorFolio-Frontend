@@ -1,6 +1,10 @@
+import { getWebsiteTitle } from "../../utils/websiteIdentity";
+import SocialIcon from "../SocialIcon";
+import { getTutorNavigationBase } from "../../utils/websiteUrls";
+import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ArrowUpRight, BookOpen, MessageCircle, Sparkles, Users, GraduationCap } from "lucide-react";
+import { Phone, ArrowRight, ArrowUpRight, BookOpen, MessageCircle, Sparkles, Users, GraduationCap } from "lucide-react";
 import "./aurora-theme.css";
 import TuitionLogo from "./TuitionLogo";
 
@@ -23,11 +27,12 @@ function AchievementCard({ item }) {
   return <article className="aurora-card aurora-achievement">{image && <img src={image} alt="" loading="lazy" />}<div className="aurora-card-body"><span className="aurora-chip">Student achievement</span><h3>{get(item, ["title", "achievementTitle"], "A moment worth celebrating")}</h3>{item.studentName && <strong>{item.studentName}</strong>}{item.description && <p>{item.description}</p>}{item.studentReview && <blockquote className="aurora-review">“{item.studentReview}”</blockquote>}</div></article>;
 }
 export default function ThemeAurora({ profile = {}, tuition = {}, achievements = [], batches = [], experience = [], faqs = [], gallery = [], username = "", previewBasePath, currentPage = "home", onContactClick }) {
+  const contactActions = getContactActions(profile);
   const homeRef = useRef(null);
-  const base = previewBasePath || `/tutor/${encodeURIComponent(username)}`;
+  const base = previewBasePath || getTutorNavigationBase(username);
   const href = (page) => page === "home" ? base : `${base}/${page}`;
   const name = [get(profile, ["firstName", "first_name"]), get(profile, ["lastName", "last_name"])].filter(Boolean).join(" ") || get(profile, ["username"], "Tutor");
-  const brand = get(tuition, ["tuitionName", "tuitionClassName"], name);
+  const brand = getWebsiteTitle(tuition, profile);
   const picture = get(profile, ["profilePicture", "profile_picture", "profilePhoto", "avatar"]);
   const subjects = list(get(tuition, ["teachingSubjects", "teaching_subjects"]));
   const intro = get(profile, ["about", "description"]);
@@ -50,7 +55,7 @@ export default function ThemeAurora({ profile = {}, tuition = {}, achievements =
     event.currentTarget.style.setProperty("--pointer-opacity", "1");
   };
   return <div className="aurora-theme"><div className="aurora-glow aurora-glow-one" aria-hidden="true"/><div className="aurora-glow aurora-glow-two" aria-hidden="true"/>
-    <header className="aurora-header"><Link to={base} className="aurora-brand"><TuitionLogo tuition={tuition} name={brand} className="h-10 w-10" fallback={<span className="aurora-brand-mark"><Sparkles size={19}/></span>}/><span>{brand}</span></Link><nav className="aurora-nav" aria-label="Tutor website navigation">{pages.map(([id, label]) => <Link key={id} to={href(id)} aria-current={currentPage === id ? "page" : undefined}>{label}</Link>)}</nav><button className="aurora-header-cta" onClick={onContactClick} type="button">Let's talk <ArrowUpRight size={16}/></button></header>
+    <header className="aurora-header"><Link to={base} className="aurora-brand"><TuitionLogo tuition={tuition} name={brand} className="h-10 w-10" /><span>{brand}</span></Link><nav className="aurora-nav" aria-label="Tutor website navigation"><Link to={base} className="aurora-mobile-identity"><TuitionLogo tuition={tuition} name={brand} className="h-9 w-9" /><span>{brand}</span></Link>{pages.map(([id, label]) => <Link key={id} to={href(id)} aria-current={currentPage === id ? "page" : undefined}>{label}</Link>)}</nav><button className="aurora-header-cta" onClick={onContactClick} type="button">Let's talk <ArrowUpRight size={16}/></button></header>
     <main className={`aurora-main${isHome ? " aurora-home" : ""}`} ref={homeRef} onPointerMove={isHome ? moveGlow : undefined} onPointerLeave={isHome ? (event) => event.currentTarget.style.setProperty("--pointer-opacity", "0") : undefined}>
       {isHome && <div className="aurora-pointer-glow" aria-hidden="true"/>}
       {isHome && <><section className="aurora-hero"><div className="aurora-hero-copy"><div className="aurora-eyebrow"><span className="aurora-pulse"/> A brighter way to learn</div><h1>Curiosity starts here<span>.</span></h1><p className="aurora-hero-intro">{intro || `Learn, grow, and reach your goals with ${name}.`}</p><div className="aurora-actions"><Link className="aurora-button aurora-button-primary" to={href("classes")}>Explore classes <ArrowRight size={18}/></Link><button className="aurora-button aurora-button-secondary" type="button" onClick={onContactClick}><MessageCircle size={17}/> Message tutor</button></div><div className="aurora-subjects">{subjects.slice(0, 4).map((subject) => <span key={subject}>{subject}</span>)}</div></div><div className="aurora-portrait-wrap"><div className="aurora-orbit aurora-orbit-one"/><div className="aurora-orbit aurora-orbit-two"/><div className="aurora-portrait">{picture ? <img src={picture} alt={name}/> : <span>{name.charAt(0).toUpperCase()}</span>}<div className="aurora-portrait-caption"><small>MEET YOUR EDUCATOR</small><strong>{name}</strong><span>{get(profile, ["qualification"], "Tutor")}</span></div></div><div className="aurora-float"><Sparkles size={18}/><span>Made for<br/><strong>your potential</strong></span></div></div></section>
@@ -68,6 +73,15 @@ export default function ThemeAurora({ profile = {}, tuition = {}, achievements =
         {currentPage === "achievements" && <div className="aurora-grid">{achievements.length ? achievements.map((item,i) => <AchievementCard key={item.achievementId ?? item.id ?? i} item={item}/>) : <Empty>Student achievements will appear here when shared.</Empty>}</div>}
         {currentPage === "experience" && <div className="aurora-timeline">{experience.length ? experience.map((item,i) => <article className="aurora-card aurora-card-body" key={item.experienceId ?? item.id ?? i}><span className="aurora-chip">{formatDate(item.startDate)} {item.isCurrent ? "— Present" : item.endDate ? `— ${formatDate(item.endDate)}` : ""}</span><h3>{get(item,["title"],"Teaching experience")}</h3>{item.description && <p>{item.description}</p>}</article>) : <Empty>Professional experience will appear here when shared.</Empty>}</div>}
         {currentPage === "gallery" && <div className="aurora-gallery">{gallery.filter((item) => get(item,["fileUrl","url","imageUrl","src"])).length ? gallery.filter((item) => get(item,["fileUrl","url","imageUrl","src"])).map((item,i) => <figure className="aurora-card" key={item.fileId ?? item.id ?? i}><img src={get(item,["fileUrl","url","imageUrl","src"])} alt={get(item,["title","originalFilename"],`Gallery photo ${i+1}`)} loading="lazy"/></figure>) : <Empty>Gallery photos will appear here when shared.</Empty>}</div>}</>}
-    </main><footer className="aurora-footer"><div><Link className="aurora-brand" to={base}><TuitionLogo tuition={tuition} name={brand} className="h-10 w-10" fallback={<span className="aurora-brand-mark"><Sparkles size={19}/></span>}/>{brand}</Link><p>Making room for bright ideas and bigger possibilities.</p></div><div className="aurora-footer-links">{pages.slice(1,5).map(([id,label]) => <Link key={id} to={href(id)}>{label}</Link>)}</div></footer>
+    </main>{contactActions.length > 0 && <aside aria-label="Contact tutor" className="aurora-contact-icons">
+      {contactActions.map((action) => <a key={action.field} href={action.href}
+        target={action.type === "whatsapp" ? "_blank" : undefined}
+        rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
+        className={`aurora-contact-icon ${action.type === "whatsapp" ? "is-whatsapp" : "is-phone"}`}
+        aria-label={action.actionLabel} title={action.actionLabel}>
+        {action.type === "whatsapp" ? <SocialIcon platform="whatsapp" className="h-6 w-6" /> : <Phone size={22} aria-hidden="true" />}
+      </a>)}
+    </aside>}
+    <footer className="aurora-footer"><div><Link className="aurora-brand" to={base}><TuitionLogo tuition={tuition} name={brand} className="h-10 w-10" />{brand}</Link><p>Making room for bright ideas and bigger possibilities.</p></div><div className="aurora-footer-links">{pages.slice(1,5).map(([id,label]) => <Link key={id} to={href(id)}>{label}</Link>)}</div></footer>
   </div>;
 }

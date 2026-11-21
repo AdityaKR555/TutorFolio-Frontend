@@ -1,3 +1,7 @@
+import { getWebsiteTitle } from "../../utils/websiteIdentity";
+import SocialIcon from "../SocialIcon";
+import { getTutorNavigationBase } from "../../utils/websiteUrls";
+import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import ExpandableText from "../ExpandableText";
@@ -40,6 +44,7 @@ const pageLinks = [
 
 /* ─── Premium SVG Icon System ────────────────────────────────────────────── */
 function LuminaryIcon({ name, className = "h-5 w-5" }) {
+  if (name === "whatsapp") return <SocialIcon platform="whatsapp" className={className} />;
   const icons = {
     home: (
       <>
@@ -143,9 +148,6 @@ function LuminaryIcon({ name, className = "h-5 w-5" }) {
         <circle cx="16" cy="4" r="1.5" fill="currentColor" />
         <circle cx="22" cy="4" r="1.5" fill="currentColor" />
       </>
-    ),
-    whatsapp: (
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.455 5.716 1.457h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" fill="currentColor" />
     ),
     sun: (
       <>
@@ -1630,15 +1632,15 @@ export default function ThemeLuminary({
     fd(tuition, ["tuitionName", "tuitionClassName", "academyName"]) ||
     "Distinguished Faculty";
 
-  const academyName =
-    fd(tuition, ["tuitionName", "tuitionClassName", "academyName"]) || name;
+  const academyName = getWebsiteTitle(tuition, profile);
 
-  const phoneCall = fd(profile, ["phone", "phoneNumber", "mobile", "contactNumber"]);
+  const phoneCall = fd(profile, ["mobileNo", "mobile_no", "phone", "phoneNumber", "mobile", "contactNumber"]);
+  const contactActions = getContactActions(profile);
   const emailAddress = fd(profile, ["email", "contactEmail"]);
   const whatsappNumber =
-    fd(profile, ["whatsapp", "whatsappNumber", "phone"])?.replace(/\D/g, "");
+    String(fd(profile, ["whatsappNo", "whatsapp_no"])).replace(/\D/g, "");
 
-  const basePath = previewBasePath || `/tutor/${encodeURIComponent(username || "")}`;
+  const basePath = previewBasePath || getTutorNavigationBase(username);
 
   /* Route page component switcher */
   let activePageContent = null;
@@ -1724,11 +1726,7 @@ export default function ThemeLuminary({
                   tuition={tuition}
                   name={academyName}
                   className="h-8 w-8 sm:h-9 sm:w-9"
-                  fallback={
-                    <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
-                      <LuminaryIcon name="crown" className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
-                    </div>
-                  }
+
                 />
                 <div className="min-w-0">
                   <span className="block truncate text-xs sm:text-sm font-black tracking-tight text-neutral-900 dark:text-white">
@@ -1796,14 +1794,10 @@ export default function ThemeLuminary({
             <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] flex flex-col justify-between border-r border-neutral-200 bg-white p-5 shadow-2xl dark:border-neutral-800 dark:bg-[#0b0f19]">
               <div>
                 <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-white">
-                      <LuminaryIcon name="crown" className="h-4 w-4" />
-                    </div>
-                    <span className="font-extrabold text-sm text-neutral-900 dark:text-white">
-                      Menu
-                    </span>
-                  </div>
+                  <Link to={basePath} onClick={() => setMobileMenuOpen(false)} className="flex min-w-0 items-center gap-2">
+                    <TuitionLogo tuition={tuition} name={academyName} className="h-8 w-8" />
+                    <span className="min-w-0 break-words text-sm font-extrabold text-neutral-900 dark:text-white">{academyName}</span>
+                  </Link>
                   <button
                     type="button"
                     onClick={() => setMobileMenuOpen(false)}
@@ -1879,9 +1873,7 @@ export default function ThemeLuminary({
           <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-3 sm:px-6">
             <div className="space-y-3">
               <Link to={basePath} className="flex items-center gap-2">
-                <TuitionLogo tuition={tuition} name={academyName} className="h-9 w-9" fallback={<div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500 text-white">
-                  <LuminaryIcon name="crown" className="h-4 w-4" />
-                </div>} />
+                <TuitionLogo tuition={tuition} name={academyName} className="h-9 w-9"  />
                 <span className="text-sm font-black text-neutral-900 dark:text-white">
                   {academyName}
                 </span>
@@ -1916,28 +1908,23 @@ export default function ThemeLuminary({
           </div>
         </footer>
 
-        {/* ── Floating Mobile Quick-Action Hub ── */}
-        <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2 sm:hidden">
-          {whatsappNumber && (
-            <a
-              href={`https://wa.me/${whatsappNumber}`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xl shadow-emerald-600/30 active:scale-95 transition"
-              aria-label="Chat on WhatsApp"
-            >
-              <LuminaryIcon name="whatsapp" className="h-6 w-6" />
-            </a>
-          )}
-          <button
-            type="button"
-            onClick={onContactClick}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-xl shadow-amber-600/40 active:scale-95 transition"
-            aria-label="Direct Consultation"
-          >
+        <div className="fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 flex flex-col gap-2">
+        {contactActions.length > 0 && <aside aria-label="Contact tutor" className="flex flex-col gap-2">
+          {contactActions.map((action) => <a key={action.field} href={action.href}
+            target={action.type === "whatsapp" ? "_blank" : undefined}
+            rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
+            className={`relative flex h-12 w-12 items-center justify-center rounded-xl text-white shadow-xl active:scale-95 transition focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-600 ${action.type === "whatsapp" ? "bg-emerald-600 shadow-emerald-600/30" : "bg-gradient-to-br from-amber-500 to-amber-700 shadow-amber-600/30"}`}
+            aria-label={action.actionLabel} title={action.actionLabel}>
+            <LuminaryIcon name={action.type === "whatsapp" ? "whatsapp" : "phone"} className="h-6 w-6" />
+          </a>)}
+        </aside>}
+          <button type="button" onClick={onContactClick}
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-xl shadow-amber-600/40 active:scale-95 transition sm:hidden"
+            aria-label="Direct Consultation">
             <LuminaryIcon name="message" className="h-6 w-6" />
           </button>
         </div>
+
       </div>
     </div>
   );

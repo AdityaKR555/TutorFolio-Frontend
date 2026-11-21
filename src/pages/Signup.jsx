@@ -1,3 +1,4 @@
+import { USERNAME_PATTERN } from "../utils/websiteUrls";
 import { showMessage } from "../components/PlatformDialog";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -89,6 +90,10 @@ function Signup() {
       return;
     }
 
+    if (!USERNAME_PATTERN.test(formData.username.trim())) {
+      await showMessage("Use 3–30 letters, numbers or hyphens, starting and ending with a letter or number.");
+      return;
+    }
     try {
       setLoading(true);
 

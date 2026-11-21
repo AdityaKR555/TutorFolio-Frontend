@@ -1,3 +1,4 @@
+import { getTutorWebsiteUrl } from "../../utils/websiteUrls";
 import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/axios";
@@ -848,7 +849,7 @@ export default function Website() {
   const userId = getUserId();
   const username = getUsername();
   const websiteUrl = username
-    ? `${window.location.origin}/tutor/${encodeURIComponent(username)}`
+    ? getTutorWebsiteUrl(username)
     : "";
 
   const [activeThemeId, setActiveThemeId] = useState("");
@@ -1054,7 +1055,7 @@ export default function Website() {
 
             {/* View website button */}
             <div className="flex shrink-0 items-center gap-2 w-full sm:w-auto">
-              {username ? (
+              {websiteUrl ? (
                 <>
                   <button
                     type="button"
@@ -1088,7 +1089,7 @@ export default function Website() {
                   to="/settings"
                   className="w-full sm:w-auto sm:min-w-[150px] h-9 sm:h-10 inline-flex justify-center items-center gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl border border-amber-300 bg-amber-50 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-amber-800 transition hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
                 >
-                  ⚠ Set a username first
+                  {username ? "Choose a website-compatible username" : "Set a username first"}
                 </Link>
               )}
             </div>
@@ -1096,7 +1097,7 @@ export default function Website() {
         </div>
 
         {/* ── Website URL card ── */}
-        {username && (
+        {websiteUrl && (
           <div className="mb-4 sm:mb-6 flex items-center gap-2.5 sm:gap-3 rounded-xl sm:rounded-2xl border border-tf-line bg-tf-surface px-3 py-2.5 sm:px-5 sm:py-4">
             <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 shrink-0 rounded-full bg-emerald-500" />
             <div className="min-w-0 flex-1">

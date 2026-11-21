@@ -1,3 +1,8 @@
+import TuitionLogo from "./TuitionLogo";
+import { getWebsiteTitle } from "../../utils/websiteIdentity";
+import SocialIcon from "../SocialIcon";
+import { getTutorNavigationBase } from "../../utils/websiteUrls";
+import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./glass-visuals.css";
 import ExpandableText from "../ExpandableText";
@@ -68,18 +73,12 @@ const ICONS = {
   quote: <path d="M10 7H6.5A2.5 2.5 0 0 0 4 9.5V14h6V9.5H6.5M20 7h-3.5A2.5 2.5 0 0 0 14 9.5V14h6V9.5h-3.5" />,
   external: <path d="M7 17 17 7M8 7h9v9" />,
   link: <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />,
-  youtube: <><rect x="2" y="5" width="20" height="14" rx="4.5" /><path fill="currentColor" stroke="none" d="m10 9 5.2 3-5.2 3z" /></>,
-  instagram: <><rect x="3" y="3" width="18" height="18" rx="5.5" /><circle cx="12" cy="12" r="4" /><circle cx="17.4" cy="6.6" r=".9" fill="currentColor" stroke="none" /></>,
-  facebook: <path d="M14 9h3V5h-3a4 4 0 0 0-4 4v2H7v4h3v6h4v-6h3l1-4h-4V9.5a.5.5 0 0 1 .5-.5Z" />,
-  linkedin: <><rect x="3" y="3" width="18" height="18" rx="4" /><path d="M8 10.5V16M8 7.6v.01M12 16v-5.5m0 2.5a2.8 2.8 0 0 1 5.6 0V16" /></>,
-  telegram: <path d="M21 4 3 11l6 2 2 6 3-4 5 3L21 4ZM9 13l12-9" />,
-  whatsapp: <><path d="M3 21l1.6-4.9A9 9 0 1 1 8 19.5L3 21Z" /><path d="M9 9c0 3 3 6 6 6l1.5-1.5-2-1-1 .8a4 4 0 0 1-2-2l.8-1-1-2L9 9Z" /></>,
-  x: <path d="M4 4l16 16M20 4 4 20" />,
 };
 const SOCIAL_ICON = { youtube: "youtube", instagram: "instagram", facebook: "facebook", linkedin: "linkedin", telegram: "telegram", whatsapp: "whatsapp", x: "x", twitter: "x" };
 const SOCIAL_NAME = { youtube: "YouTube", instagram: "Instagram", facebook: "Facebook", linkedin: "LinkedIn", telegram: "Telegram", whatsapp: "WhatsApp", x: "X", twitter: "X" };
 
 function Icon({ name, className = "h-5 w-5", fill = "none" }) {
+  if (["youtube", "instagram", "facebook", "linkedin", "telegram", "whatsapp", "x", "twitter"].includes(name)) return <SocialIcon platform={name} className={className} />;
   return <svg className={className} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">{ICONS[name] || ICONS.globe}</svg>;
 }
 
@@ -116,14 +115,7 @@ function SmallAvatar({ src, name }) {
   return <span aria-hidden="true" className="gl-chip-icon h-11 w-11 text-base font-semibold">{name?.trim()?.[0]?.toUpperCase() || "S"}</span>;
 }
 
-function TuitionLogo({ tuition, name, className = "h-9 w-9" }) {
-  const src = fd(tuition, LOGO_KEYS);
-  const [failedSrc, setFailedSrc] = useState("");
-  if (src && failedSrc !== src) {
-    return <img src={src} alt={`${name || "Tuition"} logo`} onError={() => setFailedSrc(src)} className={`${className} shrink-0 rounded-full bg-white/70 object-contain p-0.5`} />;
-  }
-  return <span aria-hidden="true" className={`gl-chip-icon ${className} shrink-0`}><Icon name="book" className="h-5 w-5" /></span>;
-}
+
 
 function PageHeading({ title, description }) {
   return <div className="mb-8 max-w-3xl sm:mb-10"><h1 className="gl-page-title">{title}</h1>{description && <p className="gl-muted mt-3 text-base leading-7 sm:text-lg">{description}</p>}</div>;
@@ -178,6 +170,7 @@ function GlassHeader({ basePath, currentPage, brand, tuition, mode, onToggleMode
         </div>
       </Glass>
       {open && <Glass as="nav" id="gl-menu" aria-label="Pages" className="gl-sheet mt-2 rounded-[1.75rem] p-2 lg:hidden">
+        <Link to={basePath} onClick={() => setOpen(false)} className="gl-row mx-2 mb-2 border-b border-current/15 px-1 py-3"><TuitionLogo tuition={tuition} name={brand} /><span className="min-w-0 break-words font-bold">{brand}</span></Link>
         {pageLinks.map((page) => <Link key={page.id} to={hrefFor(basePath, page.id)} onClick={() => setOpen(false)} aria-current={currentPage === page.id ? "page" : undefined} className="gl-sheetlink">{page.label}<Icon name="chevR" className="h-4 w-4 gl-faint" /></Link>)}
         <div className="p-2 pt-3 sm:hidden"><button type="button" onClick={() => { setOpen(false); onContactClick?.(); }} className="gl-btn gl-btn-solid w-full"><Icon name="message" className="h-4 w-4" />Message tutor</button></div>
       </Glass>}
@@ -186,17 +179,18 @@ function GlassHeader({ basePath, currentPage, brand, tuition, mode, onToggleMode
 }
 
 /* ------------------------------------------------------------- contact fab */
-function FloatingContact({ profile, socialLinks }) {
-  const phone = String(fd(profile, ["mobileNo", "mobile_no"])).trim().replace(/[^+\d]/g, "");
-  const whatsappNumber = String(fd(profile, ["whatsappNo", "whatsapp_no"])).replace(/\D/g, "");
-  const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber}` : socialLinks.find(([key]) => key.toLowerCase() === "whatsapp")?.[1];
-  if (!phone && !whatsappUrl) return null;
-  return <aside aria-label="Contact tutor" className="fixed right-3 z-40 sm:right-6" style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}>
-    <Glass className="flex flex-col gap-1.5 rounded-full p-1.5">
-      {whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="Contact tutor on WhatsApp (opens in a new tab)" title="WhatsApp" className="gl-fab gl-fab-wa"><Icon name="whatsapp" className="h-6 w-6" /></a>}
-      {phone && <a href={`tel:${phone}`} aria-label="Call tutor" title="Call tutor" className="gl-fab gl-fab-call"><Icon name="phone" className="h-5 w-5" /></a>}
-    </Glass>
-  </aside>;
+function FloatingContact({ profile }) {
+  const actions = getContactActions(profile);
+  if (!actions.length) return null;
+  return <aside aria-label="Contact tutor" className="fixed right-3 z-40 sm:right-6" style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}><Glass className="flex flex-col gap-1.5 rounded-full p-1.5">
+    {actions.map((action) => <a key={action.field} href={action.href}
+      target={action.type === "whatsapp" ? "_blank" : undefined}
+      rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
+      aria-label={action.actionLabel} title={action.actionLabel}
+      className={`relative gl-fab ${action.type === "whatsapp" ? "gl-fab-wa" : "gl-fab-call"}`}>
+      <Icon name={action.type === "whatsapp" ? "whatsapp" : "phone"} className="h-6 w-6" />
+    </a>)}
+  </Glass></aside>;
 }
 
 /* --------------------------------------------------------- achievements UI */
@@ -571,13 +565,13 @@ export default function ThemeGlass({ profile = {}, tuition = {}, achievements = 
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [currentPage]);
 
   const name = [fd(profile, ["firstName", "first_name"]), fd(profile, ["lastName", "last_name"])].filter(Boolean).join(" ") || fd(profile, ["username"], "Tutor");
-  const brand = fd(tuition, ["tuitionName", "tuitionClassName"], name);
+  const brand = getWebsiteTitle(tuition, profile);
   const location = [fd(tuition, ["city"]), fd(tuition, ["district"]), fd(tuition, ["state"])].filter(Boolean).join(", ");
   const subjects = list(fd(tuition, ["teachingSubjects", "teaching_subjects"]));
   const services = list(fd(tuition, ["services"]));
   const social = fd(profile, ["socialMedia"], {});
   const socialLinks = useMemo(() => Object.entries(social || {}).filter(([, value]) => typeof value === "string" && value.trim()).map(([label, value]) => [label, asUrl(value.trim())]).filter(([, url]) => { try { const parsed = new URL(url); return ["http:", "https:"].includes(parsed.protocol) && parsed.hostname.includes("."); } catch { return false; } }), [social]);
-  const basePath = previewBasePath || `/tutor/${encodeURIComponent(username)}`;
+  const basePath = previewBasePath || getTutorNavigationBase(username);
   const toggleMode = () => setMode((current) => (current === "dark" ? "light" : "dark"));
 
   let content;
@@ -593,7 +587,7 @@ export default function ThemeGlass({ profile = {}, tuition = {}, achievements = 
     <div className="gl-backdrop" aria-hidden="true"><span className="gl-orb gl-orb-a" /><span className="gl-orb gl-orb-b" /><span className="gl-orb gl-orb-c" /><span className="gl-grain" /></div>
     <GlassHeader basePath={basePath} currentPage={currentPage} brand={brand} tuition={tuition} mode={mode} onToggleMode={toggleMode} onContactClick={onContactClick} />
     <main className="mx-auto min-h-[70vh] max-w-6xl px-4 pb-16 pt-8 sm:px-6 sm:pt-10 lg:pt-14">{content}</main>
-    <FloatingContact profile={profile} socialLinks={socialLinks} />
+    <FloatingContact profile={profile} />
     <footer className="px-3 pb-4 sm:px-5 sm:pb-6">
       <Glass className="mx-auto max-w-6xl rounded-[2rem] p-6 sm:p-9">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1.2fr]">
@@ -606,7 +600,7 @@ export default function ThemeGlass({ profile = {}, tuition = {}, achievements = 
             <div className="mt-3 flex flex-col gap-2 text-sm">
               {fd(profile, ["email"]) && <a className="gl-footer-link flex items-center gap-2 [overflow-wrap:anywhere]" href={`mailto:${profile.email}`}><Icon name="mail" className="h-4 w-4 shrink-0" />{profile.email}</a>}
               {fd(profile, ["mobileNo", "mobile_no"]) && <a className="gl-footer-link flex items-center gap-2" href={`tel:${fd(profile, ["mobileNo", "mobile_no"])}`}><Icon name="phone" className="h-4 w-4 shrink-0" />{fd(profile, ["mobileNo", "mobile_no"])}</a>}
-              <Link to={`${hrefFor(basePath, "about")}#about-contact`} className="gl-link self-start px-0">Message the tutor<Icon name="chevR" className="h-4 w-4" /></Link>
+              <button type="button" onClick={onContactClick} className="gl-link self-start px-0">Message the tutor<Icon name="chevR" className="h-4 w-4" /></button>
             </div>
           </div>
         </div>

@@ -1,3 +1,7 @@
+import { getWebsiteTitle } from "../../utils/websiteIdentity";
+import SocialIcon from "../SocialIcon";
+import { getTutorNavigationBase } from "../../utils/websiteUrls";
+import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import ExpandableText from "../ExpandableText";
@@ -795,14 +799,14 @@ function StatCard({ value, label, icon, accent = "indigo" }) {
 
 /* ─── Social Row ──────────────────────────────────────────────────────────── */
 const socialMeta = {
-  youtube: ["YouTube", "#ef4444", "▶"],
-  instagram: ["Instagram", "#db2777", "◎"],
-  facebook: ["Facebook", "#2563eb", "f"],
-  linkedin: ["LinkedIn", "#0284c7", "in"],
-  telegram: ["Telegram", "#0891b2", "➤"],
-  whatsapp: ["WhatsApp", "#059669", "◉"],
-  x: ["X", "#171717", "𝕏"],
-  twitter: ["X", "#171717", "𝕏"],
+  youtube: ["YouTube", "#ef4444"],
+  instagram: ["Instagram", "#db2777"],
+  facebook: ["Facebook", "#2563eb"],
+  linkedin: ["LinkedIn", "#0284c7"],
+  telegram: ["Telegram", "#0891b2"],
+  whatsapp: ["WhatsApp", "#059669"],
+  x: ["X", "#171717"],
+  twitter: ["X", "#171717"],
 };
 
 function SocialRow({ links }) {
@@ -810,7 +814,7 @@ function SocialRow({ links }) {
   return (
     <div className="flex flex-wrap items-center gap-2.5">
       {links.map(([key, url]) => {
-        const [label, color, mark] = socialMeta[key.toLowerCase()] || [key, "#737373", "↗"];
+        const [label, color] = socialMeta[key.toLowerCase()] || [key, "#737373"];
         return (
           <a
             key={key}
@@ -818,10 +822,11 @@ function SocialRow({ links }) {
             target="_blank"
             rel="noopener noreferrer"
             title={label}
+            aria-label={label}
             className="group flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200/80 bg-white font-bold text-sm text-neutral-800 shadow-2xs transition-all hover:-translate-y-0.5 hover:shadow-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
           >
-            <span style={{ color }} className="transition-transform group-hover:scale-110">
-              {mark}
+            <span style={{ color: ["x", "twitter"].includes(key.toLowerCase()) ? undefined : color }} className="transition-transform group-hover:scale-110">
+              <SocialIcon platform={key} className="h-5 w-5" />
             </span>
           </a>
         );
@@ -831,48 +836,22 @@ function SocialRow({ links }) {
 }
 
 /* ─── Floating Quick Action Buttons ───────────────────────────────────────── */
-function FloatingContact({ profile, socialLinks }) {
-  const phone = String(fd(profile, ["mobileNo", "mobile_no"])).trim().replace(/[^+\d]/g, "");
-  const whatsappNumber = String(fd(profile, ["whatsappNo", "whatsapp_no"])).replace(/\D/g, "");
-  const whatsappUrl = whatsappNumber
-    ? `https://wa.me/${whatsappNumber}`
-    : socialLinks.find(([key]) => key.toLowerCase() === "whatsapp")?.[1];
-
-  if (!phone && !whatsappUrl) return null;
-
-  return (
-    <aside
-      aria-label="Contact tutor"
-      className="fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 flex flex-col gap-2.5 sm:right-6"
-    >
-      {whatsappUrl && (
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="WhatsApp tutor"
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg transition hover:scale-105 hover:bg-emerald-700 active:scale-95"
-        >
-          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor">
-            <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.4-.2-3 .8.8-2.9-.3-.5A8 8 0 1 1 12 20Zm4.4-5.8c-.2-.1-1.4-.7-1.6-.7s-.4-.1-.5.1l-.8 1c-.1.1-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.2-.3.2-.5.6-1 .1-.2.1-.3 0-.5L9.7 8.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.6.6-.9 1.3-.8 2.1 0 1.2.9 2.4 1 2.6.2.2 1.8 2.8 4.3 3.8 1.6.6 2.3.7 3.1.5.5-.1 1.4-.6 1.6-1.2.2-.6.2-1.1.1-1.2-.1-.2-.3-.3-.8-.5Z" />
-          </svg>
-        </a>
-      )}
-      {phone && (
-        <a
-          href={`tel:${phone}`}
-          aria-label="Call tutor"
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-900 text-white shadow-lg transition hover:scale-105 hover:bg-neutral-800 active:scale-95 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
-        >
-          <Icon name="phone" className="h-5 w-5" />
-        </a>
-      )}
-    </aside>
-  );
+function FloatingContact({ profile }) {
+  const actions = getContactActions(profile);
+  if (!actions.length) return null;
+  return <aside aria-label="Contact tutor" className="fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 flex flex-col gap-2.5 sm:right-6">
+    {actions.map((action) => <a key={action.field} href={action.href}
+      target={action.type === "whatsapp" ? "_blank" : undefined}
+      rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
+      aria-label={action.actionLabel} title={action.actionLabel}
+      className={`relative flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-500 ${action.type === "whatsapp" ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"}`}>
+      {action.type === "whatsapp" ? <SocialIcon platform="whatsapp" className="h-6 w-6" /> : <Icon name="phone" className="h-5 w-5" />}
+    </a>)}
+  </aside>;
 }
 
 /* ─── Mobile Drawer ────────────────────────────────────────────────────────── */
-function MobileNav({ basePath, currentPage, open, onClose, name }) {
+function MobileNav({ basePath, currentPage, open, onClose, name, tuition }) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => e.key === "Escape" && onClose();
@@ -891,14 +870,10 @@ function MobileNav({ basePath, currentPage, open, onClose, name }) {
       <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-xs transition-opacity" onClick={onClose} />
       <nav className="absolute left-0 top-0 bottom-0 w-72 max-w-[85vw] bg-white p-6 shadow-2xl dark:bg-neutral-900 flex flex-col">
         <div className="mb-6 flex items-center justify-between border-b border-neutral-100 pb-4 dark:border-neutral-800">
-          <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-xs font-bold text-white">
-              TF
-            </span>
-            <span className="text-sm font-bold text-neutral-950 dark:text-white truncate">
-              {name}
-            </span>
-          </div>
+          <Link to={basePath} onClick={onClose} className="flex min-w-0 items-center gap-2">
+            <TuitionLogo tuition={tuition} name={name} className="h-8 w-8" />
+            <span className="min-w-0 break-words text-sm font-bold text-neutral-950 dark:text-white">{name}</span>
+          </Link>
           <button
             type="button"
             onClick={onClose}
@@ -1260,7 +1235,7 @@ function HomePage({
         </div>
       </section>
 
-      <FloatingContact profile={profile} socialLinks={socialLinks} />
+
     </div>
   );
 }
@@ -1436,7 +1411,7 @@ function AboutPage({ name, profile, tuition, socialLinks, faqs, onContactClick, 
                 className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-300 transition hover:bg-emerald-500/20"
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
-                  <Icon name="message" className="h-4.5 w-4.5" />
+                  <SocialIcon platform="whatsapp" className="h-4.5 w-4.5" />
                 </span>
                 <div className="min-w-0">
                   <p className="text-[10px] text-emerald-400/80">WhatsApp</p>
@@ -1819,7 +1794,7 @@ export default function ThemeMinimal({
     [social]
   );
 
-  const basePath = previewBasePath || `/tutor/${encodeURIComponent(username)}`;
+  const basePath = previewBasePath || getTutorNavigationBase(username);
 
   /* Mobile navigation drawer state */
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -1897,11 +1872,9 @@ export default function ThemeMinimal({
               </button>
 
               <Link to={basePath} className="flex items-center gap-2.5 no-underline">
-                <TuitionLogo tuition={tuition} name={fd(tuition, ["tuitionName", "tuitionClassName"], name)} className="h-8 w-8" fallback={<span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-sky-500 font-bold text-xs text-white shadow-2xs">
-                  {fd(tuition, ["tuitionName", "tuitionClassName"], name).charAt(0).toUpperCase()}
-                </span>} />
+                <TuitionLogo tuition={tuition} name={getWebsiteTitle(tuition, profile)} className="h-8 w-8"  />
                 <span className="truncate text-base font-bold tracking-tight text-neutral-950 dark:text-white">
-                  {fd(tuition, ["tuitionName", "tuitionClassName"], name)}
+                  {getWebsiteTitle(tuition, profile)}
                 </span>
               </Link>
             </div>
@@ -1950,7 +1923,8 @@ export default function ThemeMinimal({
           currentPage={currentPage}
           open={mobileNavOpen}
           onClose={() => setMobileNavOpen(false)}
-          name={name}
+          name={getWebsiteTitle(tuition, profile)}
+          tuition={tuition}
         />
 
         {/* ── Main Content Container ── */}
@@ -1963,8 +1937,8 @@ export default function ThemeMinimal({
           <div className="mx-auto grid max-w-5xl gap-8 px-4 py-10 sm:grid-cols-3 sm:px-6">
             <div>
               <Link to={basePath} className="flex items-center gap-2 text-base font-bold text-neutral-950 dark:text-white">
-                <TuitionLogo tuition={tuition} name={fd(tuition, ["tuitionName", "tuitionClassName"], name)} className="h-9 w-9" />
-                {fd(tuition, ["tuitionName", "tuitionClassName"], name)}
+                <TuitionLogo tuition={tuition} name={getWebsiteTitle(tuition, profile)} className="h-9 w-9" />
+                {getWebsiteTitle(tuition, profile)}
               </Link>
               <p className="mt-2 text-xs text-neutral-500 leading-relaxed max-w-xs">
                 Explore classes and learn more about your tutor.
@@ -1995,6 +1969,7 @@ export default function ThemeMinimal({
 
           </div>
         </footer>
+        <FloatingContact profile={profile} />
       </div>
     </div>
   );

@@ -1,9 +1,19 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import api from "../api/axios";
 import ExpandableText from "./ExpandableText";
+import "./visitor-chat.css";
 
-const field = "w-full rounded-xl border border-tf-line bg-tf-bg px-3.5 py-3 text-sm text-tf-ink outline-none placeholder:text-tf-muted focus:border-tf-blue focus:ring-2 focus:ring-tf-blue/20";
-const button = "inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50";
+const field = "vc-field w-full rounded-xl border vc-line vc-bg px-3.5 py-3 text-sm vc-ink outline-none";
+const button = "vc-button inline-flex items-center justify-center gap-2 rounded-xl vc-accent-bg px-4 py-2.5 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50";
+
+const CHAT_THEMES = {
+  classic: "classic", theme_classic: "classic",
+  minimal: "minimal", theme_minimal: "minimal", theme_modern: "minimal",
+  luminary_elite: "luminary", theme_3: "luminary", theme3: "luminary", elite: "luminary", elite_academy: "luminary", vibrant_slate: "luminary", bold_educator: "luminary", theme_bold: "luminary",
+  aurora: "aurora", theme4: "aurora",
+  theme5: "motion", motion_studio: "motion",
+  glass: "glass", theme_glass: "glass", theme6: "glass", theme_6: "glass",
+};
 
 function unwrap(response) {
   const body = response?.data ?? response ?? {};
@@ -16,7 +26,7 @@ function timeLabel(value) {
   return Number.isNaN(date.getTime()) ? "" : date.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
 }
 
-export default function VisitorChatWidget({ tutorId, tutorName = "Tutor", open, onClose }) {
+export default function VisitorChatWidget({ tutorId, tutorName = "Tutor", open, onClose, theme = "classic", preview = false }) {
   const storageKey = `tutorfolio:visitor-chat:${tutorId}`;
   const [visitorIdentifier, setVisitorIdentifier] = useState("");
   const [thread, setThread] = useState(null);
@@ -28,8 +38,44 @@ export default function VisitorChatWidget({ tutorId, tutorName = "Tutor", open, 
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const formId = useId();
+  const dialogRef = useRef(null);
+  const modalRef = useRef(null);
   const endRef = useRef(null);
   const loadingRef = useRef(false);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const previousFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    const previousScroll = { left: window.scrollX, top: window.scrollY };
+    const modal = modalRef.current;
+    if (modal && !modal.open) modal.showModal();
+    document.body.style.overflow = "hidden";
+    const panel = dialogRef.current;
+    const focusable = () => Array.from(panel?.querySelectorAll('button:not(:disabled), input:not(:disabled), textarea:not(:disabled), a[href], [tabindex="0"]') || []).filter((element) => element.getClientRects().length);
+    const firstInput = panel?.querySelector("input, textarea");
+    (firstInput || focusable()[0] || panel)?.focus({ preventScroll: true });
+    window.scrollTo({ left: 0, top: 0, behavior: "instant" });
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") { event.preventDefault(); onClose(); }
+      if (event.key !== "Tab") return;
+      const elements = focusable();
+      const first = elements[0];
+      const last = elements.at(-1);
+      if (!first) { event.preventDefault(); panel?.focus(); return; }
+      if (event.shiftKey && (document.activeElement === first || !panel?.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && (document.activeElement === last || !panel?.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      modal?.close();
+      document.body.style.overflow = previousOverflow;
+      window.scrollTo({ ...previousScroll, behavior: "instant" });
+      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+    };
+  }, [open, onClose]);
 
   const loadThread = useCallback(async (token, quiet = false) => {
     if (!token || !tutorId || loadingRef.current) return null;
@@ -63,12 +109,13 @@ export default function VisitorChatWidget({ tutorId, tutorName = "Tutor", open, 
   useEffect(() => {
     if (!open || !tutorId) return;
     setError(""); setSuccess("");
+    if (preview) { setVisitorIdentifier(""); setThread(null); return; }
     let token = "";
     try { token = localStorage.getItem(storageKey) || ""; } catch { /* local storage might be disabled */ }
     setVisitorIdentifier(token);
     if (token) loadThread(token);
     else { setThread(null); }
-  }, [open, tutorId, storageKey, loadThread]);
+  }, [open, tutorId, storageKey, loadThread, preview]);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [thread?.messages?.length, open]);
 
@@ -79,6 +126,7 @@ export default function VisitorChatWidget({ tutorId, tutorName = "Tutor", open, 
 
   const submit = async (event) => {
     event.preventDefault();
+    if (preview) return;
     const cleanMessage = message.trim();
     if (!cleanMessage || sending || !tutorId) return;
     if (!visitorIdentifier && !visitorName.trim()) { setError("Please enter your name."); return; }
@@ -103,7 +151,7 @@ export default function VisitorChatWidget({ tutorId, tutorName = "Tutor", open, 
         setVisitorIdentifier(data.visitorIdentifier);
       }
       setMessage("");
-      setSuccess("Message sent. Replies will appear here while this browser keeps your conversation token.");
+      setSuccess("Message sent. Keep using this browser to read replies and continue the conversation.");
       const token = visitorIdentifier || localStorage.getItem(storageKey);
       if (token) await loadThread(token, true);
       window.dispatchEvent(new CustomEvent("tutorfolio-chat-updated"));
@@ -117,25 +165,26 @@ export default function VisitorChatWidget({ tutorId, tutorName = "Tutor", open, 
   const isClosed = String(thread?.status || "").toLowerCase() === "closed";
   const messages = Array.isArray(thread?.messages) ? thread.messages : [];
 
-  return <div className="tf-modal-backdrop fixed inset-0 z-[120] flex items-end justify-center bg-black/65 p-0 backdrop-blur-sm sm:items-center sm:p-5" role="dialog" aria-modal="true" aria-label={`Contact ${tutorName}`}>
-    <div className="tf-modal-panel flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-t-3xl border border-tf-line bg-tf-surface shadow-2xl shadow-black/20 dark:shadow-black/50 sm:rounded-3xl">
-      <div className="flex items-center justify-between gap-4 border-b border-tf-line p-4 sm:p-5"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-tf-blue-pressed">TutorFolio messages</p><h2 className="mt-1 text-lg font-bold text-tf-ink">Contact {tutorName}</h2><p className="mt-1 text-xs text-tf-copy">Send an enquiry directly to this tutor.</p></div><button type="button" onClick={onClose} aria-label="Close chat" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-tf-line text-lg text-tf-copy hover:bg-tf-surface-soft">×</button></div>
-      <div className="flex-1 space-y-3 overflow-y-auto bg-tf-bg p-4 sm:p-5">
-        {!visitorIdentifier && <div className="rounded-xl border border-tf-line bg-tf-surface p-3 text-xs leading-5 text-tf-copy">Your conversation token is saved only in this browser. Keep using the same browser to read replies and continue the chat.</div>}
-        {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-800 dark:border-red-500/20 dark:bg-red-500/5 dark:text-red-200">{error}</p>}
-        {success && <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs leading-5 text-emerald-800 dark:border-emerald-500/15 dark:bg-emerald-500/5 dark:text-emerald-200">{success}</p>}
-        {visitorIdentifier && loadingThread && !thread && <p className="py-8 text-center text-sm text-tf-copy">Loading your conversation…</p>}
-        {visitorIdentifier && thread && <><div className="mb-2 flex items-center justify-between gap-2"><p className="text-xs text-tf-muted">{thread.subject || "Conversation"}</p><span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ${isClosed ? "bg-slate-200 text-slate-700 dark:bg-slate-500/15 dark:text-slate-300" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300"}`}>{thread.status || "open"}</span></div>{messages.map((item, index) => {
+  return <dialog ref={modalRef} onCancel={(event) => { event.preventDefault(); onClose(); }} data-chat-theme={CHAT_THEMES[String(theme).trim().toLowerCase()] || "classic"} className="visitor-chat fixed inset-0 z-[120] flex items-end justify-center bg-black/65 p-0 backdrop-blur-sm sm:items-center sm:p-5" role="dialog" aria-modal="true" aria-labelledby={`${formId}-title`} aria-describedby={`${formId}-description`} onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <div ref={dialogRef} tabIndex={-1} className={`vc-panel ${!visitorIdentifier ? "vc-start" : ""} flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-t-3xl border vc-line vc-surface shadow-2xl shadow-black/20 dark:shadow-black/50 sm:rounded-3xl`}>
+      <div className="vc-header flex items-start justify-between gap-4 border-b vc-line p-4 sm:p-5"><div><h2 id={`${formId}-title`} className="vc-title font-bold vc-ink">Contact {tutorName}</h2><p id={`${formId}-description`} className="vc-subtitle vc-copy">Send an enquiry directly to this tutor.</p><p className="vc-browser-note vc-muted">Use this browser to continue your conversation.</p>{preview && <p className="vc-preview-note vc-muted">Preview only. Messages won’t be sent.</p>}</div><button type="button" onClick={onClose} aria-label="Close chat" className="vc-close flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border vc-line text-lg vc-copy">×</button></div>
+      {(visitorIdentifier || error || success || isClosed) && <div className="vc-history flex-1 space-y-3 overflow-y-auto vc-bg p-4 sm:p-5">
+        {error && <p role="alert" className="vc-error rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-800 dark:border-red-500/20 dark:bg-red-500/5 dark:text-red-200">{error}</p>}
+        {success && <p role="status" className="vc-success rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs leading-5 text-emerald-800 dark:border-emerald-500/15 dark:bg-emerald-500/5 dark:text-emerald-200">{success}</p>}
+        {visitorIdentifier && loadingThread && !thread && <p className="py-8 text-center text-sm vc-copy">Loading your conversation…</p>}
+        {visitorIdentifier && thread && <><div className="mb-2 flex items-center justify-between gap-2"><p className="text-xs vc-muted">{thread.subject || "Conversation"}</p><span className={`vc-status rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ${isClosed ? "bg-slate-200 text-slate-700 dark:bg-slate-500/15 dark:text-slate-300" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300"}`}>{thread.status || "open"}</span></div>{messages.map((item, index) => {
           const tutorMessage = String(item.senderType || "").toLowerCase() === "tutor";
-          return <div key={item.messageId ?? item.id ?? index} className={`flex ${tutorMessage ? "justify-start" : "justify-end"}`}><div className={`max-w-[88%] rounded-2xl px-3.5 py-3 ${tutorMessage ? "rounded-bl-md border border-tf-line bg-tf-surface text-tf-ink" : "rounded-br-md bg-blue-600 text-white"}`}><ExpandableText lines={5} className="text-sm leading-6" preserveWhitespace>{item.content}</ExpandableText><p className={`mt-1.5 text-[10px] ${tutorMessage ? "text-tf-muted" : "text-blue-100/70"}`}>{tutorMessage ? tutorName : "You"} · {timeLabel(item.createdAt)}</p></div></div>;
+          return <div key={item.messageId ?? item.id ?? index} className={`flex ${tutorMessage ? "justify-start" : "justify-end"}`}><div className={`vc-bubble max-w-[88%] rounded-2xl px-3.5 py-3 ${tutorMessage ? "vc-received rounded-bl-md border vc-line vc-surface vc-ink" : "vc-sent rounded-br-md vc-accent-bg"}`}><ExpandableText lines={5} className="text-sm leading-6" preserveWhitespace>{item.content}</ExpandableText><p className={`mt-1.5 text-[10px] ${tutorMessage ? "vc-muted" : "vc-sent-meta"}`}>{tutorMessage ? tutorName : "You"} · {timeLabel(item.createdAt)}</p></div></div>;
         })}<div ref={endRef}/></>}
-        {isClosed && <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-500/15 dark:bg-amber-500/5 dark:text-amber-100">This conversation is closed, so you cannot send another message in this thread.</div>}
-      </div>
-      {isClosed ? <div className="flex flex-col gap-3 border-t border-tf-line p-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs leading-5 text-tf-copy">Start a new conversation to contact the tutor again.</p><button type="button" onClick={startNewConversation} className={button}>Start new conversation</button></div> : <form onSubmit={submit} className="border-t border-tf-line p-4 sm:p-5">
-        {!visitorIdentifier && <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2"><div><label className="mb-1.5 block text-xs text-tf-copy">Your name <span className="text-red-600 dark:text-red-300">*</span></label><input value={visitorName} onChange={(event) => setVisitorName(event.target.value)} required maxLength={200} className={field} placeholder="Enter your name"/></div><div><label className="mb-1.5 block text-xs text-tf-copy">Email (optional)</label><input type="email" value={visitorEmail} onChange={(event) => setVisitorEmail(event.target.value)} maxLength={254} className={field} placeholder="you@example.com"/></div><div className="sm:col-span-2"><label className="mb-1.5 block text-xs text-tf-copy">Subject (optional)</label><input value={subject} onChange={(event) => setSubject(event.target.value)} maxLength={500} className={field} placeholder="e.g. Maths tuition for Class 10"/></div></div>}
-        <label className="mb-1.5 block text-xs font-medium text-tf-copy">Message</label><div className="flex items-end gap-2"><textarea value={message} onChange={(event) => setMessage(event.target.value)} required rows={2} maxLength={5000} className={`${field} min-h-[54px] resize-y`} placeholder="Write your message…"/><button type="submit" disabled={!message.trim() || sending || !tutorId} className={`${button} min-h-[50px]`}>{sending ? "Sending…" : visitorIdentifier ? "Send" : "Start chat"}</button></div>
+        {isClosed && <div className="vc-notice rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-500/15 dark:bg-amber-500/5 dark:text-amber-100">This conversation is closed, so you cannot send another message in this thread.</div>}
+      </div>}
+      {isClosed ? <div className="flex flex-col gap-3 border-t vc-line p-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs leading-5 vc-copy">Start a new conversation to contact the tutor again.</p><button type="button" onClick={startNewConversation} className={button}>Start new conversation</button></div> : <form onSubmit={submit} className="vc-compose border-t vc-line p-4 sm:p-5">
+        {!visitorIdentifier && <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2"><div><label htmlFor={`${formId}-name`} className="mb-1.5 block text-xs vc-copy">Your name <span className="vc-required">*</span></label><input id={`${formId}-name`} autoComplete="name" value={visitorName} onChange={(event) => setVisitorName(event.target.value)} required maxLength={200} className={field} placeholder="Enter your name"/></div><div><label htmlFor={`${formId}-email`} className="mb-1.5 block text-xs vc-copy">Email (optional)</label><input id={`${formId}-email`} type="email" autoComplete="email" value={visitorEmail} onChange={(event) => setVisitorEmail(event.target.value)} maxLength={254} className={field} placeholder="you@example.com"/></div><div className="sm:col-span-2"><label htmlFor={`${formId}-subject`} className="mb-1.5 block text-xs vc-copy">Subject (optional)</label><input id={`${formId}-subject`} value={subject} onChange={(event) => setSubject(event.target.value)} maxLength={500} className={field} placeholder="e.g. Maths tuition for Class 10"/></div></div>}
+        <label htmlFor={`${formId}-message`} className="mb-1.5 block text-xs font-medium vc-copy">Message <span className="vc-required">*</span></label>
+        <textarea id={`${formId}-message`} value={message} onChange={(event) => setMessage(event.target.value)} required rows={visitorIdentifier ? 3 : 5} maxLength={5000} className={`${field} vc-message resize-y`} placeholder="Write your message…"/>
+        <div className="vc-actions flex justify-end"><button type="submit" disabled={preview || !message.trim() || sending || !tutorId} className={`${button} min-h-[50px]`}>{sending ? "Sending…" : visitorIdentifier ? "Send" : "Start chat"}</button></div>
       </form>}
-      <div className="border-t border-tf-line px-4 py-2 text-center text-[10px] text-tf-muted">Please avoid sharing passwords, payment details or other sensitive information.</div>
+      <div className="vc-footer border-t vc-line vc-muted">Please avoid sharing sensitive information.</div>
     </div>
-  </div>;
+  </dialog>;
 }

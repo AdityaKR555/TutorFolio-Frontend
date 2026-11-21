@@ -1,3 +1,7 @@
+import { socialBrandColors } from "../../components/socialBrandPaths";
+import { Share2 } from "lucide-react";
+import SocialIcon from "../../components/SocialIcon";
+import { CONTACT_NUMBERS, contactNumber, contactIconSettings } from "../../utils/contactIcons";
 import PlatformLoader from "../../components/PlatformLoader";
 import React, { useEffect, useRef, useState } from "react";
 import api from "../../api/axios";
@@ -16,13 +20,13 @@ const initialSocialLinks = {
 };
 
 const socialPlatforms = [
-  { key: "facebook", label: "Facebook", mark: "f" },
-  { key: "instagram", label: "Instagram", mark: "◎" },
-  { key: "whatsapp", label: "WhatsApp", mark: "◉" },
-  { key: "telegram", label: "Telegram", mark: "➤" },
-  { key: "linkedin", label: "LinkedIn", mark: "in" },
-  { key: "youtube", label: "YouTube", mark: "▶" },
-  { key: "x", label: "X profile", mark: "𝕏" },
+  { key: "facebook", label: "Facebook" },
+  { key: "instagram", label: "Instagram" },
+  { key: "whatsapp", label: "WhatsApp" },
+  { key: "telegram", label: "Telegram" },
+  { key: "linkedin", label: "LinkedIn" },
+  { key: "youtube", label: "YouTube" },
+  { key: "x", label: "X profile" },
 ];
 
 function getSafeProfileUrl(value) {
@@ -63,6 +67,35 @@ function ProfileViewItem({ label, value, full = false, multiline = false, link =
   );
 }
 
+function ContactIconToggle({ label, number, checked, disabled, onChange }) {
+  const hasNumber = Boolean(contactNumber(number));
+  const enabled = hasNumber && checked;
+  const displayLabel = label === "WhatsApp" ? label : label.toLowerCase();
+  return (
+    <div className="mt-2">
+      <label className={`flex items-center justify-between gap-3 text-xs text-[var(--tf-copy)] ${hasNumber && !disabled ? "cursor-pointer" : "cursor-not-allowed"}`}>
+        <span>Show {displayLabel} icon on website</span>
+        <input
+          type="checkbox"
+          role="switch"
+          aria-label={`Show ${displayLabel} icon on website`}
+          aria-describedby={`${label.replaceAll(" ", "-")}-icon-help`}
+          checked={enabled}
+          disabled={disabled || !hasNumber}
+          onChange={(event) => onChange(hasNumber && event.target.checked)}
+          className="peer sr-only"
+        />
+        <span aria-hidden="true" className={`relative h-6 w-11 shrink-0 rounded-full transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--tf-blue)] peer-disabled:opacity-45 ${enabled ? "bg-[var(--tf-blue)]" : "bg-slate-300 dark:bg-slate-600"}`}>
+          <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${enabled ? "translate-x-[22px]" : "translate-x-0.5"}`} />
+        </span>
+      </label>
+      <p id={`${label.replaceAll(" ", "-")}-icon-help`} className="mt-1 text-[10px] text-[var(--tf-muted)]">
+        {hasNumber ? "Save changes to update the floating icon in every theme." : "Enter a valid 10–15 digit number to enable this icon."}
+      </p>
+    </div>
+  );
+}
+
 const initialForm = {
   firstName: "",
   lastName: "",
@@ -71,6 +104,8 @@ const initialForm = {
   mobileNo: "",
   whatsappNo: "",
   alternateNo: "",
+  showMobileIcon: false,
+  showWhatsappIcon: false,
   email: "",
   about: "",
   profilePicture: "",
@@ -121,6 +156,7 @@ function Profile() {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+      ...Object.fromEntries(CONTACT_NUMBERS.filter(({ field }) => field === name && !contactNumber(value)).map(({ flag }) => [flag, false])),
     }));
 
     setError("");
@@ -284,6 +320,7 @@ function Profile() {
           const profile = {
             ...initialForm,
             ...data.data,
+            ...contactIconSettings(data.data),
             firstName: data.data.firstName ?? "",
             lastName: data.data.lastName ?? "",
             dateOfBirth: data.data.dateOfBirth
@@ -506,7 +543,7 @@ function Profile() {
 
       if (!phone && !required) return "";
 
-      if (!/^\d{10,15}$/.test(phone)) {
+      if (!contactNumber(phone)) {
         return `${label} must contain 10 to 15 digits.`;
       }
 
@@ -557,6 +594,7 @@ function Profile() {
 
     const payload = {
       userId,
+      ...contactIconSettings(formData),
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim() || null,
       dateOfBirth: formData.dateOfBirth || null,
@@ -587,12 +625,14 @@ function Profile() {
       const data = response.data;
 
       if (data?.status === 200) {
+        let updatedForm = formData;
         if (data.data) {
           const saved = data.data;
 
-          const updatedForm = {
+          updatedForm = {
             ...initialForm,
             ...saved,
+            ...contactIconSettings(saved),
             firstName: saved.firstName ?? payload.firstName,
             lastName: saved.lastName ?? payload.lastName ?? "",
             dateOfBirth: saved.dateOfBirth
@@ -874,9 +914,16 @@ function Profile() {
                   disabled={!isEditing}
                   required
                   inputMode="numeric"
-                  maxLength={15}
+                  maxLength={16}
                   placeholder="Enter mobile number"
                   className={inputClass}
+                />
+                <ContactIconToggle
+                  label="Mobile"
+                  number={formData.mobileNo}
+                  checked={formData.showMobileIcon}
+                  disabled={saving}
+                  onChange={(checked) => setFormData((prev) => ({ ...prev, showMobileIcon: checked }))}
                 />
               </div>
 
@@ -889,9 +936,16 @@ function Profile() {
                   onChange={handleChange}
                   disabled={!isEditing}
                   inputMode="numeric"
-                  maxLength={15}
+                  maxLength={16}
                   placeholder="Enter WhatsApp number"
                   className={inputClass}
+                />
+                <ContactIconToggle
+                  label="WhatsApp"
+                  number={formData.whatsappNo}
+                  checked={formData.showWhatsappIcon}
+                  disabled={saving}
+                  onChange={(checked) => setFormData((prev) => ({ ...prev, showWhatsappIcon: checked }))}
                 />
               </div>
 
@@ -904,7 +958,7 @@ function Profile() {
                   onChange={handleChange}
                   disabled={!isEditing}
                   inputMode="numeric"
-                  maxLength={15}
+                  maxLength={16}
                   placeholder="Enter alternate number"
                   className={inputClass}
                 />
@@ -1016,14 +1070,14 @@ function Profile() {
 
           <section className="tf-card min-w-0 p-5 shadow-sm max-[560px]:p-4">
             <div className="mb-[19px] flex items-start gap-3 [&_h2]:mt-0 [&_h2]:mb-[3px] [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_h2]:text-[var(--tf-ink)] [&_p]:m-0 [&_p]:text-[11px] [&_p]:text-[var(--tf-muted)]">
-              <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] bg-[var(--tf-sky)] text-[17px] font-bold text-[var(--tf-blue)]" aria-hidden="true">◎</span>
+              <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] bg-[var(--tf-sky)] text-[17px] font-bold text-[var(--tf-blue)]" aria-hidden="true"><Share2 className="h-4 w-4" /></span>
               <div><h2>Social profiles</h2><p>Help students connect with your teaching community.</p></div>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-[14px] [&>div]:grid [&>div]:min-w-0 [&>div]:content-start [&>div]:gap-1.5 max-[560px]:grid-cols-1">
-              {socialPlatforms.map(({ key, label, mark }) => (
+              {socialPlatforms.map(({ key, label }) => (
                 <div key={key}>
                   <label className={labelClass} htmlFor={`social-${key}`}>
-                    <span className={`inline-grid h-6 w-6 shrink-0 place-items-center rounded-[7px] bg-[var(--tf-sky)] text-xs font-bold text-[var(--tf-blue)] ${key === "facebook" ? "text-[#1877f2]" : key === "instagram" ? "text-[#c13584]" : key === "whatsapp" ? "text-[#128c7e]" : key === "telegram" ? "text-[#229ed9]" : key === "linkedin" ? "text-[#0a66c2]" : key === "youtube" ? "text-[#e62117]" : "text-[var(--tf-ink)]"}`}>{mark}</span>{label}
+                    <span className={`inline-grid h-6 w-6 shrink-0 place-items-center rounded-[7px] bg-[var(--tf-sky)] text-xs font-bold text-[var(--tf-blue)] ${key === "facebook" ? "text-[#1877f2]" : key === "instagram" ? "text-[#c13584]" : key === "whatsapp" ? "text-[#128c7e]" : key === "telegram" ? "text-[#229ed9]" : key === "linkedin" ? "text-[#0a66c2]" : key === "youtube" ? "text-[#e62117]" : "text-[var(--tf-ink)]"}`}><SocialIcon platform={key} className="h-4 w-4" style={{ color: socialBrandColors[key] }} /></span>{label}
                   </label>
                   <input
                     id={`social-${key}`}
@@ -1120,8 +1174,8 @@ function Profile() {
                   <ProfileViewItem label="Last name" value={formData.lastName} />
                   <ProfileViewItem label="Date of birth" value={formData.dateOfBirth ? new Date(`${formData.dateOfBirth}T00:00:00`).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : ""} />
                   <ProfileViewItem label="Gender" value={formData.gender} />
-                  <ProfileViewItem label="Mobile number" value={formData.mobileNo} />
-                  <ProfileViewItem label="WhatsApp number" value={formData.whatsappNo} />
+                  <div><ProfileViewItem label="Mobile number" value={formData.mobileNo} /><p className="mt-1 text-[10px] text-[var(--tf-muted)]">Website icon: {formData.showMobileIcon && contactNumber(formData.mobileNo) ? "On" : "Off"}</p></div>
+                  <div><ProfileViewItem label="WhatsApp number" value={formData.whatsappNo} /><p className="mt-1 text-[10px] text-[var(--tf-muted)]">Website icon: {formData.showWhatsappIcon && contactNumber(formData.whatsappNo) ? "On" : "Off"}</p></div>
                   <ProfileViewItem label="Alternate number" value={formData.alternateNo} />
                   <ProfileViewItem label="Email" value={formData.email} />
                   <ProfileViewItem label="About" value={formData.about} full multiline />
@@ -1142,9 +1196,9 @@ function Profile() {
 
               <ProfileViewSection title="Social profiles" subtitle="Your public social links.">
                 <div className="flex flex-wrap gap-2">
-                  {socialPlatforms.filter(({ key }) => socialLinks[key].trim()).map(({ key, label, mark }) => {
+                  {socialPlatforms.filter(({ key }) => socialLinks[key].trim()).map(({ key, label }) => {
                     const safeUrl = getSafeProfileUrl(socialLinks[key]);
-                    const content = <><span className={`inline-grid h-6 w-6 shrink-0 place-items-center rounded-[7px] bg-[var(--tf-sky)] text-xs font-bold text-[var(--tf-blue)] ${key === "facebook" ? "text-[#1877f2]" : key === "instagram" ? "text-[#c13584]" : key === "whatsapp" ? "text-[#128c7e]" : key === "telegram" ? "text-[#229ed9]" : key === "linkedin" ? "text-[#0a66c2]" : key === "youtube" ? "text-[#e62117]" : "text-[var(--tf-ink)]"}`}>{mark}</span>{label}</>;
+                    const content = <><span className={`inline-grid h-6 w-6 shrink-0 place-items-center rounded-[7px] bg-[var(--tf-sky)] text-xs font-bold text-[var(--tf-blue)] ${key === "facebook" ? "text-[#1877f2]" : key === "instagram" ? "text-[#c13584]" : key === "whatsapp" ? "text-[#128c7e]" : key === "telegram" ? "text-[#229ed9]" : key === "linkedin" ? "text-[#0a66c2]" : key === "youtube" ? "text-[#e62117]" : "text-[var(--tf-ink)]"}`}><SocialIcon platform={key} className="h-4 w-4" style={{ color: socialBrandColors[key] }} /></span>{label}</>;
                     return safeUrl ? (
                       <a key={key} className="inline-flex items-center gap-[7px] rounded-lg border border-[var(--tf-line)] bg-[var(--tf-surface-soft)] px-[9px] py-1.5 text-[10px] text-[var(--tf-copy)] hover:text-[var(--tf-blue)] [&:where([data-theme=dark] *)]:bg-[var(--tf-surface-soft)]" href={safeUrl} target="_blank" rel="noreferrer">
                         {content}
