@@ -204,8 +204,6 @@ function Login() {
               <h2 className="tf-d text-3xl font-bold text-tf-ink">Log in</h2>
               <p className="mt-2 text-tf-copy">Sign in to your account.</p>
 
-              <Link to="/login?mode=admin" className="mt-4 inline-block text-sm text-tf-copy underline underline-offset-4">Platform administrator login</Link>
-
               {/* Google Login Button */}
               <button
                 type="button"

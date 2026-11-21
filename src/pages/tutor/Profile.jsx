@@ -1,3 +1,4 @@
+import { CONTACT_NUMBERS, contactNumber, contactIconSettings } from "../../utils/contactIcons";
 import PlatformLoader from "../../components/PlatformLoader";
 import React, { useEffect, useRef, useState } from "react";
 import api from "../../api/axios";
@@ -63,6 +64,35 @@ function ProfileViewItem({ label, value, full = false, multiline = false, link =
   );
 }
 
+function ContactIconToggle({ label, number, checked, disabled, onChange }) {
+  const hasNumber = Boolean(contactNumber(number));
+  const enabled = hasNumber && checked;
+  const displayLabel = label === "WhatsApp" ? label : label.toLowerCase();
+  return (
+    <div className="mt-2">
+      <label className={`flex items-center justify-between gap-3 text-xs text-[var(--tf-copy)] ${hasNumber && !disabled ? "cursor-pointer" : "cursor-not-allowed"}`}>
+        <span>Show {displayLabel} icon on website</span>
+        <input
+          type="checkbox"
+          role="switch"
+          aria-label={`Show ${displayLabel} icon on website`}
+          aria-describedby={`${label.replaceAll(" ", "-")}-icon-help`}
+          checked={enabled}
+          disabled={disabled || !hasNumber}
+          onChange={(event) => onChange(hasNumber && event.target.checked)}
+          className="peer sr-only"
+        />
+        <span aria-hidden="true" className={`relative h-6 w-11 shrink-0 rounded-full transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--tf-blue)] peer-disabled:opacity-45 ${enabled ? "bg-[var(--tf-blue)]" : "bg-slate-300 dark:bg-slate-600"}`}>
+          <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${enabled ? "translate-x-[22px]" : "translate-x-0.5"}`} />
+        </span>
+      </label>
+      <p id={`${label.replaceAll(" ", "-")}-icon-help`} className="mt-1 text-[10px] text-[var(--tf-muted)]">
+        {hasNumber ? "Save changes to update the floating icon in every theme." : "Enter a valid 10–15 digit number to enable this icon."}
+      </p>
+    </div>
+  );
+}
+
 const initialForm = {
   firstName: "",
   lastName: "",
@@ -71,6 +101,8 @@ const initialForm = {
   mobileNo: "",
   whatsappNo: "",
   alternateNo: "",
+  showMobileIcon: false,
+  showWhatsappIcon: false,
   email: "",
   about: "",
   profilePicture: "",
@@ -121,6 +153,7 @@ function Profile() {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+      ...Object.fromEntries(CONTACT_NUMBERS.filter(({ field }) => field === name && !contactNumber(value)).map(({ flag }) => [flag, false])),
     }));
 
     setError("");
@@ -284,6 +317,7 @@ function Profile() {
           const profile = {
             ...initialForm,
             ...data.data,
+            ...contactIconSettings(data.data),
             firstName: data.data.firstName ?? "",
             lastName: data.data.lastName ?? "",
             dateOfBirth: data.data.dateOfBirth
@@ -506,7 +540,7 @@ function Profile() {
 
       if (!phone && !required) return "";
 
-      if (!/^\d{10,15}$/.test(phone)) {
+      if (!contactNumber(phone)) {
         return `${label} must contain 10 to 15 digits.`;
       }
 
@@ -557,6 +591,7 @@ function Profile() {
 
     const payload = {
       userId,
+      ...contactIconSettings(formData),
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim() || null,
       dateOfBirth: formData.dateOfBirth || null,
@@ -587,12 +622,14 @@ function Profile() {
       const data = response.data;
 
       if (data?.status === 200) {
+        let updatedForm = formData;
         if (data.data) {
           const saved = data.data;
 
-          const updatedForm = {
+          updatedForm = {
             ...initialForm,
             ...saved,
+            ...contactIconSettings(saved),
             firstName: saved.firstName ?? payload.firstName,
             lastName: saved.lastName ?? payload.lastName ?? "",
             dateOfBirth: saved.dateOfBirth
@@ -874,9 +911,16 @@ function Profile() {
                   disabled={!isEditing}
                   required
                   inputMode="numeric"
-                  maxLength={15}
+                  maxLength={16}
                   placeholder="Enter mobile number"
                   className={inputClass}
+                />
+                <ContactIconToggle
+                  label="Mobile"
+                  number={formData.mobileNo}
+                  checked={formData.showMobileIcon}
+                  disabled={saving}
+                  onChange={(checked) => setFormData((prev) => ({ ...prev, showMobileIcon: checked }))}
                 />
               </div>
 
@@ -889,9 +933,16 @@ function Profile() {
                   onChange={handleChange}
                   disabled={!isEditing}
                   inputMode="numeric"
-                  maxLength={15}
+                  maxLength={16}
                   placeholder="Enter WhatsApp number"
                   className={inputClass}
+                />
+                <ContactIconToggle
+                  label="WhatsApp"
+                  number={formData.whatsappNo}
+                  checked={formData.showWhatsappIcon}
+                  disabled={saving}
+                  onChange={(checked) => setFormData((prev) => ({ ...prev, showWhatsappIcon: checked }))}
                 />
               </div>
 
@@ -904,7 +955,7 @@ function Profile() {
                   onChange={handleChange}
                   disabled={!isEditing}
                   inputMode="numeric"
-                  maxLength={15}
+                  maxLength={16}
                   placeholder="Enter alternate number"
                   className={inputClass}
                 />
@@ -1120,8 +1171,8 @@ function Profile() {
                   <ProfileViewItem label="Last name" value={formData.lastName} />
                   <ProfileViewItem label="Date of birth" value={formData.dateOfBirth ? new Date(`${formData.dateOfBirth}T00:00:00`).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : ""} />
                   <ProfileViewItem label="Gender" value={formData.gender} />
-                  <ProfileViewItem label="Mobile number" value={formData.mobileNo} />
-                  <ProfileViewItem label="WhatsApp number" value={formData.whatsappNo} />
+                  <div><ProfileViewItem label="Mobile number" value={formData.mobileNo} /><p className="mt-1 text-[10px] text-[var(--tf-muted)]">Website icon: {formData.showMobileIcon && contactNumber(formData.mobileNo) ? "On" : "Off"}</p></div>
+                  <div><ProfileViewItem label="WhatsApp number" value={formData.whatsappNo} /><p className="mt-1 text-[10px] text-[var(--tf-muted)]">Website icon: {formData.showWhatsappIcon && contactNumber(formData.whatsappNo) ? "On" : "Off"}</p></div>
                   <ProfileViewItem label="Alternate number" value={formData.alternateNo} />
                   <ProfileViewItem label="Email" value={formData.email} />
                   <ProfileViewItem label="About" value={formData.about} full multiline />

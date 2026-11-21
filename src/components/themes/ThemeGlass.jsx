@@ -1,3 +1,4 @@
+import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./glass-visuals.css";
 import ExpandableText from "../ExpandableText";
@@ -186,17 +187,18 @@ function GlassHeader({ basePath, currentPage, brand, tuition, mode, onToggleMode
 }
 
 /* ------------------------------------------------------------- contact fab */
-function FloatingContact({ profile, socialLinks }) {
-  const phone = String(fd(profile, ["mobileNo", "mobile_no"])).trim().replace(/[^+\d]/g, "");
-  const whatsappNumber = String(fd(profile, ["whatsappNo", "whatsapp_no"])).replace(/\D/g, "");
-  const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber}` : socialLinks.find(([key]) => key.toLowerCase() === "whatsapp")?.[1];
-  if (!phone && !whatsappUrl) return null;
-  return <aside aria-label="Contact tutor" className="fixed right-3 z-40 sm:right-6" style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}>
-    <Glass className="flex flex-col gap-1.5 rounded-full p-1.5">
-      {whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="Contact tutor on WhatsApp (opens in a new tab)" title="WhatsApp" className="gl-fab gl-fab-wa"><Icon name="whatsapp" className="h-6 w-6" /></a>}
-      {phone && <a href={`tel:${phone}`} aria-label="Call tutor" title="Call tutor" className="gl-fab gl-fab-call"><Icon name="phone" className="h-5 w-5" /></a>}
-    </Glass>
-  </aside>;
+function FloatingContact({ profile }) {
+  const actions = getContactActions(profile);
+  if (!actions.length) return null;
+  return <aside aria-label="Contact tutor" className="fixed right-3 z-40 sm:right-6" style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}><Glass className="flex flex-col gap-1.5 rounded-full p-1.5">
+    {actions.map((action) => <a key={action.field} href={action.href}
+      target={action.type === "whatsapp" ? "_blank" : undefined}
+      rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
+      aria-label={action.actionLabel} title={action.actionLabel}
+      className={`relative gl-fab ${action.type === "whatsapp" ? "gl-fab-wa" : "gl-fab-call"}`}>
+      <Icon name={action.type === "whatsapp" ? "whatsapp" : "phone"} className="h-6 w-6" />
+    </a>)}
+  </Glass></aside>;
 }
 
 /* --------------------------------------------------------- achievements UI */
@@ -593,7 +595,7 @@ export default function ThemeGlass({ profile = {}, tuition = {}, achievements = 
     <div className="gl-backdrop" aria-hidden="true"><span className="gl-orb gl-orb-a" /><span className="gl-orb gl-orb-b" /><span className="gl-orb gl-orb-c" /><span className="gl-grain" /></div>
     <GlassHeader basePath={basePath} currentPage={currentPage} brand={brand} tuition={tuition} mode={mode} onToggleMode={toggleMode} onContactClick={onContactClick} />
     <main className="mx-auto min-h-[70vh] max-w-6xl px-4 pb-16 pt-8 sm:px-6 sm:pt-10 lg:pt-14">{content}</main>
-    <FloatingContact profile={profile} socialLinks={socialLinks} />
+    <FloatingContact profile={profile} />
     <footer className="px-3 pb-4 sm:px-5 sm:pb-6">
       <Glass className="mx-auto max-w-6xl rounded-[2rem] p-6 sm:p-9">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1.2fr]">

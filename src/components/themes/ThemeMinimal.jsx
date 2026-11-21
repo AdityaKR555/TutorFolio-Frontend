@@ -1,3 +1,4 @@
+import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import ExpandableText from "../ExpandableText";
@@ -831,44 +832,18 @@ function SocialRow({ links }) {
 }
 
 /* ─── Floating Quick Action Buttons ───────────────────────────────────────── */
-function FloatingContact({ profile, socialLinks }) {
-  const phone = String(fd(profile, ["mobileNo", "mobile_no"])).trim().replace(/[^+\d]/g, "");
-  const whatsappNumber = String(fd(profile, ["whatsappNo", "whatsapp_no"])).replace(/\D/g, "");
-  const whatsappUrl = whatsappNumber
-    ? `https://wa.me/${whatsappNumber}`
-    : socialLinks.find(([key]) => key.toLowerCase() === "whatsapp")?.[1];
-
-  if (!phone && !whatsappUrl) return null;
-
-  return (
-    <aside
-      aria-label="Contact tutor"
-      className="fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 flex flex-col gap-2.5 sm:right-6"
-    >
-      {whatsappUrl && (
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="WhatsApp tutor"
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg transition hover:scale-105 hover:bg-emerald-700 active:scale-95"
-        >
-          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor">
-            <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.4-.2-3 .8.8-2.9-.3-.5A8 8 0 1 1 12 20Zm4.4-5.8c-.2-.1-1.4-.7-1.6-.7s-.4-.1-.5.1l-.8 1c-.1.1-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.2-.3.2-.5.6-1 .1-.2.1-.3 0-.5L9.7 8.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.6.6-.9 1.3-.8 2.1 0 1.2.9 2.4 1 2.6.2.2 1.8 2.8 4.3 3.8 1.6.6 2.3.7 3.1.5.5-.1 1.4-.6 1.6-1.2.2-.6.2-1.1.1-1.2-.1-.2-.3-.3-.8-.5Z" />
-          </svg>
-        </a>
-      )}
-      {phone && (
-        <a
-          href={`tel:${phone}`}
-          aria-label="Call tutor"
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-900 text-white shadow-lg transition hover:scale-105 hover:bg-neutral-800 active:scale-95 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
-        >
-          <Icon name="phone" className="h-5 w-5" />
-        </a>
-      )}
-    </aside>
-  );
+function FloatingContact({ profile }) {
+  const actions = getContactActions(profile);
+  if (!actions.length) return null;
+  return <aside aria-label="Contact tutor" className="fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 flex flex-col gap-2.5 sm:right-6">
+    {actions.map((action) => <a key={action.field} href={action.href}
+      target={action.type === "whatsapp" ? "_blank" : undefined}
+      rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
+      aria-label={action.actionLabel} title={action.actionLabel}
+      className={`relative flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition hover:scale-105 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-500 ${action.type === "whatsapp" ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"}`}>
+      {action.type === "whatsapp" ? <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.4-.2-3 .8.8-2.9-.3-.5A8 8 0 1 1 12 20Zm4.4-5.8c-.2-.1-1.4-.7-1.6-.7s-.4-.1-.5.1l-.8 1c-.1.1-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.2-.3.2-.5.6-1 .1-.2.1-.3 0-.5L9.7 8.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.6.6-.9 1.3-.8 2.1 0 1.2.9 2.4 1 2.6.2.2 1.8 2.8 4.3 3.8 1.6.6 2.3.7 3.1.5.5-.1 1.4-.6 1.6-1.2.2-.6.2-1.1.1-1.2-.1-.2-.3-.3-.8-.5Z" /></svg> : <Icon name="phone" className="h-5 w-5" />}
+    </a>)}
+  </aside>;
 }
 
 /* ─── Mobile Drawer ────────────────────────────────────────────────────────── */
@@ -1260,7 +1235,7 @@ function HomePage({
         </div>
       </section>
 
-      <FloatingContact profile={profile} socialLinks={socialLinks} />
+
     </div>
   );
 }
@@ -1995,6 +1970,7 @@ export default function ThemeMinimal({
 
           </div>
         </footer>
+        <FloatingContact profile={profile} />
       </div>
     </div>
   );

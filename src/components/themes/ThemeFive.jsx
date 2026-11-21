@@ -1,6 +1,7 @@
+import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ArrowDown, ArrowRight, ArrowUpRight, Menu } from "lucide-react";
+import { Phone, ArrowDown, ArrowRight, ArrowUpRight, Menu } from "lucide-react";
 import TuitionLogo from "./TuitionLogo";
 import "./theme-five.css";
 
@@ -161,6 +162,7 @@ function EntryCard({ title, text, image, meta, anchor, to, index }) {
   return to ? <Link className="five-entry-link" to={to} aria-label={`View ${title}`}>{card}</Link> : card;
 }
 export default function ThemeFive({ profile = {}, tuition = {}, batches = [], achievements = [], gallery = [], experience = [], faqs = [], username = "", previewBasePath, currentPage = "home", onContactClick }) {
+  const contactActions = getContactActions(profile);
   const [menuOpen, setMenuOpen] = React.useState(false);
   const location = useLocation();
   const mainRef = useRef(null);
@@ -226,5 +228,14 @@ export default function ThemeFive({ profile = {}, tuition = {}, batches = [], ac
         {currentPage === "achievements" && <div className="five-grid">{achievements.length ? achievementCards(achievements) : <p>Achievements will appear here when shared.</p>}</div>}
         {currentPage === "experience" && <div className="five-timeline">{experience.length ? experience.map((item,i) => <article key={item.experienceId ?? item.id ?? i}><span>{item.startDate || ""} {item.isCurrent ? "— Present" : item.endDate ? `— ${item.endDate}` : ""}</span><h2>{value(item,["title"],"Experience")}</h2><p>{item.description}</p></article>) : <p>Experience will appear here when shared.</p>}</div>}
         {currentPage === "gallery" && <div className="five-gallery">{gallery.filter((item) => value(item,["fileUrl","url","imageUrl","src"])).length ? gallery.filter((item) => value(item,["fileUrl","url","imageUrl","src"])).map((item,i) => <img key={item.fileId ?? item.id ?? i} src={value(item,["fileUrl","url","imageUrl","src"])} alt={value(item,["title","originalFilename"],`Gallery photo ${i+1}`)} loading="lazy"/>) : <p>Photos will appear here when shared.</p>}</div>}</section>}</main>
+    {contactActions.length > 0 && <aside aria-label="Contact tutor" className="five-contact-icons">
+      {contactActions.map((action) => <a key={action.field} href={action.href}
+        target={action.type === "whatsapp" ? "_blank" : undefined}
+        rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
+        className={`five-contact-icon ${action.type === "whatsapp" ? "is-whatsapp" : "is-phone"}`}
+        aria-label={action.actionLabel} title={action.actionLabel}>
+        {action.type === "whatsapp" ? <svg aria-hidden="true" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M3 21l1.6-4.9A9 9 0 1 1 8 19.5L3 21Z" /><path d="M9 9c0 3 3 6 6 6l1.5-1.5-2-1-1 .8a4 4 0 0 1-2-2l.8-1-1-2L9 9Z" /></svg> : <Phone size={22} aria-hidden="true" />}
+      </a>)}
+    </aside>}
     <footer className="five-footer"><Link to={base} className="five-brand"><TuitionLogo tuition={tuition} name={brand} className="five-logo" fallback={<span className="five-logo-fallback">{brand.charAt(0).toUpperCase()}</span>}/><span>{brand}</span></Link><nav aria-label="Footer navigation">{pages.map(([id,label]) => <Link key={id} to={href(id)}>{label}</Link>)}</nav><span>© {new Date().getFullYear()} {name}</span></footer></div>;
 }

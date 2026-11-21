@@ -1,3 +1,4 @@
+import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./classic-visuals.css";
 import ClassicGallery from "./ClassicGallery";
@@ -245,15 +246,17 @@ function SocialSection({ links }) {
   </section>;
 }
 
-function FloatingContact({ profile, socialLinks }) {
-  const phone = String(fd(profile, ["mobileNo", "mobile_no"])).trim().replace(/[^+\d]/g, "");
-  const whatsappNumber = String(fd(profile, ["whatsappNo", "whatsapp_no"])).replace(/\D/g, "");
-  const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber}` : socialLinks.find(([key]) => key.toLowerCase() === "whatsapp")?.[1];
-  if (!phone && !whatsappUrl) return null;
-  const buttonClass = "flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-600";
+function FloatingContact({ profile }) {
+  const actions = getContactActions(profile);
+  if (!actions.length) return null;
   return <aside aria-label="Contact tutor" className="fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 flex flex-col gap-3 sm:right-6">
-    {whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="Contact tutor on WhatsApp (opens in a new tab)" title="WhatsApp tutor" className={`${buttonClass} bg-emerald-600 hover:bg-emerald-700`}><svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.4-.2-3 .8.8-2.9-.3-.5A8 8 0 1 1 12 20Zm4.4-5.8c-.2-.1-1.4-.7-1.6-.7s-.4-.1-.5.1l-.8 1c-.1.1-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.2-.3.2-.5.6-1 .1-.2.1-.3 0-.5L9.7 8.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.6.6-.9 1.3-.8 2.1 0 1.2.9 2.4 1 2.6.2.2 1.8 2.8 4.3 3.8 1.6.6 2.3.7 3.1.5.5-.1 1.4-.6 1.6-1.2.2-.6.2-1.1.1-1.2-.1-.2-.3-.3-.8-.5Z"/></svg></a>}
-    {phone && <a href={`tel:${phone}`} aria-label="Call tutor" title="Call tutor" className={`${buttonClass} bg-sky-700 hover:bg-sky-800`}><Icon name="phone" className="h-6 w-6"/></a>}
+    {actions.map((action) => <a key={action.field} href={action.href}
+      target={action.type === "whatsapp" ? "_blank" : undefined}
+      rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
+      aria-label={action.actionLabel} title={action.actionLabel}
+      className={`relative flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-600 ${action.type === "whatsapp" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-sky-700 hover:bg-sky-800"}`}>
+      {action.type === "whatsapp" ? <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.4-.2-3 .8.8-2.9-.3-.5A8 8 0 1 1 12 20Zm4.4-5.8c-.2-.1-1.4-.7-1.6-.7s-.4-.1-.5.1l-.8 1c-.1.1-.3.2-.5.1a6.5 6.5 0 0 1-3.2-2.8c-.2-.3.2-.5.6-1 .1-.2.1-.3 0-.5L9.7 8.8c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.6.6-.9 1.3-.8 2.1 0 1.2.9 2.4 1 2.6.2.2 1.8 2.8 4.3 3.8 1.6.6 2.3.7 3.1.5.5-.1 1.4-.6 1.6-1.2.2-.6.2-1.1.1-1.2-.1-.2-.3-.3-.8-.5Z" /></svg> : <Icon name="phone" className="h-5 w-5" />}
+    </a>)}
   </aside>;
 }
 
@@ -267,7 +270,7 @@ function HomePage({ socialLinks, name, profile, tuition, subjects, batches, achi
       {[[subjects.length || "Personal", "Subjects offered", "books"], [experience ? `${experience} years` : batches.length, experience ? "Teaching experience" : "Published batches", "journey"], [achievements.length, "Student stories", "trophy"]].map(([value, label, type]) => <div key={type} className="flex items-center justify-between gap-2 overflow-hidden rounded-2xl border border-sky-100 bg-gradient-to-br from-white to-sky-50/70 p-5 dark:border-slate-700 dark:from-slate-900 dark:to-sky-950/40"><div><p className="text-2xl font-semibold text-sky-800 dark:text-sky-200">{value}</p><p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{label}</p></div><KpiIllustration type={type}/></div>)}
     </section>
     <SocialSection links={socialLinks}/>
-    <FloatingContact profile={profile} socialLinks={socialLinks}/>
+
 
     <div className="relative left-1/2 mt-12 w-[calc(100vw-2rem)] -translate-x-1/2 space-y-8 sm:w-[calc(100vw-3rem)] lg:w-[calc(100vw-4rem)]">
       <section className="rounded-3xl border border-sky-100 bg-white px-5 py-8 dark:border-slate-800 dark:bg-slate-900 sm:p-10 lg:p-12">
@@ -418,6 +421,7 @@ export default function ThemeClassic({ profile = {}, tuition = {}, achievements 
         </div>
       </header>
       <main className="mx-auto min-h-[70vh] max-w-7xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8 lg:py-12">{content}</main>
+      <FloatingContact profile={profile} />
       <footer className="classic-footer mt-6 border-t border-sky-100 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="classic-footer-grid mx-auto grid max-w-[1600px] gap-7 px-5 py-8 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.1fr_1.25fr_1.2fr] lg:gap-8 lg:px-8">
           <Link to={basePath} className="classic-footer-brand flex min-w-0 items-start gap-3 text-slate-950 dark:text-white"><TuitionLogo tuition={tuition} name={fd(tuition, ["tuitionName", "tuitionClassName"], name)} className="h-9 w-9"/><span className="pt-0.5 text-xl font-bold tracking-tight">{fd(tuition, ["tuitionName", "tuitionClassName"], name)}</span></Link>

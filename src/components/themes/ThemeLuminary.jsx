@@ -1,3 +1,4 @@
+import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import ExpandableText from "../ExpandableText";
@@ -1633,10 +1634,11 @@ export default function ThemeLuminary({
   const academyName =
     fd(tuition, ["tuitionName", "tuitionClassName", "academyName"]) || name;
 
-  const phoneCall = fd(profile, ["phone", "phoneNumber", "mobile", "contactNumber"]);
+  const phoneCall = fd(profile, ["mobileNo", "mobile_no", "phone", "phoneNumber", "mobile", "contactNumber"]);
+  const contactActions = getContactActions(profile);
   const emailAddress = fd(profile, ["email", "contactEmail"]);
   const whatsappNumber =
-    fd(profile, ["whatsapp", "whatsappNumber", "phone"])?.replace(/\D/g, "");
+    String(fd(profile, ["whatsappNo", "whatsapp_no"])).replace(/\D/g, "");
 
   const basePath = previewBasePath || `/tutor/${encodeURIComponent(username || "")}`;
 
@@ -1916,28 +1918,23 @@ export default function ThemeLuminary({
           </div>
         </footer>
 
-        {/* ── Floating Mobile Quick-Action Hub ── */}
-        <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2 sm:hidden">
-          {whatsappNumber && (
-            <a
-              href={`https://wa.me/${whatsappNumber}`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white shadow-xl shadow-emerald-600/30 active:scale-95 transition"
-              aria-label="Chat on WhatsApp"
-            >
-              <LuminaryIcon name="whatsapp" className="h-6 w-6" />
-            </a>
-          )}
-          <button
-            type="button"
-            onClick={onContactClick}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-xl shadow-amber-600/40 active:scale-95 transition"
-            aria-label="Direct Consultation"
-          >
+        <div className="fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 flex flex-col gap-2">
+        {contactActions.length > 0 && <aside aria-label="Contact tutor" className="flex flex-col gap-2">
+          {contactActions.map((action) => <a key={action.field} href={action.href}
+            target={action.type === "whatsapp" ? "_blank" : undefined}
+            rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
+            className={`relative flex h-12 w-12 items-center justify-center rounded-xl text-white shadow-xl active:scale-95 transition focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-600 ${action.type === "whatsapp" ? "bg-emerald-600 shadow-emerald-600/30" : "bg-gradient-to-br from-amber-500 to-amber-700 shadow-amber-600/30"}`}
+            aria-label={action.actionLabel} title={action.actionLabel}>
+            <LuminaryIcon name={action.type === "whatsapp" ? "whatsapp" : "phone"} className="h-6 w-6" />
+          </a>)}
+        </aside>}
+          <button type="button" onClick={onContactClick}
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-xl shadow-amber-600/40 active:scale-95 transition sm:hidden"
+            aria-label="Direct Consultation">
             <LuminaryIcon name="message" className="h-6 w-6" />
           </button>
         </div>
+
       </div>
     </div>
   );

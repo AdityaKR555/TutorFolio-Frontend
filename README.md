@@ -17,8 +17,8 @@ If you are developing a production application, we recommend using TypeScript wi
 
 ## Platform admin workspace
 
-The admin console is at `/admin`. Use **Platform administrator login** on `/login`
-(or open `/login?mode=admin`). Email/password is followed by email OTP verification.
+The admin console is at `/admin`. Open `/login?mode=admin` to sign in.
+Email/password is followed by email OTP verification.
 Admin sessions use separate session storage and a dedicated API client; tutor
 sessions, API calls, layouts and pages remain separate.
 

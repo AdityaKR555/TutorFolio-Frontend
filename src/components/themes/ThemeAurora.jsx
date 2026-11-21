@@ -1,6 +1,7 @@
+import { getContactActions } from "../../utils/contactIcons";
 import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ArrowUpRight, BookOpen, MessageCircle, Sparkles, Users, GraduationCap } from "lucide-react";
+import { Phone, ArrowRight, ArrowUpRight, BookOpen, MessageCircle, Sparkles, Users, GraduationCap } from "lucide-react";
 import "./aurora-theme.css";
 import TuitionLogo from "./TuitionLogo";
 
@@ -23,6 +24,7 @@ function AchievementCard({ item }) {
   return <article className="aurora-card aurora-achievement">{image && <img src={image} alt="" loading="lazy" />}<div className="aurora-card-body"><span className="aurora-chip">Student achievement</span><h3>{get(item, ["title", "achievementTitle"], "A moment worth celebrating")}</h3>{item.studentName && <strong>{item.studentName}</strong>}{item.description && <p>{item.description}</p>}{item.studentReview && <blockquote className="aurora-review">“{item.studentReview}”</blockquote>}</div></article>;
 }
 export default function ThemeAurora({ profile = {}, tuition = {}, achievements = [], batches = [], experience = [], faqs = [], gallery = [], username = "", previewBasePath, currentPage = "home", onContactClick }) {
+  const contactActions = getContactActions(profile);
   const homeRef = useRef(null);
   const base = previewBasePath || `/tutor/${encodeURIComponent(username)}`;
   const href = (page) => page === "home" ? base : `${base}/${page}`;
@@ -68,6 +70,15 @@ export default function ThemeAurora({ profile = {}, tuition = {}, achievements =
         {currentPage === "achievements" && <div className="aurora-grid">{achievements.length ? achievements.map((item,i) => <AchievementCard key={item.achievementId ?? item.id ?? i} item={item}/>) : <Empty>Student achievements will appear here when shared.</Empty>}</div>}
         {currentPage === "experience" && <div className="aurora-timeline">{experience.length ? experience.map((item,i) => <article className="aurora-card aurora-card-body" key={item.experienceId ?? item.id ?? i}><span className="aurora-chip">{formatDate(item.startDate)} {item.isCurrent ? "— Present" : item.endDate ? `— ${formatDate(item.endDate)}` : ""}</span><h3>{get(item,["title"],"Teaching experience")}</h3>{item.description && <p>{item.description}</p>}</article>) : <Empty>Professional experience will appear here when shared.</Empty>}</div>}
         {currentPage === "gallery" && <div className="aurora-gallery">{gallery.filter((item) => get(item,["fileUrl","url","imageUrl","src"])).length ? gallery.filter((item) => get(item,["fileUrl","url","imageUrl","src"])).map((item,i) => <figure className="aurora-card" key={item.fileId ?? item.id ?? i}><img src={get(item,["fileUrl","url","imageUrl","src"])} alt={get(item,["title","originalFilename"],`Gallery photo ${i+1}`)} loading="lazy"/></figure>) : <Empty>Gallery photos will appear here when shared.</Empty>}</div>}</>}
-    </main><footer className="aurora-footer"><div><Link className="aurora-brand" to={base}><TuitionLogo tuition={tuition} name={brand} className="h-10 w-10" fallback={<span className="aurora-brand-mark"><Sparkles size={19}/></span>}/>{brand}</Link><p>Making room for bright ideas and bigger possibilities.</p></div><div className="aurora-footer-links">{pages.slice(1,5).map(([id,label]) => <Link key={id} to={href(id)}>{label}</Link>)}</div></footer>
+    </main>{contactActions.length > 0 && <aside aria-label="Contact tutor" className="aurora-contact-icons">
+      {contactActions.map((action) => <a key={action.field} href={action.href}
+        target={action.type === "whatsapp" ? "_blank" : undefined}
+        rel={action.type === "whatsapp" ? "noopener noreferrer" : undefined}
+        className={`aurora-contact-icon ${action.type === "whatsapp" ? "is-whatsapp" : "is-phone"}`}
+        aria-label={action.actionLabel} title={action.actionLabel}>
+        {action.type === "whatsapp" ? <svg aria-hidden="true" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M3 21l1.6-4.9A9 9 0 1 1 8 19.5L3 21Z" /><path d="M9 9c0 3 3 6 6 6l1.5-1.5-2-1-1 .8a4 4 0 0 1-2-2l.8-1-1-2L9 9Z" /></svg> : <Phone size={22} aria-hidden="true" />}
+      </a>)}
+    </aside>}
+    <footer className="aurora-footer"><div><Link className="aurora-brand" to={base}><TuitionLogo tuition={tuition} name={brand} className="h-10 w-10" fallback={<span className="aurora-brand-mark"><Sparkles size={19}/></span>}/>{brand}</Link><p>Making room for bright ideas and bigger possibilities.</p></div><div className="aurora-footer-links">{pages.slice(1,5).map(([id,label]) => <Link key={id} to={href(id)}>{label}</Link>)}</div></footer>
   </div>;
 }
