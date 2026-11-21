@@ -10,3 +10,6 @@
 .five-contact-icon:focus-visible{outline:3px solid #ff6b35;outline-offset:5px}
 
 .five-contact-icon{position:relative}
+
+.five-nav .five-mobile-identity{display:none}
+@media(max-width:900px){.five-nav .five-mobile-identity{display:flex;align-items:center;gap:10px;flex-shrink:0;font-weight:700}.five-mobile-identity span{overflow-wrap:anywhere;white-space:normal}}

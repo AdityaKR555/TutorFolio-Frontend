@@ -1,3 +1,4 @@
+import { getWebsiteTitle } from "../../utils/websiteIdentity";
 import SocialIcon from "../SocialIcon";
 import { getTutorNavigationBase } from "../../utils/websiteUrls";
 import { getContactActions } from "../../utils/contactIcons";
@@ -850,7 +851,7 @@ function FloatingContact({ profile }) {
 }
 
 /* ─── Mobile Drawer ────────────────────────────────────────────────────────── */
-function MobileNav({ basePath, currentPage, open, onClose, name }) {
+function MobileNav({ basePath, currentPage, open, onClose, name, tuition }) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => e.key === "Escape" && onClose();
@@ -869,14 +870,10 @@ function MobileNav({ basePath, currentPage, open, onClose, name }) {
       <div className="absolute inset-0 bg-neutral-950/60 backdrop-blur-xs transition-opacity" onClick={onClose} />
       <nav className="absolute left-0 top-0 bottom-0 w-72 max-w-[85vw] bg-white p-6 shadow-2xl dark:bg-neutral-900 flex flex-col">
         <div className="mb-6 flex items-center justify-between border-b border-neutral-100 pb-4 dark:border-neutral-800">
-          <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-xs font-bold text-white">
-              TF
-            </span>
-            <span className="text-sm font-bold text-neutral-950 dark:text-white truncate">
-              {name}
-            </span>
-          </div>
+          <Link to={basePath} onClick={onClose} className="flex min-w-0 items-center gap-2">
+            <TuitionLogo tuition={tuition} name={name} className="h-8 w-8" />
+            <span className="min-w-0 break-words text-sm font-bold text-neutral-950 dark:text-white">{name}</span>
+          </Link>
           <button
             type="button"
             onClick={onClose}
@@ -1875,11 +1872,9 @@ export default function ThemeMinimal({
               </button>
 
               <Link to={basePath} className="flex items-center gap-2.5 no-underline">
-                <TuitionLogo tuition={tuition} name={fd(tuition, ["tuitionName", "tuitionClassName"], name)} className="h-8 w-8" fallback={<span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-sky-500 font-bold text-xs text-white shadow-2xs">
-                  {fd(tuition, ["tuitionName", "tuitionClassName"], name).charAt(0).toUpperCase()}
-                </span>} />
+                <TuitionLogo tuition={tuition} name={getWebsiteTitle(tuition, profile)} className="h-8 w-8"  />
                 <span className="truncate text-base font-bold tracking-tight text-neutral-950 dark:text-white">
-                  {fd(tuition, ["tuitionName", "tuitionClassName"], name)}
+                  {getWebsiteTitle(tuition, profile)}
                 </span>
               </Link>
             </div>
@@ -1928,7 +1923,8 @@ export default function ThemeMinimal({
           currentPage={currentPage}
           open={mobileNavOpen}
           onClose={() => setMobileNavOpen(false)}
-          name={name}
+          name={getWebsiteTitle(tuition, profile)}
+          tuition={tuition}
         />
 
         {/* ── Main Content Container ── */}
@@ -1941,8 +1937,8 @@ export default function ThemeMinimal({
           <div className="mx-auto grid max-w-5xl gap-8 px-4 py-10 sm:grid-cols-3 sm:px-6">
             <div>
               <Link to={basePath} className="flex items-center gap-2 text-base font-bold text-neutral-950 dark:text-white">
-                <TuitionLogo tuition={tuition} name={fd(tuition, ["tuitionName", "tuitionClassName"], name)} className="h-9 w-9" />
-                {fd(tuition, ["tuitionName", "tuitionClassName"], name)}
+                <TuitionLogo tuition={tuition} name={getWebsiteTitle(tuition, profile)} className="h-9 w-9" />
+                {getWebsiteTitle(tuition, profile)}
               </Link>
               <p className="mt-2 text-xs text-neutral-500 leading-relaxed max-w-xs">
                 Explore classes and learn more about your tutor.

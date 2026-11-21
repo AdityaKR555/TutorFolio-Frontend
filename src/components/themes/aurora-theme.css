@@ -10,3 +10,6 @@
 .aurora-contact-icon:hover{transform:translateY(-3px);box-shadow:0 8px 28px #c8fc7830}
 
 .aurora-contact-icon{position:relative}
+
+.aurora-nav .aurora-mobile-identity{display:none}
+@media(max-width:900px){.aurora-nav .aurora-mobile-identity{display:flex;align-items:center;gap:10px;flex-shrink:0;font-weight:700}.aurora-mobile-identity span{overflow-wrap:anywhere;white-space:normal}}

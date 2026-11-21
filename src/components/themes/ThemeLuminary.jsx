@@ -1,3 +1,4 @@
+import { getWebsiteTitle } from "../../utils/websiteIdentity";
 import SocialIcon from "../SocialIcon";
 import { getTutorNavigationBase } from "../../utils/websiteUrls";
 import { getContactActions } from "../../utils/contactIcons";
@@ -1631,8 +1632,7 @@ export default function ThemeLuminary({
     fd(tuition, ["tuitionName", "tuitionClassName", "academyName"]) ||
     "Distinguished Faculty";
 
-  const academyName =
-    fd(tuition, ["tuitionName", "tuitionClassName", "academyName"]) || name;
+  const academyName = getWebsiteTitle(tuition, profile);
 
   const phoneCall = fd(profile, ["mobileNo", "mobile_no", "phone", "phoneNumber", "mobile", "contactNumber"]);
   const contactActions = getContactActions(profile);
@@ -1726,11 +1726,7 @@ export default function ThemeLuminary({
                   tuition={tuition}
                   name={academyName}
                   className="h-8 w-8 sm:h-9 sm:w-9"
-                  fallback={
-                    <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
-                      <LuminaryIcon name="crown" className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
-                    </div>
-                  }
+
                 />
                 <div className="min-w-0">
                   <span className="block truncate text-xs sm:text-sm font-black tracking-tight text-neutral-900 dark:text-white">
@@ -1798,14 +1794,10 @@ export default function ThemeLuminary({
             <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] flex flex-col justify-between border-r border-neutral-200 bg-white p-5 shadow-2xl dark:border-neutral-800 dark:bg-[#0b0f19]">
               <div>
                 <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-white">
-                      <LuminaryIcon name="crown" className="h-4 w-4" />
-                    </div>
-                    <span className="font-extrabold text-sm text-neutral-900 dark:text-white">
-                      Menu
-                    </span>
-                  </div>
+                  <Link to={basePath} onClick={() => setMobileMenuOpen(false)} className="flex min-w-0 items-center gap-2">
+                    <TuitionLogo tuition={tuition} name={academyName} className="h-8 w-8" />
+                    <span className="min-w-0 break-words text-sm font-extrabold text-neutral-900 dark:text-white">{academyName}</span>
+                  </Link>
                   <button
                     type="button"
                     onClick={() => setMobileMenuOpen(false)}
@@ -1881,9 +1873,7 @@ export default function ThemeLuminary({
           <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-3 sm:px-6">
             <div className="space-y-3">
               <Link to={basePath} className="flex items-center gap-2">
-                <TuitionLogo tuition={tuition} name={academyName} className="h-9 w-9" fallback={<div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500 text-white">
-                  <LuminaryIcon name="crown" className="h-4 w-4" />
-                </div>} />
+                <TuitionLogo tuition={tuition} name={academyName} className="h-9 w-9"  />
                 <span className="text-sm font-black text-neutral-900 dark:text-white">
                   {academyName}
                 </span>

@@ -1,3 +1,4 @@
+import { recoverGalleryImage } from "../../utils/galleryDelivery";
 import { getTutorNavigationBase } from "../../utils/websiteUrls";
 import PlatformLoader from "../../components/PlatformLoader";
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -239,7 +240,7 @@ export default function PublicTutorWebsite({ hostUsername }) {
   };
 
   return (
-    <div className="mobile-public-portfolio">
+    <div className="mobile-public-portfolio" onErrorCapture={(event) => recoverGalleryImage(event, gallery, api.defaults.baseURL)}>
       {isPreview && (
         <div className="sticky top-0 z-50 flex items-center justify-between gap-3 bg-indigo-600 px-4 py-3 text-sm text-white">
           <span>Theme preview. Your live website has not changed.</span>

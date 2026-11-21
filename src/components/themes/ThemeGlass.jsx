@@ -1,3 +1,5 @@
+import TuitionLogo from "./TuitionLogo";
+import { getWebsiteTitle } from "../../utils/websiteIdentity";
 import SocialIcon from "../SocialIcon";
 import { getTutorNavigationBase } from "../../utils/websiteUrls";
 import { getContactActions } from "../../utils/contactIcons";
@@ -113,14 +115,7 @@ function SmallAvatar({ src, name }) {
   return <span aria-hidden="true" className="gl-chip-icon h-11 w-11 text-base font-semibold">{name?.trim()?.[0]?.toUpperCase() || "S"}</span>;
 }
 
-function TuitionLogo({ tuition, name, className = "h-9 w-9" }) {
-  const src = fd(tuition, LOGO_KEYS);
-  const [failedSrc, setFailedSrc] = useState("");
-  if (src && failedSrc !== src) {
-    return <img src={src} alt={`${name || "Tuition"} logo`} onError={() => setFailedSrc(src)} className={`${className} shrink-0 rounded-full bg-white/70 object-contain p-0.5`} />;
-  }
-  return <span aria-hidden="true" className={`gl-chip-icon ${className} shrink-0`}><Icon name="book" className="h-5 w-5" /></span>;
-}
+
 
 function PageHeading({ title, description }) {
   return <div className="mb-8 max-w-3xl sm:mb-10"><h1 className="gl-page-title">{title}</h1>{description && <p className="gl-muted mt-3 text-base leading-7 sm:text-lg">{description}</p>}</div>;
@@ -175,6 +170,7 @@ function GlassHeader({ basePath, currentPage, brand, tuition, mode, onToggleMode
         </div>
       </Glass>
       {open && <Glass as="nav" id="gl-menu" aria-label="Pages" className="gl-sheet mt-2 rounded-[1.75rem] p-2 lg:hidden">
+        <Link to={basePath} onClick={() => setOpen(false)} className="gl-row mx-2 mb-2 border-b border-current/15 px-1 py-3"><TuitionLogo tuition={tuition} name={brand} /><span className="min-w-0 break-words font-bold">{brand}</span></Link>
         {pageLinks.map((page) => <Link key={page.id} to={hrefFor(basePath, page.id)} onClick={() => setOpen(false)} aria-current={currentPage === page.id ? "page" : undefined} className="gl-sheetlink">{page.label}<Icon name="chevR" className="h-4 w-4 gl-faint" /></Link>)}
         <div className="p-2 pt-3 sm:hidden"><button type="button" onClick={() => { setOpen(false); onContactClick?.(); }} className="gl-btn gl-btn-solid w-full"><Icon name="message" className="h-4 w-4" />Message tutor</button></div>
       </Glass>}
@@ -569,7 +565,7 @@ export default function ThemeGlass({ profile = {}, tuition = {}, achievements = 
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [currentPage]);
 
   const name = [fd(profile, ["firstName", "first_name"]), fd(profile, ["lastName", "last_name"])].filter(Boolean).join(" ") || fd(profile, ["username"], "Tutor");
-  const brand = fd(tuition, ["tuitionName", "tuitionClassName"], name);
+  const brand = getWebsiteTitle(tuition, profile);
   const location = [fd(tuition, ["city"]), fd(tuition, ["district"]), fd(tuition, ["state"])].filter(Boolean).join(", ");
   const subjects = list(fd(tuition, ["teachingSubjects", "teaching_subjects"]));
   const services = list(fd(tuition, ["services"]));
