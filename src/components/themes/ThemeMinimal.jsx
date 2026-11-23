@@ -1441,7 +1441,7 @@ function AboutPage({ name, profile, tuition, socialLinks, faqs, onContactClick, 
 /* ═══════════════════════════════════════════════════════════════════════════════
    PAGE: CLASSES
    ═══════════════════════════════════════════════════════════════════════════════ */
-function ClassesPage({ tuition, subjects, services }) {
+function ClassesPage({ tuition, subjects, services, basePath }) {
   const tuitionName = fd(tuition, ["tuitionName", "tuitionClassName"], "Independent Tutor");
   const eligibleClasses = fd(tuition, ["eligibleClasses", "eligible_classes"]);
   const languages = fd(tuition, ["languages"], "Available on enquiry");
@@ -1539,7 +1539,7 @@ function ClassesPage({ tuition, subjects, services }) {
           </p>
         </div>
         <Link
-          to="../about#about-contact"
+          to={`${basePath}/about#about-contact`}
           className="inline-flex shrink-0 h-10 items-center gap-2 rounded-xl bg-indigo-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95"
         >
           Enquire Now
@@ -1818,7 +1818,7 @@ export default function ThemeMinimal({
       />
     );
   } else if (currentPage === "classes") {
-    content = <ClassesPage tuition={tuition} subjects={subjects} services={services} />;
+    content = <ClassesPage tuition={tuition} subjects={subjects} services={services} basePath={basePath} />;
   } else if (currentPage === "batches") {
     content = <BatchesPage batches={batches} />;
   } else if (currentPage === "gallery") {
