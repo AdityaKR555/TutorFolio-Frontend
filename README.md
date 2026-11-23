@@ -43,20 +43,15 @@ and achievement fields. Signed URLs and other hosts/buckets remain unchanged.
 Restart Vite after changing these variables and rebuild/redeploy for production.
 This compatibility fix does not modify database values or bucket permissions.
 
-## Tutor website subdomains
+## Tutor website URLs
 
-The frontend loads platform domains and reserved names from `GET /website/domains`.
-Tutor websites render at `username.<platform-domain>`; exact platform hosts open the
-platform app. All six themes keep navigation on the tutor host. Legacy
-`/tutor/username` links redirect in the browser on configured production hosts;
-local development uses `username.localhost:5173` as well. An unavailable registry
-blocks production host routing instead of guessing a tenant.
+Tutor websites render at `/t/{username}` on the current frontend domain, including
+local development. All six themes keep section navigation under that path.
+Legacy `/tutor/{username}` links redirect to `/t/{username}` while preserving the
+section, query string and fragment. Theme previews keep their existing routes.
 
-Set an absolute `VITE_API_BASE_URL` for each deployment. The backend's
-`TUTOR_WEBSITE_DOMAINS` lists root domains and its `tuition.platform_subdomains`
-table controls reserved names and platform environments. Apply the backend's
-`local/db_changes_tutor_subdomains_21112026.md` before deployment, audit existing
-usernames, and provision wildcard DNS, frontend host routing and HTTPS for every
-environment, including nested tutor hosts. This change does not provision hosting.
+The frontend uses the existing `GET /website/u/{username}` API and does not need
+the domain registry or wildcard tutor hosts to render websites. Keep an absolute
+`VITE_API_BASE_URL` configured for the deployment.
 
-Run `node scripts/test-website-domains.mjs` for hostname and URL checks.
+Run `npm run test:website-domains` for URL and theme navigation checks.

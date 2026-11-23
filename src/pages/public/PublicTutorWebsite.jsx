@@ -95,9 +95,8 @@ function ErrorScreen({ error, onRetry }) {
 }
 
 /* ─── main component ────────────────────────────────────────────────────────── */
-export default function PublicTutorWebsite({ hostUsername }) {
-  const { username: pathUsername = "", section = "", previewThemeId, previewUserId } = useParams();
-  const username = hostUsername || pathUsername;
+export default function PublicTutorWebsite() {
+  const { username = "", section = "", previewThemeId, previewUserId } = useParams();
   const isPreview = Boolean(previewThemeId && previewUserId);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -195,7 +194,7 @@ export default function PublicTutorWebsite({ hostUsername }) {
   const navigatePage = (page) => {
     const base = isPreview
       ? `/theme-preview/${encodeURIComponent(previewThemeId)}/${encodeURIComponent(previewUserId)}`
-      : hostUsername ? "" : `/tutor/${encodeURIComponent(username)}`;
+      : getTutorNavigationBase(username);
     navigate(page === "home" ? (base || "/") : `${base}/${page}`);
   };
   const navigateLegacySection = (tab) => navigatePage(({ overview: "home", tuition: "classes", faqs: "about", contact: "about" })[tab] || tab);
@@ -208,7 +207,7 @@ export default function PublicTutorWebsite({ hostUsername }) {
   };
 
   /* ── render ── */
-  if (hostUsername && section && ![...validPages, "faqs", "contact"].includes(section)) return <ErrorScreen error="This page could not be found." onRetry={() => navigatePage("home")} />;
+  if (section && ![...validPages, "faqs", "contact"].includes(section)) return <ErrorScreen error="This page could not be found." onRetry={() => navigatePage("home")} />;
   if (loading) return <LoadingScreen />;
   if (error || !website) return <ErrorScreen error={error} onRetry={fetchWebsite} />;
 
