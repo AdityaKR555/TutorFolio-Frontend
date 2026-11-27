@@ -875,92 +875,10 @@ export default function Website() {
     try {
       const themesRes = await api.get("/themes", { params: { userId } });
       const themesData = checkApiResponse(themesRes, "Unable to fetch themes.");
-      const rawThemes = (themesData?.themes || []).map((t) => ({
+      const themes = (themesData?.themes || []).map((t) => ({
         ...t,
         themeId: t.themeId || t.id,
       }));
-      const themes = [...rawThemes];
-
-      // Ensure all 6 themes are always available (Classic Academic, Modern Minimal, Luminary Elite, Aurora, Motion Studio, and Glass)
-      const DEFAULT_THEMES_FALLBACK = [
-        {
-          themeId: "classic",
-          title: "Classic Academic",
-          description: "Traditional university-grade structure with prominent credential badges, syllabus highlights, and trusted blue accents.",
-          primaryColor: "#1e40af",
-          secondaryColor: "#3b82f6",
-          backgroundColor: "#f8fafc",
-          planAvailability: ["free", "pro", "elite"],
-          previewUrl: "/theme-preview/classic",
-        },
-        {
-          themeId: "minimal",
-          title: "Modern Minimal",
-          description: "Clean, content-first Swiss layout with subtle borders, refined monospace accents, and breathable whitespace.",
-          primaryColor: "#0f172a",
-          secondaryColor: "#10b981",
-          backgroundColor: "#ffffff",
-          planAvailability: ["free", "pro", "elite"],
-          previewUrl: "/theme-preview/minimal",
-        },
-        {
-          themeId: "luminary_elite",
-          title: "Luminary Elite",
-          description: "Haute-couture dark & gold aesthetic with heraldic crests, ambient radial glows, and luxury pedigree showcases.",
-          primaryColor: "#d97706",
-          secondaryColor: "#fbbf24",
-          backgroundColor: "#090d16",
-          planAvailability: ["pro", "elite"],
-          previewUrl: "/theme-preview/luminary_elite",
-        },
-        {
-          themeId: "aurora",
-          title: "Aurora",
-          description: "Atmospheric cosmic dark canvas with violet glows, organic planetary orbits, and electric lime accents.",
-          primaryColor: "#c8fc78",
-          secondaryColor: "#743de3",
-          backgroundColor: "#111022",
-          planAvailability: ["pro", "elite"],
-          previewUrl: "/theme-preview/aurora",
-        },
-        {
-          themeId: "motion_studio",
-          title: "Motion Studio",
-          description: "High-energy kinetic editorial layout with electric blue accents, marquee tickers, and bold studio motion.",
-          primaryColor: "#414dff",
-          secondaryColor: "#d6ff63",
-          backgroundColor: "#101116",
-          planAvailability: ["pro", "elite"],
-          previewUrl: "/theme-preview/motion_studio",
-        },
-        {
-          themeId: "glass",
-          title: "Glass Theme",
-          description: "iOS-style frosted glass with soft ambient colour, floating translucent panels, and a light/dark mode toggle.",
-          primaryColor: "#b45309",
-          secondaryColor: "#54a880",
-          backgroundColor: "#ebe4d8",
-          planAvailability: ["pro", "elite"],
-          previewUrl: "/theme-preview/glass",
-        },
-      ];
-
-      DEFAULT_THEMES_FALLBACK.forEach((fallback) => {
-        const isPresent = themes.some((t) => {
-          const id = String(t.themeId || t.id || "").toLowerCase();
-          return (
-            id === fallback.themeId ||
-            (fallback.themeId === "luminary_elite" && (id === "theme_3" || id === "theme3" || id === "elite" || id === "vibrant_slate" || id === "bold_educator")) ||
-            (fallback.themeId === "aurora" && (id === "theme4" || id === "theme_4")) ||
-            (fallback.themeId === "motion_studio" && (id === "theme5" || id === "theme_5")) ||
-            (fallback.themeId === "glass" && (id === "theme6" || id === "theme_6" || id === "glass"))
-          );
-        });
-        if (!isPresent) {
-          themes.push(fallback);
-        }
-      });
-
       setAvailableThemes(themes);
       setActiveThemeId(
         themes.find((theme) => theme.isSelected)?.themeId ||

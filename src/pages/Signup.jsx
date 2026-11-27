@@ -148,7 +148,7 @@ function Signup() {
         }
       } else if (error.request) {
         await showMessage(
-          "Unable to connect to the server. Please check your internet connection and try again."
+          "We’re having trouble reaching our servers. Please try again later."
         );
       } else {
         await showMessage("Something went wrong. Please try again.");

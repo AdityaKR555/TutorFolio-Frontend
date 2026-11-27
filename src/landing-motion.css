@@ -227,3 +227,48 @@
 
 /* A restrained blur softens the liquid edge without losing the ribbon shape. */
 .lp-liquid-cursor { filter: blur(2.2px); opacity: .85; }
+
+/* The tutor introduces the product in her own words. */
+.lp-hero-visual { padding-top: 170px; }
+.lp-tutor-guide { position: absolute; inset: 0 0 auto; height: 320px; z-index: 7; pointer-events: none; }
+.lp-tutor-guide .lp-teacher-character { top: -25px; right: -25px; animation: lp-tutor-breathe 4.5s ease-in-out infinite; transform-origin: 50% 95%; }
+.lp-tutor-guide .lp-teacher-character img { animation: lp-tutor-greet 7.5s ease-in-out infinite; transform-origin: 50% 90%; }
+.lp-tutor-speech { position: absolute; top: 0; left: 4%; right: 145px; max-width: 340px; padding: 17px 20px 10px; border: 1px solid #dbe5f3; border-radius: 20px 20px 4px 20px; background: #fffffff5; box-shadow: 0 12px 35px -15px #244b7938, inset 0 1px 0 white; color: #203953; pointer-events: auto; }
+.lp-tutor-speech::after { content: ''; position: absolute; right: -10px; top: 45px; width: 18px; height: 18px; background: #fff; border-right: 1px solid #dbe5f3; border-top: 1px solid #dbe5f3; transform: rotate(45deg); border-radius: 0 4px 0 0; }
+.lp-tutor-speech-label { display: flex; align-items: center; gap: 6px; color: #5576a0; font-size: 9px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; }
+.lp-tutor-speech-label>span { display: flex; align-items: center; gap: 3px; margin-left: auto; height: 12px; }
+.lp-tutor-speech-label i { width: 3px; height: 5px; border-radius: 3px; background: #789be0; animation: lp-tutor-voice .8s ease-in-out infinite alternate; }
+.lp-tutor-speech-label i:nth-child(2) { animation-delay: .2s; }
+.lp-tutor-speech-label i:nth-child(3) { animation-delay: .4s; }
+.lp-tutor-speech-message { min-height: 83px; margin: 12px 0 0; font-size: 14px; font-weight: 550; line-height: 1.65; letter-spacing: -.2px; }
+.lp-tutor-spoken>span { display: inline-block; white-space: pre; animation: lp-tutor-word .35s ease-out both; animation-delay: calc(var(--word) * 65ms); }
+.lp-tutor-speech-controls { display: flex; justify-content: space-between; align-items: center; }
+.lp-tutor-speech-controls>div { display: flex; gap: 0; }
+.lp-tutor-speech-controls button { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #6380a1; cursor: pointer; }
+.lp-tutor-speech-controls button>span { width: 5px; height: 5px; border-radius: 5px; background: #d5dfec; transition: width .25s, background .25s; }
+.lp-tutor-speech-controls button[aria-pressed="true"]>span { width: 17px; background: #2864e8; }
+.lp-tutor-speech-controls button:hover { background: #edf3ff; }
+.lp-tutor-speech-controls button:focus-visible { outline: 2px solid #2864e8; outline-offset: 2px; }
+.lp-tutor-speech-controls button:disabled { opacity: .4; cursor: default; }
+.lp-tutor-guide[data-running="false"] .lp-teacher-character,
+.lp-tutor-guide[data-running="false"] .lp-teacher-character img,
+.lp-tutor-guide[data-running="false"] .lp-tutor-speech-label i { animation-play-state: paused; }
+@keyframes lp-tutor-breathe { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes lp-tutor-greet { 0%,45%,100% { transform: rotate(0); } 10%,25% { transform: rotate(2deg); } 17%,33% { transform: rotate(-1.5deg); } }
+@keyframes lp-tutor-voice { to { height: 12px; opacity: .5; } }
+@keyframes lp-tutor-word { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 520px) {
+  .lp-hero-visual { padding-top: 195px; }
+  .lp-tutor-speech { left: 0; right: 100px; padding: 13px 13px 7px; }
+  .lp-tutor-speech-label { font-size: 8px; gap: 4px; letter-spacing: .3px; }
+  .lp-tutor-speech-message { font-size: 12px; min-height: 100px; line-height: 1.65; }
+  .lp-tutor-guide .lp-teacher-character { right: -17px; top: 0; width: 125px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-tutor-guide .lp-teacher-character,
+  .lp-tutor-guide .lp-teacher-character img,
+  .lp-tutor-speech-label i,
+  .lp-tutor-spoken>span { animation: none; transform: none; }
+}
+/* Keep every word readable when motion is paused or the guide is being read. */
+.lp-tutor-guide[data-running="false"] .lp-tutor-spoken>span { animation: none; }
