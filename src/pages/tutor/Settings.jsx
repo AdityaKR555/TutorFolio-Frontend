@@ -84,6 +84,8 @@ function Settings() {
   const [pendingEmail, setPendingEmail] = useState("");
   const [emailSaving, setEmailSaving] = useState(false);
   const [emailLoading, setEmailLoading] = useState(true);
+  const [accountSecurity, setAccountSecurity] = useState(null);
+  const isGoogleAccount = accountSecurity?.authProvider === "google";
   const [resendAt, setResendAt] = useState(0);
   const [resendSeconds, setResendSeconds] = useState(0);
 
@@ -137,6 +139,10 @@ function Settings() {
     api.get("/profile/settings/account", { timeout: 15000 }).then(({ data: result }) => {
       if (cancelled) return;
       if (result.status !== 200 || !result.data) throw new Error("Unable to load account settings");
+      setAccountSecurity({
+        authProvider: result.data.authProvider,
+        canChangePassword: result.data.canChangePassword === true,
+      });
       setCurrentEmail(result.data.email);
       setCurrentUsername(result.data.username);
       setUsernameDraft(result.data.username);
@@ -564,6 +570,8 @@ function Settings() {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
 
+    if (!accountSecurity?.canChangePassword) return;
+
     const id = getUserId();
 
     if (!id) {
@@ -955,11 +963,20 @@ function Settings() {
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <span className="mb-[3px] block text-[10px] font-bold uppercase tracking-[.08em] text-[var(--tf-muted)]">Security</span>
-                <h2 className="tf-section-title mt-0 mb-1">Change password</h2>
-                <p className="m-0 text-[11px] text-[var(--tf-muted)]">Use a strong password that you do not use elsewhere.</p>
+                <h2 className="tf-section-title mt-0 mb-1">{isGoogleAccount ? "Sign-in method" : "Change password"}</h2>
+                {accountSecurity?.canChangePassword && <p className="m-0 text-[11px] text-[var(--tf-muted)]">Use a strong password that you do not use elsewhere.</p>}
               </div>
             </div>
 
+            {emailLoading ? (
+              <p className="text-sm text-tf-muted" role="status">Loading sign-in settings…</p>
+            ) : isGoogleAccount ? (
+              <div className="rounded-xl border border-tf-line bg-tf-surface-soft p-4 text-sm leading-6 text-tf-copy">
+                <p className="font-semibold text-tf-ink">You sign in with Google.</p>
+                <p className="mt-2">Your sign-in is managed by Google, so password changes aren’t available here. To change your Google password, visit your Google Account settings.</p>
+                <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 items-center rounded-lg font-semibold text-tf-blue hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600">Open Google Account settings <span className="sr-only">(opens in a new tab)</span></a>
+              </div>
+            ) : accountSecurity?.canChangePassword ? (
             <form
               onSubmit={handlePasswordSubmit}
               className="grid grid-cols-2 gap-x-[14px] gap-y-[13px] max-[560px]:grid-cols-1"
@@ -1086,6 +1103,9 @@ function Settings() {
                 </button>
               </div>
             </form>
+            ) : (
+              <p className="text-sm text-tf-muted">Unable to load your sign-in settings. Please reload this page to try again.</p>
+            )}
           </section>
 
           <p className="m-0 text-right text-[10px] text-[var(--tf-muted)]">Account and security changes are saved to your Tutorfolio account.</p>

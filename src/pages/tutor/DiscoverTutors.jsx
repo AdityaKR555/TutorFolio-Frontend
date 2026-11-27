@@ -28,7 +28,8 @@ const secondaryButtonClass = "tf-button-secondary whitespace-nowrap";
 
 function getCurrentUserId() {
   try {
-    return JSON.parse(localStorage.getItem("user") || "null")?.user_id ?? null;
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    return user?.userId ?? user?.user_id ?? user?.id ?? null;
   } catch {
     return null;
   }
@@ -183,9 +184,7 @@ export default function DiscoverTutors() {
         limit: 12,
       };
       if (userId !== null) {
-        // Backends that use either naming convention will receive the current tutor ID.
-        params.caller_user_id = userId;
-        params.user_id = userId;
+        params.callerUserId = userId;
       }
 
       try {
@@ -246,7 +245,7 @@ export default function DiscoverTutors() {
       setSuggesting(true);
       try {
         const response = await api.get("/search/tutors/suggest", {
-          params: { query: cleanQuery, limit: 8 },
+          params: { query: cleanQuery, limit: 8, callerUserId: getCurrentUserId() ?? undefined },
           timeout: 12000,
         });
         const body = response?.data ?? {};

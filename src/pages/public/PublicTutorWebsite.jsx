@@ -1,8 +1,9 @@
 import { recoverGalleryImage } from "../../utils/galleryDelivery";
 import { getTutorNavigationBase } from "../../utils/websiteUrls";
 import PlatformLoader from "../../components/PlatformLoader";
-import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ArrowRight, Globe, RefreshCw } from "lucide-react";
 import api from "../../api/axios";
 import VisitorChatWidget from "../../components/VisitorChatWidget";
 import { ThemeClassic, ThemeMinimal, ThemeLuminary, ThemeAurora, ThemeGlass } from "../../components/themes/index.js";
@@ -67,7 +68,7 @@ const THEME_MAP = {
   theme6: ThemeGlass,
   theme_6: ThemeGlass,
 };
-const DEFAULT_THEME = "classic";
+const NOT_CONFIGURED = "WEBSITE_NOT_CONFIGURED";
 
 /* ─── fallback UI components (used when theme components aren't loaded) ─────── */
 function LoadingScreen() {
@@ -80,16 +81,24 @@ function LoadingScreen() {
     </div>
   );
 }
-function ErrorScreen({ error, onRetry }) {
+function ErrorScreen({ message, onRetry }) {
   return (
     <main className="min-h-screen flex items-center justify-center bg-tf-bg px-5 py-16">
-      <div className="w-full max-w-lg rounded-2xl border border-blue-200 dark:border-blue-500/15 bg-tf-surface p-7 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-500/10 text-2xl text-red-700 dark:text-red-300">!</div>
-        <h1 className="mt-4 text-xl font-bold text-tf-ink">Tutor website unavailable</h1>
-        <p className="mt-2 text-sm leading-6 text-tf-copy">{error || "This tutor profile may not exist or may not be public."}</p>
-        <button type="button" onClick={onRetry} className="mt-5 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Try again</button>
-        <div><Link to="/" className="mt-4 inline-block text-sm text-blue-700 dark:text-blue-300 hover:underline">Go to TutorFolio</Link></div>
-      </div>
+      <section aria-labelledby="website-unavailable-title" className="w-full max-w-lg rounded-3xl border border-blue-200 dark:border-blue-500/15 bg-tf-surface p-6 text-center shadow-sm sm:p-10">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300">
+          <Globe size={30} strokeWidth={1.5} aria-hidden="true" />
+        </div>
+        <h1 id="website-unavailable-title" className="mt-6 text-2xl font-bold tracking-tight text-tf-ink">This tutor website is unavailable</h1>
+        <p className="mt-3 text-sm leading-6 text-tf-copy">{message || "We couldn’t load this page. Please try again, or come back a little later."}</p>
+        <div className="mt-6 rounded-2xl bg-blue-50/70 p-4 text-left text-sm leading-6 text-tf-copy dark:bg-blue-500/5 sm:p-5">
+          <p><span className="font-semibold text-tf-ink">Visiting this tutor?</span> If this continues, contact the tutor directly for class details.</p>
+          <p className="mt-3"><span className="font-semibold text-tf-ink">Is this your website?</span> Open your TutorFolio dashboard, verify your email if needed, and choose an available theme to publish your website.</p>
+        </div>
+        <button type="button" onClick={onRetry} className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600">
+          <RefreshCw size={16} aria-hidden="true" /> Try again
+        </button>
+        <div><Link to="/" className="mt-5 inline-flex min-h-11 items-center gap-1.5 rounded-lg text-sm font-medium text-blue-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600 dark:text-blue-300">Go to TutorFolio <ArrowRight size={16} aria-hidden="true" /></Link></div>
+      </section>
     </main>
   );
 }
@@ -99,14 +108,13 @@ export default function PublicTutorWebsite() {
   const { username = "", section = "", previewThemeId, previewUserId } = useParams();
   const isPreview = Boolean(previewThemeId && previewUserId);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
   const [website, setWebsite] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
-  const [themeId, setThemeId] = useState(searchParams.get("theme") || DEFAULT_THEME);
+  const [themeId, setThemeId] = useState("");
   const [themeInfo, setThemeInfo] = useState(null);
   const visitRecordedRef = useRef(null);
 
@@ -114,12 +122,15 @@ export default function PublicTutorWebsite() {
   const fetchWebsite = useCallback(async () => {
     setLoading(true);
     setError("");
+    setWebsite(null);
+    setThemeId("");
+    setThemeInfo(null);
     try {
       const res = await api.get(isPreview
         ? `/themes/preview/${encodeURIComponent(previewThemeId)}?userId=${encodeURIComponent(previewUserId)}`
         : `/website/u/${encodeURIComponent(username)}`, { timeout: 20000 });
       const body = res?.data ?? {};
-      if (body.status !== undefined && body.status !== 200) throw new Error(body.message || "Tutor website could not be found.");
+      if (body.status !== undefined && body.status !== 200) throw new Error(body.code || "Tutor website could not be found.");
       const payload = unwrap(body);
       const root = isPreview ? payload.website : payload;
       if (isPreview) {
@@ -130,30 +141,25 @@ export default function PublicTutorWebsite() {
       }
       const normalized = normalizeWebsite(root);
       if (!Object.keys(normalized.profile).length && (root.username || root.firstName || root.profilePicture)) normalized.profile = root;
-      /* Resolve theme metadata before displaying the site so branding matches the selected theme. */
-      const tutorId = Number(fd(normalized.profile, ["userId","user_id","userid","tutorId","tutor_id"], 0)) || null;
       if (!isPreview) {
-        const requestedTheme = searchParams.get("theme");
-        try {
-          const themeResponse = await api.get(requestedTheme ? `/themes/${encodeURIComponent(requestedTheme)}` : tutorId ? `/themes/current/${tutorId}` : `/themes/${DEFAULT_THEME}`, { timeout: 8000 });
-          const data = themeResponse?.data?.data;
-          const theme = data?.theme || data;
-          const tid = String(theme?.themeId || theme?.id || "").trim().toLowerCase();
-          if (tid && THEME_MAP[tid]) { setThemeId(tid); setThemeInfo(theme); }
-          else { setThemeId(DEFAULT_THEME); setThemeInfo(null); }
-        } catch {
-          setThemeId(DEFAULT_THEME);
-          setThemeInfo(null);
+        // Public websites use only the saved, active theme confirmed by the backend.
+        const selection = root?.theme;
+        const theme = selection?.theme;
+        const tid = String(selection?.themeId || "").trim().toLowerCase();
+        if (selection?.isDefaultFallback !== false || theme?.isActive !== true || !THEME_MAP[tid]) {
+          throw new Error(NOT_CONFIGURED);
         }
+        setThemeId(tid);
+        setThemeInfo(theme);
       }
       setWebsite({ ...normalized, raw: root });
     } catch (err) {
       setWebsite(null);
-      setError(err?.response?.data?.message || err.message || "Unable to load this tutor website.");
+      setError(err?.response?.data?.code || err.message || "Unable to load this tutor website.");
     } finally {
       setLoading(false);
     }
-  }, [username, searchParams, isPreview, previewThemeId, previewUserId]);
+  }, [username, isPreview, previewThemeId, previewUserId]);
 
   useEffect(() => { if (username || isPreview) fetchWebsite(); }, [fetchWebsite, username, isPreview]);
 
@@ -207,13 +213,14 @@ export default function PublicTutorWebsite() {
   };
 
   /* ── render ── */
-  if (section && ![...validPages, "faqs", "contact"].includes(section)) return <ErrorScreen error="This page could not be found." onRetry={() => navigatePage("home")} />;
+  if (section && ![...validPages, "faqs", "contact"].includes(section)) return <ErrorScreen message="This page could not be found. Try returning to the tutor’s home page." onRetry={() => navigatePage("home")} />;
   if (loading) return <LoadingScreen />;
-  if (error || !website) return <ErrorScreen error={error} onRetry={fetchWebsite} />;
+  if (error || !website) return <ErrorScreen message={error === NOT_CONFIGURED ? "This tutor hasn’t published a website yet. Please check back later." : undefined} onRetry={fetchWebsite} />;
 
-  /* pick theme component (fall back to Classic if unknown) */
+  /* Render only a supported, explicitly resolved theme. */
   const activeKey = String(themeId || "").trim().toLowerCase();
-  const ThemeComponent = THEME_MAP[activeKey] ?? ThemeClassic;
+  const ThemeComponent = THEME_MAP[activeKey];
+  if (!ThemeComponent) return <ErrorScreen onRetry={fetchWebsite} />;
   const isFreeTheme = Array.isArray(themeInfo?.planAvailability) && themeInfo.planAvailability.some((plan) => String(plan).trim().toLowerCase() === "free");
   const needsSharedIdentity = ![ThemeClassic, ThemeMinimal, ThemeLuminary, ThemeAurora, ThemeFive, ThemeGlass].includes(ThemeComponent);
 
